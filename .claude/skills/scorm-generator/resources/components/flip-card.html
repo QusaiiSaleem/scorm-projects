@@ -1,0 +1,23 @@
+<!-- Flip Card Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css (flip-card styles are included)
+
+     Customization:
+     - Change .flip-card height via inline style or course-custom.css
+     - Front side uses --color-primary/--color-secondary gradient
+     - Back side uses --color-surface-elevated
+-->
+
+<div class="flip-card" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+     aria-label="Flip card: click to reveal answer"
+     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+  <div class="flip-card-inner">
+    <div class="flip-card-front">
+      <h3>Front: Question or Term</h3>
+      <p class="flip-hint" style="position:absolute;bottom:12px;font-size:0.875rem;opacity:0.8;">Click to flip</p>
+    </div>
+    <div class="flip-card-back">
+      <p>Back: Answer or Definition</p>
+    </div>
+  </div>
+</div>

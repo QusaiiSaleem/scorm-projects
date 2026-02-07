@@ -1,0 +1,22 @@
+{
+  "courseName": "computational-thinking",
+  "courseTitle": "Computational Thinking",
+  "startedAt": "2026-02-06T00:00:00Z",
+  "chapters": {
+    "chapter-1": {
+      "title": "Chapter 1: Computational Thinking",
+      "scoCount": 18,
+      "status": "in-progress"
+    }
+  },
+  "phases": {
+    "interview": { "status": "completed", "output": "specs/computational-thinking_spec.md" },
+    "design": { "status": "pending", "output": null },
+    "art-direction": { "status": "pending", "output": null },
+    "visuals": { "status": "pending", "output": null },
+    "animation": { "status": "pending", "output": null },
+    "assessment": { "status": "pending", "output": null },
+    "rendering": { "status": "pending", "output": null },
+    "packaging": { "status": "pending", "output": null }
+  }
+}

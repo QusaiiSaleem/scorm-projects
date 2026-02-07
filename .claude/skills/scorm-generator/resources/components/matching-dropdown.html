@@ -1,0 +1,392 @@
+<!-- Matching Drop-Down Component
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Left column shows items/terms
+     - Right column has <select> dropdowns with the same set of choices
+     - Learner matches each term to the correct option
+     - "Check" button validates all pairs
+     - Correct matches highlight green, incorrect highlight with growth feedback
+
+     ACCESSIBILITY:
+     - Each dropdown has a proper <label> association
+     - Keyboard-friendly: Tab between dropdowns, use arrow keys to select
+     - Screen reader announces results via live region
+     - No drag-and-drop required (inherently accessible)
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+     - learner_response = "term1[.]match1,term2[.]match2,..."
+-->
+
+<style>
+  /* === Matching Activity Container === */
+  .matching-dropdown-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Matching Table === */
+  .matching-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: var(--space-md) 0;
+  }
+
+  /* Header row */
+  .matching-table thead th {
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-heading);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: start;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  /* Each matching row */
+  .matching-row {
+    transition: background var(--transition-fast);
+  }
+
+  .matching-row td {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-border-subtle);
+    vertical-align: middle;
+  }
+
+  /* Term cell (left column) */
+  .matching-term {
+    font-weight: 600;
+    font-size: var(--font-size-body);
+    min-width: 150px;
+  }
+
+  /* Row number badge */
+  .matching-num {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-inline-end: var(--space-sm);
+    flex-shrink: 0;
+  }
+
+  /* Dropdown cell (right column) */
+  .matching-select-cell {
+    min-width: 200px;
+  }
+
+  /* Styled select dropdown */
+  .matching-select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    padding-inline-end: 36px; /* Space for arrow */
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-elevated);
+    font-family: var(--font-body);
+    font-size: var(--font-size-small);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+    appearance: none;
+    /* Custom dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748B' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    min-height: 44px;
+  }
+
+  [dir="rtl"] .matching-select {
+    background-position: 12px center;
+    padding-inline-end: var(--space-md);
+    padding-inline-start: 36px;
+  }
+
+  .matching-select:hover {
+    border-color: var(--color-primary-light);
+  }
+
+  .matching-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  }
+
+  /* Correct match state */
+  .matching-row.correct .matching-select {
+    border-color: var(--color-success);
+    background-color: var(--color-success-bg);
+  }
+
+  .matching-row.correct .matching-term {
+    color: var(--color-success);
+  }
+
+  /* Incorrect match state */
+  .matching-row.incorrect .matching-select {
+    border-color: var(--color-error);
+    background-color: var(--color-error-bg);
+  }
+
+  /* Result icon after check */
+  .matching-result-icon {
+    font-size: 18px;
+    min-width: 28px;
+    text-align: center;
+    visibility: hidden;
+  }
+
+  .matching-row.correct .matching-result-icon,
+  .matching-row.incorrect .matching-result-icon {
+    visibility: visible;
+  }
+
+  /* === Feedback === */
+  .matching-feedback {
+    margin-top: var(--space-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .matching-feedback.show {
+    display: block;
+  }
+
+  /* === Actions === */
+  .matching-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* === Responsive: Stack on mobile === */
+  @media (max-width: 600px) {
+    .matching-table thead {
+      display: none;
+    }
+
+    .matching-table,
+    .matching-table tbody,
+    .matching-table tr,
+    .matching-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .matching-row {
+      margin-bottom: var(--space-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .matching-row td {
+      border: none;
+    }
+
+    .matching-term {
+      background: var(--color-surface);
+      font-size: 15px;
+    }
+
+    .matching-select-cell {
+      padding-top: 0;
+    }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="matching-dropdown-activity" role="region" aria-label="Matching activity">
+  <p class="question-stem">Match each term with its correct definition:</p>
+
+  <table class="matching-table">
+    <thead>
+      <tr>
+        <th scope="col">Term</th>
+        <th scope="col">Match</th>
+        <th scope="col"><span class="sr-only">Result</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Row 1: data-correct is the value of the correct dropdown option -->
+      <tr class="matching-row" data-correct="photosynthesis-def">
+        <td class="matching-term">
+          <span class="matching-num" aria-hidden="true">1</span>
+          <label for="match-1">Photosynthesis</label>
+        </td>
+        <td class="matching-select-cell">
+          <select class="matching-select" id="match-1" aria-label="Match for Photosynthesis">
+            <option value="">-- Select --</option>
+            <option value="photosynthesis-def">Converting light energy to chemical energy</option>
+            <option value="respiration-def">Breaking down glucose for energy</option>
+            <option value="osmosis-def">Movement of water across a membrane</option>
+            <option value="mitosis-def">Cell division for growth</option>
+          </select>
+        </td>
+        <td class="matching-result-icon" aria-hidden="true"></td>
+      </tr>
+
+      <!-- Row 2 -->
+      <tr class="matching-row" data-correct="respiration-def">
+        <td class="matching-term">
+          <span class="matching-num" aria-hidden="true">2</span>
+          <label for="match-2">Cellular Respiration</label>
+        </td>
+        <td class="matching-select-cell">
+          <select class="matching-select" id="match-2" aria-label="Match for Cellular Respiration">
+            <option value="">-- Select --</option>
+            <option value="photosynthesis-def">Converting light energy to chemical energy</option>
+            <option value="respiration-def">Breaking down glucose for energy</option>
+            <option value="osmosis-def">Movement of water across a membrane</option>
+            <option value="mitosis-def">Cell division for growth</option>
+          </select>
+        </td>
+        <td class="matching-result-icon" aria-hidden="true"></td>
+      </tr>
+
+      <!-- Row 3 -->
+      <tr class="matching-row" data-correct="osmosis-def">
+        <td class="matching-term">
+          <span class="matching-num" aria-hidden="true">3</span>
+          <label for="match-3">Osmosis</label>
+        </td>
+        <td class="matching-select-cell">
+          <select class="matching-select" id="match-3" aria-label="Match for Osmosis">
+            <option value="">-- Select --</option>
+            <option value="photosynthesis-def">Converting light energy to chemical energy</option>
+            <option value="respiration-def">Breaking down glucose for energy</option>
+            <option value="osmosis-def">Movement of water across a membrane</option>
+            <option value="mitosis-def">Cell division for growth</option>
+          </select>
+        </td>
+        <td class="matching-result-icon" aria-hidden="true"></td>
+      </tr>
+
+      <!-- Row 4 -->
+      <tr class="matching-row" data-correct="mitosis-def">
+        <td class="matching-term">
+          <span class="matching-num" aria-hidden="true">4</span>
+          <label for="match-4">Mitosis</label>
+        </td>
+        <td class="matching-select-cell">
+          <select class="matching-select" id="match-4" aria-label="Match for Mitosis">
+            <option value="">-- Select --</option>
+            <option value="photosynthesis-def">Converting light energy to chemical energy</option>
+            <option value="respiration-def">Breaking down glucose for energy</option>
+            <option value="osmosis-def">Movement of water across a membrane</option>
+            <option value="mitosis-def">Cell division for growth</option>
+          </select>
+        </td>
+        <td class="matching-result-icon" aria-hidden="true"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Actions -->
+  <div class="matching-actions">
+    <button class="btn-primary" onclick="checkMatching()">Check Matches</button>
+    <button class="btn-secondary" onclick="resetMatching()">Reset</button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="matching-feedback" id="matching-feedback" role="alert" aria-live="polite"></div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="matching-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   MATCHING DROP-DOWN COMPONENT
+   ============================================================
+   - Validates each row's dropdown against data-correct value
+   - Shows per-row and overall feedback
+   - Inherently keyboard accessible (native <select> elements)
+   ============================================================ */
+
+/**
+ * Check all matching pairs.
+ * Compares each row's selected value to data-correct.
+ */
+function checkMatching() {
+  var rows = document.querySelectorAll('.matching-row');
+  var correctCount = 0;
+  var totalCount = rows.length;
+
+  rows.forEach(function(row) {
+    var correct = row.getAttribute('data-correct');
+    var select = row.querySelector('.matching-select');
+    var icon = row.querySelector('.matching-result-icon');
+    var selected = select.value;
+
+    /* Clear previous state */
+    row.classList.remove('correct', 'incorrect');
+
+    if (selected === correct) {
+      row.classList.add('correct');
+      if (icon) icon.textContent = '\u2714'; /* checkmark */
+      correctCount++;
+    } else {
+      row.classList.add('incorrect');
+      if (icon) icon.textContent = '\u2716'; /* X mark */
+    }
+  });
+
+  /* Show overall feedback */
+  var feedbackEl = document.getElementById('matching-feedback');
+  if (feedbackEl) {
+    feedbackEl.classList.add('show');
+    if (correctCount === totalCount) {
+      feedbackEl.innerHTML = '<div class="feedback-correct"><span aria-hidden="true">&#10004;</span> ' +
+        '<span>Perfect! All ' + totalCount + ' matches are correct!</span></div>';
+    } else {
+      feedbackEl.innerHTML = '<div class="feedback-incorrect"><span aria-hidden="true">&#128161;</span> ' +
+        '<span>You got ' + correctCount + ' of ' + totalCount + ' correct. Review the highlighted items and try again!</span></div>';
+    }
+  }
+
+  announceMatching(correctCount + ' of ' + totalCount + ' matches are correct.');
+}
+
+/**
+ * Reset all dropdowns and clear feedback.
+ */
+function resetMatching() {
+  var rows = document.querySelectorAll('.matching-row');
+  rows.forEach(function(row) {
+    row.classList.remove('correct', 'incorrect');
+    var select = row.querySelector('.matching-select');
+    if (select) select.selectedIndex = 0;
+    var icon = row.querySelector('.matching-result-icon');
+    if (icon) icon.textContent = '';
+  });
+
+  var feedbackEl = document.getElementById('matching-feedback');
+  if (feedbackEl) {
+    feedbackEl.classList.remove('show');
+    feedbackEl.innerHTML = '';
+  }
+}
+
+/**
+ * Announce to screen readers.
+ */
+function announceMatching(msg) {
+  var el = document.getElementById('matching-announce');
+  if (el) el.textContent = msg;
+}
+</script>

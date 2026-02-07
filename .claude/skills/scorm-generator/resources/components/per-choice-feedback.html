@@ -1,0 +1,420 @@
+<!-- Per-Choice Feedback Component
+     Usage: Copy into lesson HTML. Add to any quiz question for targeted feedback.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Each answer option has its own unique feedback text (not just "Correct" / "Incorrect")
+     - When a learner selects a wrong answer, they see specific feedback explaining
+       WHY that answer is wrong and guiding them toward the right thinking
+     - Correct answers also get specific positive reinforcement
+     - Supports "Try Again" mode where learner can attempt again after wrong answers
+
+     THIS IS AN ENHANCEMENT PATTERN — not a standalone component.
+     It adds per-choice feedback to any multiple-choice quiz question.
+
+     GROWTH MINDSET:
+     - Wrong-answer feedback uses encouraging language
+     - Explains the misconception, not just "wrong"
+     - Uses the "growth" purple color, not punishing red
+     - Offers "Try Again" instead of locking out
+
+     ACCESSIBILITY:
+     - Feedback announced via aria-live region
+     - Each feedback panel has role="alert"
+     - Focus moves to feedback after selection
+-->
+
+<style>
+  /* === Per-Choice Quiz Container === */
+  .pcf-quiz {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Answer Options with Per-Choice Feedback === */
+  .pcf-option {
+    display: block;
+    width: 100%;
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0;
+    margin-bottom: var(--space-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: start;
+    overflow: hidden; /* So the feedback slides down inside the card */
+  }
+
+  .pcf-option:hover:not(.disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+  }
+
+  /* The clickable answer text area */
+  .pcf-option-text {
+    padding: var(--space-md) var(--space-lg);
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--color-text);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: inherit;
+    text-align: start;
+  }
+
+  /* Option letter badge (A, B, C, D) */
+  .pcf-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    transition: all var(--transition-base);
+  }
+
+  /* Correct answer selected */
+  .pcf-option.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+    animation: correctPulse 0.4s ease;
+  }
+
+  .pcf-option.correct .pcf-letter {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+  }
+
+  /* Incorrect answer selected */
+  .pcf-option.incorrect {
+    border-color: var(--color-growth);
+    background: var(--color-growth-bg);
+    animation: incorrectShake 0.4s ease;
+  }
+
+  .pcf-option.incorrect .pcf-letter {
+    background: var(--color-growth);
+    border-color: var(--color-growth);
+    color: white;
+  }
+
+  /* Disabled after answering */
+  .pcf-option.disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .pcf-option.disabled:hover {
+    border-color: var(--color-border);
+    background: var(--color-surface-elevated);
+  }
+
+  /* Show which option was the correct one (when wrong is selected) */
+  .pcf-option.show-correct {
+    border-color: var(--color-success);
+    border-style: dashed;
+  }
+
+  .pcf-option.show-correct .pcf-letter {
+    background: var(--color-success-bg);
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  /* === Per-Choice Feedback Panel === */
+  /* This slides down INSIDE the option card when selected */
+  .pcf-feedback {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+    padding: 0 var(--space-lg);
+    font-size: var(--font-size-small);
+    line-height: 1.7;
+  }
+
+  .pcf-feedback.show {
+    max-height: 300px;
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  /* Correct feedback styling */
+  .pcf-option.correct .pcf-feedback.show {
+    background: rgba(16, 185, 129, 0.05);
+    border-top-color: var(--color-success);
+  }
+
+  /* Incorrect feedback styling (growth purple, not red) */
+  .pcf-option.incorrect .pcf-feedback.show {
+    background: rgba(139, 92, 246, 0.05);
+    border-top-color: var(--color-growth);
+  }
+
+  .pcf-feedback-icon {
+    margin-inline-end: var(--space-xs);
+  }
+
+  /* === Try Again Button === */
+  .pcf-try-again {
+    display: none;
+    margin-top: var(--space-md);
+  }
+
+  .pcf-try-again.show {
+    display: inline-block;
+  }
+
+  /* === Overall Feedback (after final answer) === */
+  .pcf-overall-feedback {
+    margin-top: var(--space-lg);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .pcf-overall-feedback.show {
+    display: block;
+  }
+
+  /* === Attempts Counter === */
+  .pcf-attempts {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-sm);
+    text-align: end;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .pcf-option.correct { animation: none; }
+    .pcf-option.incorrect { animation: none; }
+    .pcf-feedback { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="pcf-quiz" role="region" aria-label="Quiz question with targeted feedback">
+  <p class="question-stem">What is the primary function of mitochondria in a cell?</p>
+
+  <!-- Each option has:
+       data-correct="true/false" — marks the right answer
+       data-feedback="..." — unique feedback text for THIS specific choice
+       data-max-attempts="2" — optional: how many tries before locking (0 = unlimited) -->
+  <div class="pcf-options" data-max-attempts="2" id="pcf-q1">
+
+    <!-- Option A (correct) -->
+    <div class="pcf-option" data-correct="true"
+         data-feedback="Exactly right! Mitochondria are the powerhouses of the cell, converting nutrients into ATP (adenosine triphosphate), the energy currency that fuels cellular processes."
+         onclick="handlePCFClick(this)">
+      <button class="pcf-option-text" type="button">
+        <span class="pcf-letter">A</span>
+        <span>Producing energy (ATP) for the cell</span>
+      </button>
+      <div class="pcf-feedback" role="alert"></div>
+    </div>
+
+    <!-- Option B (incorrect) -->
+    <div class="pcf-option" data-correct="false"
+         data-feedback="Not quite. While protein synthesis IS important for cells, that's the job of ribosomes (found on rough ER and free in cytoplasm). Think about which organelle is called the 'powerhouse' of the cell."
+         onclick="handlePCFClick(this)">
+      <button class="pcf-option-text" type="button">
+        <span class="pcf-letter">B</span>
+        <span>Synthesizing proteins for growth</span>
+      </button>
+      <div class="pcf-feedback" role="alert"></div>
+    </div>
+
+    <!-- Option C (incorrect) -->
+    <div class="pcf-option" data-correct="false"
+         data-feedback="Good thinking, but storing genetic information is the job of the nucleus, which contains DNA. Mitochondria do have their own small DNA, but their primary role is different. Hint: think about energy!"
+         onclick="handlePCFClick(this)">
+      <button class="pcf-option-text" type="button">
+        <span class="pcf-letter">C</span>
+        <span>Storing genetic information</span>
+      </button>
+      <div class="pcf-feedback" role="alert"></div>
+    </div>
+
+    <!-- Option D (incorrect) -->
+    <div class="pcf-option" data-correct="false"
+         data-feedback="That's actually the role of lysosomes, which contain digestive enzymes to break down waste. Mitochondria have a constructive role — they BUILD something the cell needs. What does every cell need to function?"
+         onclick="handlePCFClick(this)">
+      <button class="pcf-option-text" type="button">
+        <span class="pcf-letter">D</span>
+        <span>Breaking down cellular waste</span>
+      </button>
+      <div class="pcf-feedback" role="alert"></div>
+    </div>
+  </div>
+
+  <!-- Attempts counter -->
+  <div class="pcf-attempts" id="pcf-q1-attempts" aria-live="polite"></div>
+
+  <!-- Try Again button (shown after wrong answer if attempts remain) -->
+  <button class="btn-secondary pcf-try-again" id="pcf-q1-retry"
+          onclick="retryPCF('pcf-q1')">Try Again</button>
+
+  <!-- Overall feedback (shown when question is complete) -->
+  <div class="pcf-overall-feedback" id="pcf-q1-overall" role="alert" aria-live="polite"></div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="pcf-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   PER-CHOICE FEEDBACK COMPONENT
+   ============================================================
+   Enhancement for quiz questions that provides targeted,
+   specific feedback for EACH answer option (not just generic
+   "correct" or "incorrect" messages).
+
+   Supports:
+   - Multiple attempts with "Try Again"
+   - Growth mindset messaging
+   - Highlighting the correct answer after final attempt
+   ============================================================ */
+
+/* Track attempts per question group */
+var pcfAttempts = {};
+
+/**
+ * Handle clicking an answer option.
+ * Shows per-choice feedback, tracks attempts.
+ */
+function handlePCFClick(option) {
+  /* Don't react if already disabled */
+  if (option.classList.contains('disabled')) return;
+
+  var container = option.closest('.pcf-options');
+  var qId = container.id;
+  var maxAttempts = parseInt(container.getAttribute('data-max-attempts')) || 0; /* 0 = unlimited */
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+  var feedbackText = option.getAttribute('data-feedback') || '';
+
+  /* Initialize attempt counter */
+  if (!pcfAttempts[qId]) pcfAttempts[qId] = 0;
+  pcfAttempts[qId]++;
+
+  /* Clear previous feedback and states */
+  var allOptions = container.querySelectorAll('.pcf-option');
+  allOptions.forEach(function(opt) {
+    opt.classList.remove('correct', 'incorrect', 'show-correct');
+    var fb = opt.querySelector('.pcf-feedback');
+    if (fb) { fb.classList.remove('show'); fb.innerHTML = ''; }
+  });
+
+  /* Apply state to clicked option */
+  if (isCorrect) {
+    option.classList.add('correct');
+  } else {
+    option.classList.add('incorrect');
+  }
+
+  /* Show per-choice feedback inside the option card */
+  var feedbackEl = option.querySelector('.pcf-feedback');
+  if (feedbackEl && feedbackText) {
+    var icon = isCorrect ? '&#10004;' : '&#128161;';
+    feedbackEl.innerHTML = '<span class="pcf-feedback-icon" aria-hidden="true">' + icon + '</span> ' + feedbackText;
+    feedbackEl.classList.add('show');
+  }
+
+  /* Update attempts display */
+  var attemptsEl = document.getElementById(qId + '-attempts');
+  if (attemptsEl && maxAttempts > 0) {
+    attemptsEl.textContent = 'Attempt ' + pcfAttempts[qId] + ' of ' + maxAttempts;
+  }
+
+  if (isCorrect) {
+    /* CORRECT: disable all options, show overall success */
+    allOptions.forEach(function(opt) { opt.classList.add('disabled'); });
+    showOverallFeedback(qId, true);
+    hideRetryButton(qId);
+    announcePCF('Correct! ' + feedbackText);
+  } else {
+    /* INCORRECT */
+    var attemptsLeft = maxAttempts > 0 ? maxAttempts - pcfAttempts[qId] : 999;
+
+    if (attemptsLeft > 0) {
+      /* Still has attempts: show Try Again */
+      showRetryButton(qId);
+      announcePCF('Not quite. ' + feedbackText + ' You have ' +
+        (maxAttempts > 0 ? attemptsLeft + ' attempt(s) remaining.' : 'another chance.'));
+    } else {
+      /* No attempts left: lock and show correct answer */
+      allOptions.forEach(function(opt) {
+        opt.classList.add('disabled');
+        if (opt.getAttribute('data-correct') === 'true') {
+          opt.classList.add('show-correct');
+        }
+      });
+      showOverallFeedback(qId, false);
+      hideRetryButton(qId);
+      announcePCF('No more attempts. The correct answer has been highlighted.');
+    }
+  }
+}
+
+/**
+ * Retry: clear states so learner can try again.
+ */
+function retryPCF(qId) {
+  var container = document.getElementById(qId);
+  if (!container) return;
+
+  var options = container.querySelectorAll('.pcf-option');
+  options.forEach(function(opt) {
+    opt.classList.remove('correct', 'incorrect', 'show-correct', 'disabled');
+    var fb = opt.querySelector('.pcf-feedback');
+    if (fb) { fb.classList.remove('show'); fb.innerHTML = ''; }
+  });
+
+  hideRetryButton(qId);
+  announcePCF('Try again. Select your answer.');
+}
+
+/**
+ * Show overall feedback after the question is complete.
+ */
+function showOverallFeedback(qId, isCorrect) {
+  var el = document.getElementById(qId + '-overall');
+  if (!el) return;
+
+  el.classList.add('show');
+  if (isCorrect) {
+    el.innerHTML = '<div class="feedback-correct"><span aria-hidden="true">&#10004;</span> ' +
+      '<span>Great work! You got it right.</span></div>';
+  } else {
+    el.innerHTML = '<div class="feedback-incorrect"><span aria-hidden="true">&#128161;</span> ' +
+      '<span>The correct answer is highlighted above. Review the feedback to understand why.</span></div>';
+  }
+}
+
+function showRetryButton(qId) {
+  var btn = document.getElementById(qId + '-retry');
+  if (btn) btn.classList.add('show');
+}
+
+function hideRetryButton(qId) {
+  var btn = document.getElementById(qId + '-retry');
+  if (btn) btn.classList.remove('show');
+}
+
+function announcePCF(msg) {
+  var el = document.getElementById('pcf-announce');
+  if (el) el.textContent = msg;
+}
+</script>

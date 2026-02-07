@@ -1,0 +1,508 @@
+<!-- Interactive Checklist Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A checkbox list with items the learner must complete
+     - Click a checkbox → animated SVG checkmark draws in
+     - Progress bar at top shows completion percentage
+     - All items must be checked to reveal a "Complete" button
+     - Items can have sub-descriptions that expand on click
+     - Checked state persists via suspend_data (if SCORM API present)
+     - Growth mindset message on full completion
+
+     CUSTOMIZATION:
+     - Add/remove .checklist-item elements
+     - Set data-item-id on each item for state persistence
+     - Add .checklist-item-desc for expandable sub-descriptions
+     - Set data-completion-msg on .interactive-checklist for custom message
+     - Adjust colors via CSS custom properties
+
+     ACCESSIBILITY:
+     - Each item uses native <input type="checkbox"> for screen readers
+     - Labels are properly associated via for/id
+     - Progress bar uses role="progressbar" with aria-valuenow
+     - Completion announced via aria-live region
+     - Keyboard: Tab between items, Space/Enter to toggle
+-->
+
+<style>
+  /* === Checklist Container === */
+  .interactive-checklist {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* === Progress Bar === */
+  .checklist-progress {
+    margin-block-end: var(--space-md, 16px);
+  }
+
+  .checklist-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-block-end: var(--space-xs, 4px);
+  }
+
+  .checklist-progress-label {
+    font-size: var(--font-size-small, 0.85rem);
+    font-weight: 600;
+    color: var(--color-text-secondary, #6b7280);
+  }
+
+  .checklist-progress-count {
+    font-size: var(--font-size-small, 0.85rem);
+    color: var(--color-primary, #6366f1);
+    font-weight: 700;
+  }
+
+  .checklist-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-border, #e5e7eb);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .checklist-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary, #6366f1), var(--color-accent, #f59e0b));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* === Checklist Items === */
+  .checklist-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 8px);
+  }
+
+  .checklist-item {
+    background: var(--color-surface-elevated, #fff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-md, 8px);
+    padding: 0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+  }
+
+  .checklist-item:hover {
+    border-color: var(--color-border-subtle, #d1d5db);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
+  }
+
+  /* Checked item styling */
+  .checklist-item.checked {
+    border-color: var(--color-success, #22c55e);
+    background: rgba(34, 197, 94, 0.04);
+  }
+
+  /* === Checkbox + Label Row === */
+  .checklist-item-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    cursor: pointer;
+    min-height: 52px;
+  }
+
+  /* Hide native checkbox visually, keep accessible */
+  .checklist-item-row input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* Custom checkbox appearance */
+  .checklist-check {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 2px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-sm, 6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  /* Checked state for custom checkbox */
+  .checklist-item.checked .checklist-check {
+    border-color: var(--color-success, #22c55e);
+    background: var(--color-success, #22c55e);
+  }
+
+  /* SVG checkmark inside */
+  .checklist-check svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition: stroke-dashoffset 0.3s ease;
+  }
+
+  .checklist-item.checked .checklist-check svg {
+    stroke-dashoffset: 0;
+  }
+
+  /* Focus ring when checkbox is focused */
+  .checklist-item-row input:focus-visible + .checklist-check {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  /* Label text */
+  .checklist-item-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text, #1f2937);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .checklist-item.checked .checklist-item-label {
+    color: var(--color-text-secondary, #6b7280);
+  }
+
+  /* Expand arrow for items with descriptions */
+  .checklist-expand-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--color-text-secondary, #9ca3af);
+    stroke-width: 2;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .checklist-item.expanded .checklist-expand-icon {
+    transform: rotate(180deg);
+  }
+
+  /* === Expandable Sub-Description === */
+  .checklist-item-desc {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding-inline: var(--space-md, 16px);
+    padding-inline-start: 60px; /* align with label */
+    font-size: var(--font-size-small, 0.85rem);
+    color: var(--color-text-secondary, #6b7280);
+    line-height: 1.6;
+  }
+
+  .checklist-item.expanded .checklist-item-desc {
+    max-height: 200px;
+    padding-block-end: var(--space-md, 16px);
+  }
+
+  /* === Completion Section === */
+  .checklist-complete {
+    margin-block-start: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(99,102,241,0.06));
+    border: 1px solid var(--color-success, #22c55e);
+    border-radius: var(--radius-md, 8px);
+    text-align: center;
+    display: none;
+  }
+
+  .checklist-complete.visible { display: block; }
+
+  .checklist-complete-msg {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-success, #16a34a);
+    margin: 0 0 var(--space-sm, 8px);
+    line-height: 1.4;
+  }
+
+  .checklist-complete-btn {
+    padding: var(--space-sm, 8px) var(--space-lg, 24px);
+    background: var(--color-success, #22c55e);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .checklist-complete-btn:hover { background: #16a34a; }
+
+  .checklist-complete-btn:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .checklist-check svg { transition: none; }
+    .checklist-item-desc { transition: none; }
+    .checklist-progress-fill { transition: none; }
+    .checklist-expand-icon { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="interactive-checklist" role="region" aria-label="Task checklist"
+     data-completion-msg="All tasks complete! You're ready to move forward.">
+
+  <!-- Progress bar -->
+  <div class="checklist-progress">
+    <div class="checklist-progress-header">
+      <span class="checklist-progress-label">Progress</span>
+      <span class="checklist-progress-count" id="cl-progress-text">0 of 5</span>
+    </div>
+    <div class="checklist-progress-bar" role="progressbar"
+         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+         id="cl-progress-bar">
+      <div class="checklist-progress-fill" id="cl-progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Checklist items -->
+  <ul class="checklist-items">
+    <!-- Item 1 (with description) -->
+    <li class="checklist-item" data-item-id="cl-1">
+      <label class="checklist-item-row" for="check-1" onclick="toggleDesc(this.parentElement)">
+        <input type="checkbox" id="check-1" onchange="toggleCheckItem(this)">
+        <span class="checklist-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+        </span>
+        <span class="checklist-item-label">Review the project brief</span>
+        <svg class="checklist-expand-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </label>
+      <div class="checklist-item-desc">
+        Read through the complete project brief document and highlight any questions you may have for your team.
+      </div>
+    </li>
+
+    <!-- Item 2 (with description) -->
+    <li class="checklist-item" data-item-id="cl-2">
+      <label class="checklist-item-row" for="check-2" onclick="toggleDesc(this.parentElement)">
+        <input type="checkbox" id="check-2" onchange="toggleCheckItem(this)">
+        <span class="checklist-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+        </span>
+        <span class="checklist-item-label">Complete the self-assessment</span>
+        <svg class="checklist-expand-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </label>
+      <div class="checklist-item-desc">
+        Fill out the skills self-assessment to identify your current knowledge level and areas for growth.
+      </div>
+    </li>
+
+    <!-- Item 3 (no description) -->
+    <li class="checklist-item" data-item-id="cl-3">
+      <label class="checklist-item-row" for="check-3">
+        <input type="checkbox" id="check-3" onchange="toggleCheckItem(this)">
+        <span class="checklist-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+        </span>
+        <span class="checklist-item-label">Watch the orientation video</span>
+      </label>
+    </li>
+
+    <!-- Item 4 (with description) -->
+    <li class="checklist-item" data-item-id="cl-4">
+      <label class="checklist-item-row" for="check-4" onclick="toggleDesc(this.parentElement)">
+        <input type="checkbox" id="check-4" onchange="toggleCheckItem(this)">
+        <span class="checklist-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+        </span>
+        <span class="checklist-item-label">Set up your workspace tools</span>
+        <svg class="checklist-expand-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </label>
+      <div class="checklist-item-desc">
+        Install the required software and verify that you can log into all team platforms.
+      </div>
+    </li>
+
+    <!-- Item 5 (no description) -->
+    <li class="checklist-item" data-item-id="cl-5">
+      <label class="checklist-item-row" for="check-5">
+        <input type="checkbox" id="check-5" onchange="toggleCheckItem(this)">
+        <span class="checklist-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+        </span>
+        <span class="checklist-item-label">Submit your introduction post</span>
+      </label>
+    </li>
+  </ul>
+
+  <!-- Completion gate (hidden until all checked) -->
+  <div class="checklist-complete" id="cl-complete">
+    <p class="checklist-complete-msg" id="cl-complete-msg">
+      All tasks complete! You're ready to move forward.
+    </p>
+    <button class="checklist-complete-btn" onclick="completeChecklist()">
+      Mark as Complete
+    </button>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div class="sr-only" aria-live="polite" id="cl-announce"></div>
+
+<script>
+/* ============================================================
+   INTERACTIVE CHECKLIST — Task completion with progress tracking
+   ============================================================
+   - Toggle checkboxes to track completion
+   - SVG checkmark animation on check
+   - Progress bar updates in real time
+   - All items checked reveals completion button
+   - State persists if SCORM API / suspend_data available
+   ============================================================ */
+
+var clTotalItems = 0;
+var clCheckedCount = 0;
+
+(function initChecklist() {
+  var items = document.querySelectorAll('.checklist-item');
+  clTotalItems = items.length;
+
+  /* Set custom completion message if provided */
+  var container = document.querySelector('.interactive-checklist');
+  var customMsg = container ? container.getAttribute('data-completion-msg') : null;
+  if (customMsg) {
+    var msgEl = document.getElementById('cl-complete-msg');
+    if (msgEl) msgEl.textContent = customMsg;
+  }
+
+  /* Restore state from suspend_data if available */
+  restoreChecklistState();
+  updateChecklistProgress();
+})();
+
+/**
+ * Toggle a checklist item's checked state.
+ */
+function toggleCheckItem(checkbox) {
+  var item = checkbox.closest('.checklist-item');
+  var isChecked = checkbox.checked;
+
+  if (isChecked) {
+    item.classList.add('checked');
+  } else {
+    item.classList.remove('checked');
+  }
+
+  updateChecklistProgress();
+  saveChecklistState();
+}
+
+/**
+ * Toggle expand/collapse of item description.
+ */
+function toggleDesc(item) {
+  var desc = item.querySelector('.checklist-item-desc');
+  if (!desc) return; /* no description, nothing to toggle */
+  item.classList.toggle('expanded');
+}
+
+/**
+ * Update the progress bar and count display.
+ */
+function updateChecklistProgress() {
+  var items = document.querySelectorAll('.checklist-item');
+  clCheckedCount = document.querySelectorAll('.checklist-item.checked').length;
+  var pct = clTotalItems > 0 ? Math.round((clCheckedCount / clTotalItems) * 100) : 0;
+
+  /* Update progress bar */
+  var fill = document.getElementById('cl-progress-fill');
+  if (fill) fill.style.width = pct + '%';
+
+  var bar = document.getElementById('cl-progress-bar');
+  if (bar) bar.setAttribute('aria-valuenow', pct);
+
+  /* Update count text */
+  var text = document.getElementById('cl-progress-text');
+  if (text) text.textContent = clCheckedCount + ' of ' + clTotalItems;
+
+  /* Show/hide completion section */
+  var complete = document.getElementById('cl-complete');
+  if (complete) {
+    if (clCheckedCount === clTotalItems && clTotalItems > 0) {
+      complete.classList.add('visible');
+      announce('All tasks complete! You can now mark this section as complete.');
+    } else {
+      complete.classList.remove('visible');
+    }
+  }
+}
+
+/**
+ * Called when learner clicks "Mark as Complete".
+ */
+function completeChecklist() {
+  announce('Checklist marked as complete. Great work!');
+  /* Notify SCORM API if available */
+  if (typeof window.ScormAPI !== 'undefined') {
+    window.ScormAPI.setStatus('completed');
+  }
+}
+
+/**
+ * Save checked state to suspend_data (if SCORM API available).
+ */
+function saveChecklistState() {
+  try {
+    var items = document.querySelectorAll('.checklist-item');
+    var state = {};
+    items.forEach(function(item) {
+      var id = item.getAttribute('data-item-id');
+      state[id] = item.classList.contains('checked');
+    });
+    if (typeof window.ScormAPI !== 'undefined') {
+      var existing = {};
+      try { existing = JSON.parse(window.ScormAPI.getSuspendData() || '{}'); } catch(e) {}
+      existing.checklist = state;
+      window.ScormAPI.setSuspendData(JSON.stringify(existing));
+    }
+  } catch (e) { /* silently fail outside SCORM context */ }
+}
+
+/**
+ * Restore checked state from suspend_data.
+ */
+function restoreChecklistState() {
+  try {
+    if (typeof window.ScormAPI === 'undefined') return;
+    var data = JSON.parse(window.ScormAPI.getSuspendData() || '{}');
+    if (!data.checklist) return;
+    var items = document.querySelectorAll('.checklist-item');
+    items.forEach(function(item) {
+      var id = item.getAttribute('data-item-id');
+      if (data.checklist[id]) {
+        item.classList.add('checked');
+        var cb = item.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = true;
+      }
+    });
+  } catch (e) { /* silently fail */ }
+}
+
+/**
+ * Announce a message to screen readers.
+ */
+function announce(msg) {
+  var el = document.getElementById('cl-announce');
+  if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+}
+</script>

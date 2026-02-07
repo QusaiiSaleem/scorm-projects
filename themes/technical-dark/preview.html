@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Dark Theme — Preview</title>
+
+  <!-- Base foundation (structural styles) -->
+  <link rel="stylesheet" href="../_base/base.css">
+
+  <!-- Theme overrides (CSS custom properties) -->
+  <link rel="stylesheet" href="./theme.css">
+
+  <!-- No decorations.css for this theme — the minimalism IS the decoration -->
+
+  <style>
+    /* Preview-only styles — not part of the theme */
+    .preview-section {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .preview-section:last-child {
+      border-bottom: none;
+    }
+    .preview-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 16px;
+      display: block;
+      font-family: var(--font-mono);
+    }
+    .preview-label::before {
+      content: '// ';
+      color: var(--color-text-secondary);
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .swatch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .swatch {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 4px;
+    }
+    .swatch span {
+      font-size: 9px;
+      font-weight: 600;
+      color: inherit;
+      text-align: center;
+      line-height: 1.2;
+      font-family: var(--font-mono);
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .feedback-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip Navigation -->
+  <a href="#main-content" class="skip-nav">Skip to content</a>
+
+  <!-- ============================================================
+       NAV BAR
+       ============================================================ -->
+  <nav class="nav-bar" aria-label="Course navigation">
+    <span class="course-title">Technical Dark Theme Preview</span>
+    <div class="points-badge" aria-label="Points earned">
+      <span>&#9889;</span>
+      <span class="points-count">750</span>
+      <span>pts</span>
+    </div>
+  </nav>
+
+  <div class="sco-container">
+    <main id="main-content" class="sco-content">
+
+      <!-- ============================================================
+           HERO SECTION
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Hero Section</span>
+        <section class="hero-section">
+          <h1 class="display-text">System Architecture 101</h1>
+          <p>A terminal-inspired learning environment for technical mastery.</p>
+        </section>
+      </div>
+
+      <!-- ============================================================
+           COLOR SWATCHES
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Color Palette</span>
+        <div class="swatch-row">
+          <div class="swatch" style="background: #22D3EE; color: #0F172A;"><span>Primary</span></div>
+          <div class="swatch" style="background: #06B6D4; color: #0F172A;"><span>Prim Dark</span></div>
+          <div class="swatch" style="background: #67E8F9; color: #0F172A;"><span>Prim Light</span></div>
+          <div class="swatch" style="background: #A78BFA; color: #0F172A;"><span>Secondary</span></div>
+          <div class="swatch" style="background: #34D399; color: #0F172A;"><span>Accent</span></div>
+          <div class="swatch" style="background: #0F172A; color: #E2E8F0;"><span>Background</span></div>
+          <div class="swatch" style="background: #1E293B; color: #E2E8F0;"><span>Surface</span></div>
+          <div class="swatch" style="background: #334155; color: #E2E8F0;"><span>Elevated</span></div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           TYPOGRAPHY
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Typography</span>
+        <h1>Heading Level 1 -- Monospace Impact</h1>
+        <h2>Heading Level 2 -- Section Headers</h2>
+        <h3>Heading Level 3 -- Subsections</h3>
+        <h4>Heading Level 4 -- Detail Headings</h4>
+        <p>Body text uses Cairo for readability on dark backgrounds. The monospace headings create a strong contrast between navigation and reading content, giving the whole interface a code-editor personality.</p>
+        <p class="text-secondary">Secondary text appears in a muted slate tone that stays readable against the dark surface.</p>
+        <p>Inline <code>const result = await fetchData()</code> uses cyan highlighting to pop against the dark background.</p>
+        <pre><code>// Code blocks feel native in this theme
+async function deployModule(config) {
+  const manifest = await buildManifest(config);
+  const package = await createSCORM(manifest);
+
+  console.log('Package ready:', package.filename);
+  return package;
+}</code></pre>
+      </div>
+
+      <!-- ============================================================
+           BUTTONS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Buttons</span>
+        <div class="button-row">
+          <button class="btn-primary">Primary Button</button>
+          <button class="btn-secondary">Secondary Button</button>
+          <button class="btn-ghost">Ghost Button</button>
+        </div>
+        <br>
+        <div class="button-row">
+          <button class="btn-primary" disabled>Disabled Primary</button>
+          <button class="btn-secondary" disabled>Disabled Secondary</button>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           CARDS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Cards</span>
+        <div class="preview-grid">
+          <div class="card">
+            <h3>API Reference</h3>
+            <p>Cards use sharp corners and dark elevated surfaces that feel like IDE panels.</p>
+          </div>
+          <div class="card">
+            <h3>Architecture Guide</h3>
+            <p>The slate color progression from background to surface to elevated creates depth without decoration.</p>
+          </div>
+          <div class="card">
+            <h3>Debug Console</h3>
+            <p>Minimal shadows with high opacity create a flat, focused appearance.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           CALLOUTS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Callouts</span>
+        <div class="callout callout-info">
+          <span class="callout-icon">&#8505;&#65039;</span>
+          <div>
+            <strong>Note</strong>
+            <p>The SCORM API must be initialized before calling <code>LMSGetValue()</code>.</p>
+          </div>
+        </div>
+        <div class="callout callout-success">
+          <span class="callout-icon">&#9989;</span>
+          <div>
+            <strong>Build passed</strong>
+            <p>All 47 tests passed. Package is ready for deployment.</p>
+          </div>
+        </div>
+        <div class="callout callout-warning">
+          <span class="callout-icon">&#9888;&#65039;</span>
+          <div>
+            <strong>Deprecation warning</strong>
+            <p>The <code>cmi.core.lesson_status</code> field is deprecated in SCORM 2004. Use <code>cmi.completion_status</code> instead.</p>
+          </div>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">&#128161;</span>
+          <div>
+            <strong>Best practice</strong>
+            <p>Always wrap <code>JSON.parse(suspend_data)</code> in a try-catch block to handle corrupted data gracefully.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           PROGRESS INDICATORS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Progress Indicators</span>
+
+        <h4>Thin Progress Bar (lesson level)</h4>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 72%;"></div>
+        </div>
+
+        <h4>Module Progress Bar</h4>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 55%;"></div>
+        </div>
+
+        <br>
+        <h4>Journey Map</h4>
+        <div class="journey-map">
+          <div class="journey-node completed">1</div>
+          <div class="journey-node completed">2</div>
+          <div class="journey-node completed">3</div>
+          <div class="journey-node active">4</div>
+          <div class="journey-node">5</div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           QUIZ OPTIONS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Quiz Options</span>
+        <div class="quiz-container">
+          <div class="quiz-header">
+            <span class="quiz-progress">Question 3 of 10</span>
+          </div>
+          <p class="question-stem">Which SCORM data model element stores the learner's progress between sessions?</p>
+          <button class="btn-quiz-option">A. cmi.core.lesson_status</button>
+          <button class="btn-quiz-option">B. cmi.core.score.raw</button>
+          <button class="btn-quiz-option selected">C. cmi.suspend_data</button>
+          <button class="btn-quiz-option">D. cmi.core.session_time</button>
+        </div>
+
+        <br>
+        <h4>Answered States</h4>
+        <button class="btn-quiz-option correct">C. cmi.suspend_data &#9989;</button>
+        <button class="btn-quiz-option incorrect">A. cmi.core.lesson_status &#10060;</button>
+      </div>
+
+      <!-- ============================================================
+           FEEDBACK (Growth Mindset)
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Feedback -- Growth Mindset</span>
+        <div class="feedback-stack">
+          <div class="feedback-correct">
+            <span>&#9889;</span>
+            <div>
+              <strong>Correct!</strong>
+              <p><code>cmi.suspend_data</code> is a free-form string field where you can store serialized learner state between sessions.</p>
+            </div>
+          </div>
+          <div class="feedback-incorrect">
+            <span>&#128736;</span>
+            <div>
+              <strong>Not quite -- keep debugging!</strong>
+              <p><code>cmi.core.lesson_status</code> tracks completion, not arbitrary session data. Think about which field lets you store custom JSON. Try again!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           GAMIFICATION UI
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Gamification Elements</span>
+        <div class="button-row" style="margin-bottom: 16px;">
+          <div class="points-badge">
+            <span>&#9889;</span>
+            <span class="points-count">750</span>
+            <span>pts</span>
+          </div>
+          <div class="points-badge glow">
+            <span>&#128640;</span>
+            <span class="points-count">2,400</span>
+            <span>pts</span>
+          </div>
+          <div class="badge-earned">
+            <span>&#128187;</span>
+            <span>Code Review Pro</span>
+          </div>
+          <div class="badge-earned">
+            <span>&#9881;&#65039;</span>
+            <span>System Architect</span>
+          </div>
+        </div>
+
+        <div class="completion-message">
+          <h2>&#128640; Module Complete!</h2>
+          <p>You earned <strong>100 points</strong> and unlocked the <strong>Debugger</strong> badge.</p>
+          <div class="badge-earned" style="margin-top: 12px;">
+            <span>&#128375;</span>
+            <span>Debugger</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           QUIZ SCORE
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Quiz Score Display</span>
+        <div class="preview-grid">
+          <div class="quiz-score pass">
+            <div class="score-circle">88%</div>
+            <h3>Tests Passing</h3>
+            <p>Solid understanding of the system architecture.</p>
+          </div>
+          <div class="quiz-score fail">
+            <div class="score-circle">45%</div>
+            <h3>Needs Refactoring</h3>
+            <p>Review the documentation and debug your understanding.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           INTERACTIVE ELEMENTS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Interactive Elements</span>
+
+        <!-- Tabs -->
+        <h4>Tabs</h4>
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab">Overview</button>
+          <button class="tab" role="tab">API Docs</button>
+          <button class="tab" role="tab">Examples</button>
+        </div>
+        <div class="tab-content active">
+          <p>This is the Overview tab content. In the dark theme, tabs blend seamlessly with the surface and use subtle borders for delineation.</p>
+        </div>
+
+        <br>
+
+        <!-- Accordion -->
+        <h4>Accordion</h4>
+        <div class="accordion-item open">
+          <button class="accordion-header">
+            <span>How does suspend_data work?</span>
+            <span class="chevron">&#9660;</span>
+          </button>
+          <div class="accordion-body">
+            <p>The <code>cmi.suspend_data</code> field accepts a string of up to 4096 characters (SCORM 1.2) or 64000 characters (SCORM 2004). Serialize your state as compact JSON.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>What is the maximum score value?</span>
+            <span class="chevron">&#9660;</span>
+          </button>
+          <div class="accordion-body">
+            <p>In SCORM 1.2, <code>cmi.core.score.raw</code> accepts values from 0 to 100. SCORM 2004 allows custom ranges with min/max fields.</p>
+          </div>
+        </div>
+
+        <br>
+
+        <!-- Flip Card -->
+        <h4>Flip Card</h4>
+        <div class="flip-card" style="max-width: 300px;">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3 style="color: white;">Click to Flip</h3>
+              <p style="color: rgba(255,255,255,0.8);">Tap to reveal the definition</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>SCO</h3>
+              <p>Sharable Content Object -- the smallest unit of content that communicates with the LMS via the SCORM API.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           DIVIDERS
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Dividers</span>
+        <hr>
+        <p class="text-center text-secondary">Standard divider above, gradient divider below</p>
+        <div class="divider-gradient"></div>
+      </div>
+
+      <!-- ============================================================
+           NAVIGATION (Prev / Next)
+           ============================================================ -->
+      <div class="preview-section">
+        <span class="preview-label">Lesson Navigation</span>
+        <nav class="sco-nav" aria-label="Lesson navigation">
+          <button class="btn-prev">&#8592; Previous</button>
+          <span class="page-indicator">Page 4 of 12</span>
+          <button class="btn-next">Next &#8594;</button>
+        </nav>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Flip card interactivity -->
+  <script>
+    document.querySelectorAll('.flip-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        card.classList.toggle('flipped');
+      });
+    });
+  </script>
+
+</body>
+</html>

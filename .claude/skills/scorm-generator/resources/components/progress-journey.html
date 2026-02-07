@@ -1,0 +1,381 @@
+<!-- Progress Journey Map Component
+     Usage: Copy into lesson HTML. SVG winding path with waypoint navigation.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - SVG winding path with positioned waypoint nodes
+     - Waypoint states: completed (green check), current (pulsing), locked (grey lock)
+     - Click completed waypoints to revisit content
+     - Current waypoint highlighted with glow effect
+     - Character icon at current position
+     - Replaces boring list/sidebar navigation
+
+     CUSTOMIZATION:
+     - Edit WAYPOINTS array: { id, label, status, scoUrl }
+     - Status values: "completed", "current", "locked"
+     - Adjust path curve by editing the SVG path d attribute
+     - Change icon/character at current position
+
+     ACCESSIBILITY:
+     - Waypoints are <button> elements with aria-labels
+     - Keyboard: Tab between waypoints, Enter to navigate
+     - Screen reader: announces waypoint state and position
+     - Role="navigation" on the container
+
+     SCORM REPORTING:
+     - Current position stored in cmi.suspend_data
+     - Click events can trigger SCO navigation
+-->
+
+<style>
+  /* === Progress Journey Container === */
+  .progress-journey {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-md, 16px);
+  }
+
+  .pj-title {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #333);
+    margin-bottom: var(--space-lg, 24px);
+  }
+
+  .pj-map {
+    position: relative;
+    width: 100%;
+  }
+
+  .pj-map svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* The path line */
+  .pj-path-bg {
+    fill: none;
+    stroke: var(--color-border, #e0e0e0);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  .pj-path-progress {
+    fill: none;
+    stroke: var(--color-success, #10b981);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s ease;
+  }
+
+  /* Waypoint nodes (SVG circles rendered as HTML buttons overlay) */
+  .pj-waypoints {
+    position: absolute;
+    inset: 0;
+  }
+
+  .pj-waypoint {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid var(--color-border, #e0e0e0);
+    background: var(--color-surface-elevated, #fff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    z-index: 2;
+  }
+
+  .pj-waypoint:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .pj-waypoint:focus-visible {
+    outline: 3px solid var(--color-primary, #6c5ce7);
+    outline-offset: 3px;
+  }
+
+  /* Completed state */
+  .pj-waypoint.completed {
+    border-color: var(--color-success, #10b981);
+    background: var(--color-success, #10b981);
+    color: #fff;
+  }
+
+  /* Current state */
+  .pj-waypoint.current {
+    border-color: var(--color-primary, #6c5ce7);
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+    box-shadow: 0 0 0 6px rgba(108, 92, 231, 0.25);
+    animation: pjPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pjPulse {
+    0%, 100% { box-shadow: 0 0 0 6px rgba(108, 92, 231, 0.25); }
+    50% { box-shadow: 0 0 0 12px rgba(108, 92, 231, 0.1); }
+  }
+
+  /* Locked state */
+  .pj-waypoint.locked {
+    border-color: var(--color-border-subtle, #ddd);
+    background: var(--color-surface, #f5f5f5);
+    color: var(--color-text-secondary, #aaa);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .pj-waypoint.locked:hover {
+    transform: translate(-50%, -50%);
+  }
+
+  /* Waypoint label */
+  .pj-label {
+    position: absolute;
+    transform: translate(-50%, 0);
+    top: calc(100% + 6px);
+    white-space: nowrap;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #666);
+    pointer-events: none;
+    text-align: center;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pj-waypoint.current .pj-label {
+    color: var(--color-primary, #6c5ce7);
+  }
+
+  .pj-waypoint.completed .pj-label {
+    color: var(--color-success, #10b981);
+  }
+
+  /* Character indicator */
+  .pj-character {
+    position: absolute;
+    transform: translate(-50%, -130%);
+    font-size: 1.5rem;
+    pointer-events: none;
+    z-index: 3;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: left 0.5s ease, top 0.5s ease;
+  }
+
+  /* Legend */
+  .pj-legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg, 24px);
+    margin-top: var(--space-lg, 24px);
+    font-size: 0.75rem;
+    color: var(--color-text-secondary, #666);
+    flex-wrap: wrap;
+  }
+
+  .pj-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pj-legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid;
+    flex-shrink: 0;
+  }
+
+  .pj-legend-dot.completed {
+    background: var(--color-success, #10b981);
+    border-color: var(--color-success, #10b981);
+  }
+
+  .pj-legend-dot.current {
+    background: var(--color-primary, #6c5ce7);
+    border-color: var(--color-primary, #6c5ce7);
+  }
+
+  .pj-legend-dot.locked {
+    background: var(--color-surface, #f5f5f5);
+    border-color: var(--color-border, #ddd);
+  }
+
+  /* Nav info panel */
+  .pj-info {
+    margin-top: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    border-radius: var(--radius-md, 8px);
+    text-align: center;
+    font-size: 0.9rem;
+    display: none;
+    animation: pjFadeIn 0.3s ease;
+  }
+
+  .pj-info.show {
+    display: block;
+  }
+
+  @keyframes pjFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .pj-waypoint.current { animation: none; }
+    .pj-path-progress { transition: none; }
+    .pj-character { transition: none; }
+    .pj-info.show { animation: none; }
+  }
+</style>
+
+<div class="progress-journey" role="navigation" aria-label="Course progress map">
+
+  <div class="pj-title" id="pj-title">Your Learning Journey</div>
+
+  <div class="pj-map" id="pj-map">
+    <!-- SVG winding path -->
+    <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <!-- Background path -->
+      <path class="pj-path-bg"
+            d="M80,60 C180,60 140,140 300,140 C460,140 420,220 300,260 C180,300 220,360 520,360" />
+      <!-- Progress path (animated) -->
+      <path class="pj-path-progress" id="pj-progress-path"
+            d="M80,60 C180,60 140,140 300,140 C460,140 420,220 300,260 C180,300 220,360 520,360" />
+    </svg>
+
+    <!-- Waypoint buttons (positioned to match path) -->
+    <div class="pj-waypoints" id="pj-waypoints"></div>
+
+    <!-- Character at current position -->
+    <div class="pj-character" id="pj-character" aria-hidden="true">&#127891;</div>
+  </div>
+
+  <!-- Legend -->
+  <div class="pj-legend">
+    <div class="pj-legend-item">
+      <div class="pj-legend-dot completed"></div> Completed
+    </div>
+    <div class="pj-legend-item">
+      <div class="pj-legend-dot current"></div> Current
+    </div>
+    <div class="pj-legend-item">
+      <div class="pj-legend-dot locked"></div> Locked
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <div class="pj-info" id="pj-info" role="status" aria-live="polite"></div>
+</div>
+
+<div id="pj-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   PROGRESS JOURNEY MAP COMPONENT
+   ============================================================
+   Edit WAYPOINTS array to define your learning path nodes.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Waypoint definitions ===
+     x, y = percentage position relative to the map container
+     status = "completed" | "current" | "locked"
+     scoUrl = URL to navigate to (or JS callback) */
+  var WAYPOINTS = [
+    { id: 'w1', label: 'Introduction',   status: 'completed', x: 13.3, y: 15, scoUrl: '#intro' },
+    { id: 'w2', label: 'Lesson 1',       status: 'completed', x: 33,   y: 25, scoUrl: '#lesson1' },
+    { id: 'w3', label: 'Quiz 1',         status: 'completed', x: 50,   y: 35, scoUrl: '#quiz1' },
+    { id: 'w4', label: 'Lesson 2',       status: 'current',   x: 65,   y: 47, scoUrl: '#lesson2' },
+    { id: 'w5', label: 'Lesson 3',       status: 'locked',    x: 50,   y: 62, scoUrl: '#lesson3' },
+    { id: 'w6', label: 'Quiz 2',         status: 'locked',    x: 35,   y: 73, scoUrl: '#quiz2' },
+    { id: 'w7', label: 'Final Review',   status: 'locked',    x: 55,   y: 84, scoUrl: '#review' },
+    { id: 'w8', label: 'Certificate',    status: 'locked',    x: 86.7, y: 90, scoUrl: '#cert' }
+  ];
+
+  var waypointsEl = document.getElementById('pj-waypoints');
+  var characterEl = document.getElementById('pj-character');
+  var infoEl = document.getElementById('pj-info');
+  var progressPath = document.getElementById('pj-progress-path');
+
+  /* === Calculate progress path length === */
+  var pathLength = progressPath.getTotalLength();
+  progressPath.style.strokeDasharray = pathLength;
+
+  /* Find current waypoint index for progress */
+  var currentIdx = 0;
+  WAYPOINTS.forEach(function(wp, i) {
+    if (wp.status === 'current') currentIdx = i;
+  });
+
+  /* Animate path to current progress */
+  var progressRatio = (currentIdx + 0.5) / WAYPOINTS.length;
+  var dashOffset = pathLength * (1 - progressRatio);
+  progressPath.style.strokeDashoffset = dashOffset;
+
+  /* === Render waypoints === */
+  WAYPOINTS.forEach(function(wp) {
+    var btn = document.createElement('button');
+    btn.className = 'pj-waypoint ' + wp.status;
+    btn.dataset.id = wp.id;
+    btn.style.left = wp.x + '%';
+    btn.style.top = wp.y + '%';
+    btn.setAttribute('aria-label', wp.label + ' (' + wp.status + ')');
+
+    /* Icon based on status */
+    if (wp.status === 'completed') {
+      btn.innerHTML = '&#10004;';
+    } else if (wp.status === 'current') {
+      btn.innerHTML = '&#9654;';
+    } else {
+      btn.innerHTML = '&#128274;';
+      btn.setAttribute('aria-disabled', 'true');
+    }
+
+    /* Label */
+    var label = document.createElement('span');
+    label.className = 'pj-label';
+    label.textContent = wp.label;
+    btn.appendChild(label);
+
+    /* Click handler */
+    btn.addEventListener('click', function() {
+      if (wp.status === 'locked') {
+        announce(wp.label + ' is locked. Complete previous lessons first.');
+        return;
+      }
+      infoEl.className = 'pj-info show';
+      infoEl.textContent = 'Navigating to: ' + wp.label;
+      announce('Selected: ' + wp.label);
+
+      /* CUSTOMIZE: Add your navigation logic here */
+      /* window.location.href = wp.scoUrl; */
+    });
+
+    waypointsEl.appendChild(btn);
+
+    /* Position character at current waypoint */
+    if (wp.status === 'current') {
+      characterEl.style.left = wp.x + '%';
+      characterEl.style.top = wp.y + '%';
+    }
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('pj-announce');
+    if (el) el.textContent = msg;
+  }
+})();
+</script>

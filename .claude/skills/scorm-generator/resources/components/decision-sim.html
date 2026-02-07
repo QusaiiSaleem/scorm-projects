@@ -1,0 +1,600 @@
+<!-- Decision Simulator Component (Multi-Round Scenario)
+     Usage: Copy into lesson HTML. Customize SIM_DATA object.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Multi-round simulation with 3-5 rounds
+     - Each round: scenario description + 2-3 decision options
+     - Dashboard: 3-4 metrics as progress bars
+     - Decisions affect metrics (positive/negative deltas)
+     - Animated metric changes with color feedback
+     - End summary: final metrics + rating + decision review
+
+     ACCESSIBILITY:
+     - role="application" with proper labeling
+     - Focus management between rounds
+     - Live region announces metric changes
+     - Keyboard: Tab to options, Enter to select
+
+     CUSTOMIZATION POINTS marked with [CUSTOMIZE]
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "choice"
+     - One interaction per round
+-->
+
+<style>
+  /* === Simulator Container === */
+  .decision-sim-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Round Counter === */
+  .sim-round-indicator {
+    display: flex;
+    gap: var(--space-sm, 0.5rem);
+    margin-bottom: var(--space-lg, 1.5rem);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sim-round-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-border, #d1d5db);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+
+  .sim-round-dot.completed {
+    background: var(--color-success, #16a34a);
+  }
+
+  .sim-round-dot.current {
+    background: var(--color-primary, #2563eb);
+    transform: scale(1.3);
+  }
+
+  /* === Dashboard (Metrics) === */
+  .sim-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-md, 1rem);
+    margin-bottom: var(--space-lg, 1.5rem);
+    padding: var(--space-md, 1rem);
+    background: var(--color-surface-elevated, #f9fafb);
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--color-border, #e0e0e0);
+  }
+
+  .sim-metric {
+    text-align: center;
+  }
+
+  .sim-metric-label {
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #666);
+    margin-bottom: var(--space-xs, 0.25rem);
+    font-weight: 600;
+  }
+
+  .sim-metric-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: var(--color-border, #e0e0e0);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 4px;
+  }
+
+  .sim-metric-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s ease, background 0.3s ease;
+    background: var(--color-primary, #2563eb);
+  }
+
+  .sim-metric-bar-fill.positive {
+    background: var(--color-success, #16a34a);
+  }
+
+  .sim-metric-bar-fill.negative {
+    background: var(--color-error, #dc2626);
+  }
+
+  .sim-metric-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text, #222);
+  }
+
+  .sim-metric-delta {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sim-metric-delta.show {
+    opacity: 1;
+    animation: deltaFloat 1.5s ease forwards;
+  }
+
+  .sim-metric-delta.up { color: var(--color-success, #16a34a); }
+  .sim-metric-delta.down { color: var(--color-error, #dc2626); }
+
+  @keyframes deltaFloat {
+    0% { transform: translateY(0); opacity: 1; }
+    70% { transform: translateY(-12px); opacity: 1; }
+    100% { transform: translateY(-18px); opacity: 0; }
+  }
+
+  /* === Scenario Card === */
+  .sim-scenario {
+    padding: var(--space-lg, 1.5rem);
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-lg, 1.5rem);
+  }
+
+  .sim-scenario-title {
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-primary, #2563eb);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin: 0 0 var(--space-sm, 0.5rem) 0;
+  }
+
+  .sim-scenario-text {
+    font-size: var(--font-size-body, 1rem);
+    line-height: 1.7;
+    color: var(--color-text, #222);
+    margin: 0;
+  }
+
+  /* === Decision Options === */
+  .sim-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 0.5rem);
+    margin-bottom: var(--space-lg, 1.5rem);
+  }
+
+  .sim-option-btn {
+    width: 100%;
+    padding: var(--space-md, 1rem) var(--space-lg, 1.5rem);
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface, #fff);
+    text-align: left;
+    cursor: pointer;
+    font-size: var(--font-size-body, 1rem);
+    line-height: 1.5;
+    color: var(--color-text, #222);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.1s ease;
+  }
+
+  .sim-option-btn:hover {
+    border-color: var(--color-primary, #2563eb);
+    background: var(--color-growth-bg, #eff6ff);
+  }
+
+  .sim-option-btn:focus-visible {
+    outline: 3px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+  }
+
+  .sim-option-btn:active {
+    transform: scale(0.98);
+  }
+
+  .sim-option-btn.selected {
+    border-color: var(--color-primary, #2563eb);
+    background: var(--color-primary-light, #dbeafe);
+    pointer-events: none;
+  }
+
+  .sim-option-btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* === End Summary === */
+  .sim-summary {
+    display: none;
+  }
+
+  .sim-summary.show {
+    display: block;
+    animation: fadeUp 0.4s ease-out;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .sim-rating {
+    text-align: center;
+    padding: var(--space-lg, 1.5rem);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-lg, 1.5rem);
+  }
+
+  .sim-rating.excellent {
+    background: var(--color-success-bg, #dcfce7);
+    border: 2px solid var(--color-success, #16a34a);
+  }
+
+  .sim-rating.good {
+    background: var(--color-growth-bg, #fef9c3);
+    border: 2px solid var(--color-accent, #f59e0b);
+  }
+
+  .sim-rating.needs-improvement {
+    background: var(--color-error-bg, #fef2f2);
+    border: 2px solid var(--color-error, #dc2626);
+  }
+
+  .sim-rating-label {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 var(--space-xs, 0.25rem) 0;
+  }
+
+  .sim-rating-desc {
+    font-size: var(--font-size-body, 1rem);
+    color: var(--color-text-secondary, #666);
+    margin: 0;
+  }
+
+  /* Decision review list */
+  .sim-review {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-lg, 1.5rem) 0;
+  }
+
+  .sim-review li {
+    padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+    border-left: 3px solid var(--color-primary, #2563eb);
+    margin-bottom: var(--space-sm, 0.5rem);
+    background: var(--color-surface-elevated, #f9fafb);
+    border-radius: 0 var(--radius-sm, 4px) var(--radius-sm, 4px) 0;
+  }
+
+  .sim-review-round {
+    font-size: var(--font-size-small, 0.875rem);
+    font-weight: 700;
+    color: var(--color-primary, #2563eb);
+  }
+
+  .sim-review-choice {
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text, #222);
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .sim-metric-delta.show { animation: none; opacity: 1; }
+    .sim-summary.show { animation: none; }
+    .sim-metric-bar-fill { transition: width 0.1s; }
+    .sim-round-dot { transition: none; }
+  }
+
+  /* === Mobile === */
+  @media (max-width: 600px) {
+    .sim-dashboard { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="decision-sim-activity" role="region" aria-label="Decision simulation">
+
+  <!-- Round indicators -->
+  <div class="sim-round-indicator" id="sim-rounds" aria-label="Simulation progress"></div>
+
+  <!-- Dashboard metrics -->
+  <div class="sim-dashboard" id="sim-dashboard" role="status" aria-label="Performance metrics"></div>
+
+  <!-- Scenario card -->
+  <div class="sim-scenario" id="sim-scenario">
+    <p class="sim-scenario-title" id="sim-scenario-title">Round 1</p>
+    <p class="sim-scenario-text" id="sim-scenario-text">Loading...</p>
+  </div>
+
+  <!-- Decision options -->
+  <div class="sim-options" id="sim-options" role="group" aria-label="Decision options"></div>
+
+  <!-- End summary (hidden until simulation ends) -->
+  <div class="sim-summary" id="sim-summary">
+    <div class="sim-rating" id="sim-rating">
+      <p class="sim-rating-label" id="sim-rating-label"></p>
+      <p class="sim-rating-desc" id="sim-rating-desc"></p>
+    </div>
+    <h3 style="margin: 0 0 var(--space-sm, 0.5rem) 0; font-size: var(--font-size-body, 1rem);">Your Decisions</h3>
+    <ul class="sim-review" id="sim-review"></ul>
+    <button class="btn-primary" onclick="restartSim()">Try Again</button>
+  </div>
+
+  <!-- Screen reader announcements -->
+  <div id="sim-announce" class="sr-only" aria-live="polite"></div>
+</div>
+
+<script>
+/* ============================================================
+   DECISION SIMULATOR COMPONENT — Multi-Round Scenario
+   ============================================================
+   Runs sequential rounds. Each decision affects dashboard metrics.
+   Ends with a rating based on final metric values.
+   ============================================================ */
+
+/* [CUSTOMIZE] Replace with your own simulation data.
+   metrics: define the dashboard gauges.
+   rounds: define scenarios and decision options with effects. */
+var SIM_DATA = {
+  metrics: [
+    { id: "budget",       label: "Budget",       initial: 70, min: 0, max: 100 },
+    { id: "satisfaction", label: "Satisfaction",  initial: 50, min: 0, max: 100 },
+    { id: "risk",         label: "Risk",          initial: 30, min: 0, max: 100 },
+    { id: "efficiency",   label: "Efficiency",    initial: 60, min: 0, max: 100 }
+  ],
+  rounds: [
+    {
+      scenario: "Your team has a tight deadline approaching. The client wants additional features added to the project scope. How do you respond?",
+      options: [
+        { label: "Accept all additional features and ask the team to work overtime.", effects: { budget: -15, satisfaction: -20, risk: +25, efficiency: -10 } },
+        { label: "Negotiate with the client to prioritize only the most critical features.", effects: { budget: -5, satisfaction: +10, risk: -5, efficiency: +10 } },
+        { label: "Decline the additional features and stick to the original scope.", effects: { budget: +5, satisfaction: -10, risk: -15, efficiency: +5 } }
+      ]
+    },
+    {
+      scenario: "A key team member has submitted their resignation. They hold critical knowledge about the project architecture. What do you do?",
+      options: [
+        { label: "Offer a significant raise and promotion to retain them.", effects: { budget: -20, satisfaction: +15, risk: -10, efficiency: +5 } },
+        { label: "Begin immediate knowledge transfer sessions and start recruiting.", effects: { budget: -10, satisfaction: +5, risk: +5, efficiency: -5 } },
+        { label: "Accept the resignation and distribute their work among remaining team members.", effects: { budget: +5, satisfaction: -15, risk: +20, efficiency: -15 } }
+      ]
+    },
+    {
+      scenario: "Testing reveals a significant bug in the core module. Fixing it will delay the release by two weeks. What is your decision?",
+      options: [
+        { label: "Delay the release to fix the bug properly.", effects: { budget: -10, satisfaction: +10, risk: -20, efficiency: -5 } },
+        { label: "Ship with a partial fix and plan a patch update within a week.", effects: { budget: -5, satisfaction: 0, risk: +10, efficiency: +5 } },
+        { label: "Ship as-is and fix in the next release cycle.", effects: { budget: +10, satisfaction: -15, risk: +25, efficiency: +10 } }
+      ]
+    },
+    {
+      scenario: "The project has been delivered. The client requests a post-launch review meeting. How do you prepare?",
+      options: [
+        { label: "Prepare a comprehensive report with metrics, lessons learned, and future recommendations.", effects: { budget: -5, satisfaction: +20, risk: -10, efficiency: +10 } },
+        { label: "Send a brief summary email and offer to answer questions.", effects: { budget: 0, satisfaction: +5, risk: 0, efficiency: +5 } }
+      ]
+    }
+  ],
+  /* [CUSTOMIZE] Rating thresholds based on average of all metrics */
+  ratings: {
+    excellent: { threshold: 65, label: "Excellent Leader", description: "Your decisions balanced all priorities expertly. The project succeeded with high stakeholder satisfaction." },
+    good: { threshold: 45, label: "Good Manager", description: "You made reasonable choices overall. Some areas could be improved with more strategic thinking." },
+    needsImprovement: { label: "Needs Improvement", description: "Several decisions led to poor outcomes. Consider how each choice affects multiple stakeholders." }
+  }
+};
+
+/* --- State --- */
+var simCurrentRound = 0;
+var simMetrics = {};
+var simHistory = [];
+var simRunning = true;
+
+/* --- Initialize --- */
+(function initSim() {
+  /* Set initial metric values */
+  SIM_DATA.metrics.forEach(function(m) {
+    simMetrics[m.id] = m.initial;
+  });
+
+  renderRoundDots();
+  renderDashboard();
+  renderRound();
+})();
+
+function renderRoundDots() {
+  var container = document.getElementById('sim-rounds');
+  container.innerHTML = '';
+  for (var i = 0; i < SIM_DATA.rounds.length; i++) {
+    var dot = document.createElement('span');
+    dot.className = 'sim-round-dot';
+    if (i < simCurrentRound) dot.classList.add('completed');
+    if (i === simCurrentRound && simRunning) dot.classList.add('current');
+    container.appendChild(dot);
+  }
+}
+
+function renderDashboard() {
+  var container = document.getElementById('sim-dashboard');
+  container.innerHTML = '';
+  SIM_DATA.metrics.forEach(function(m) {
+    var val = simMetrics[m.id];
+    var pct = ((val - m.min) / (m.max - m.min)) * 100;
+
+    var div = document.createElement('div');
+    div.className = 'sim-metric';
+    div.id = 'metric-' + m.id;
+    div.innerHTML =
+      '<div class="sim-metric-label">' + m.label + '</div>' +
+      '<div class="sim-metric-bar-bg"><div class="sim-metric-bar-fill" id="bar-' + m.id + '" style="width:' + pct + '%"></div></div>' +
+      '<span class="sim-metric-value" id="val-' + m.id + '">' + Math.round(val) + '</span> ' +
+      '<span class="sim-metric-delta" id="delta-' + m.id + '"></span>';
+    container.appendChild(div);
+  });
+}
+
+function renderRound() {
+  if (simCurrentRound >= SIM_DATA.rounds.length) {
+    showSummary();
+    return;
+  }
+
+  var round = SIM_DATA.rounds[simCurrentRound];
+  document.getElementById('sim-scenario-title').textContent = 'Round ' + (simCurrentRound + 1) + ' of ' + SIM_DATA.rounds.length;
+  document.getElementById('sim-scenario-text').textContent = round.scenario;
+
+  /* Show scenario and options, hide summary */
+  document.getElementById('sim-scenario').style.display = '';
+  document.getElementById('sim-options').style.display = '';
+  document.getElementById('sim-summary').classList.remove('show');
+
+  var optionsContainer = document.getElementById('sim-options');
+  optionsContainer.innerHTML = '';
+  round.options.forEach(function(opt, idx) {
+    var btn = document.createElement('button');
+    btn.className = 'sim-option-btn';
+    btn.textContent = opt.label;
+    btn.setAttribute('aria-label', 'Option ' + (idx + 1) + ': ' + opt.label);
+    btn.addEventListener('click', function() { selectOption(idx); });
+    optionsContainer.appendChild(btn);
+  });
+
+  renderRoundDots();
+  simAnnounce('Round ' + (simCurrentRound + 1) + ': ' + round.scenario);
+}
+
+function selectOption(optIndex) {
+  var round = SIM_DATA.rounds[simCurrentRound];
+  var option = round.options[optIndex];
+
+  /* Record choice */
+  simHistory.push({ round: simCurrentRound + 1, choice: option.label });
+
+  /* Disable all buttons, highlight selected */
+  var buttons = document.querySelectorAll('.sim-option-btn');
+  buttons.forEach(function(btn, i) {
+    btn.disabled = true;
+    if (i === optIndex) btn.classList.add('selected');
+  });
+
+  /* Apply effects with animation */
+  applyEffects(option.effects);
+
+  /* Advance to next round after delay */
+  setTimeout(function() {
+    simCurrentRound++;
+    renderRound();
+  }, 1500);
+}
+
+function applyEffects(effects) {
+  var announceText = [];
+
+  SIM_DATA.metrics.forEach(function(m) {
+    var delta = effects[m.id] || 0;
+    if (delta === 0) return;
+
+    var oldVal = simMetrics[m.id];
+    var newVal = Math.max(m.min, Math.min(m.max, oldVal + delta));
+    simMetrics[m.id] = newVal;
+
+    /* Animate bar */
+    var pct = ((newVal - m.min) / (m.max - m.min)) * 100;
+    var bar = document.getElementById('bar-' + m.id);
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.classList.remove('positive', 'negative');
+      bar.classList.add(delta > 0 ? 'positive' : 'negative');
+      setTimeout(function() { bar.classList.remove('positive', 'negative'); }, 1000);
+    }
+
+    /* Update value */
+    var valEl = document.getElementById('val-' + m.id);
+    if (valEl) valEl.textContent = Math.round(newVal);
+
+    /* Show delta badge */
+    var deltaEl = document.getElementById('delta-' + m.id);
+    if (deltaEl) {
+      deltaEl.textContent = (delta > 0 ? '+' : '') + delta;
+      deltaEl.className = 'sim-metric-delta show ' + (delta > 0 ? 'up' : 'down');
+      /* Reset after animation */
+      (function(el) {
+        setTimeout(function() { el.classList.remove('show'); }, 1500);
+      })(deltaEl);
+    }
+
+    announceText.push(m.label + ': ' + (delta > 0 ? '+' : '') + delta);
+  });
+
+  simAnnounce('Effects: ' + announceText.join(', '));
+}
+
+/* --- Summary --- */
+
+function showSummary() {
+  simRunning = false;
+  renderRoundDots();
+
+  /* Hide scenario and options */
+  document.getElementById('sim-scenario').style.display = 'none';
+  document.getElementById('sim-options').style.display = 'none';
+
+  /* Calculate average metric score */
+  var total = 0;
+  SIM_DATA.metrics.forEach(function(m) {
+    var normalized = ((simMetrics[m.id] - m.min) / (m.max - m.min)) * 100;
+    total += normalized;
+  });
+  var avg = total / SIM_DATA.metrics.length;
+
+  /* Determine rating */
+  var ratingEl = document.getElementById('sim-rating');
+  var labelEl = document.getElementById('sim-rating-label');
+  var descEl = document.getElementById('sim-rating-desc');
+  ratingEl.classList.remove('excellent', 'good', 'needs-improvement');
+
+  if (avg >= SIM_DATA.ratings.excellent.threshold) {
+    ratingEl.classList.add('excellent');
+    labelEl.textContent = SIM_DATA.ratings.excellent.label;
+    descEl.textContent = SIM_DATA.ratings.excellent.description;
+  } else if (avg >= SIM_DATA.ratings.good.threshold) {
+    ratingEl.classList.add('good');
+    labelEl.textContent = SIM_DATA.ratings.good.label;
+    descEl.textContent = SIM_DATA.ratings.good.description;
+  } else {
+    ratingEl.classList.add('needs-improvement');
+    labelEl.textContent = SIM_DATA.ratings.needsImprovement.label;
+    descEl.textContent = SIM_DATA.ratings.needsImprovement.description;
+  }
+
+  /* Render decision review */
+  var reviewEl = document.getElementById('sim-review');
+  reviewEl.innerHTML = '';
+  simHistory.forEach(function(h) {
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="sim-review-round">Round ' + h.round + ':</span> <span class="sim-review-choice">' + h.choice + '</span>';
+    reviewEl.appendChild(li);
+  });
+
+  document.getElementById('sim-summary').classList.add('show');
+  simAnnounce('Simulation complete. Rating: ' + labelEl.textContent);
+}
+
+/* --- Restart --- */
+
+function restartSim() {
+  simCurrentRound = 0;
+  simHistory = [];
+  simRunning = true;
+  SIM_DATA.metrics.forEach(function(m) {
+    simMetrics[m.id] = m.initial;
+  });
+  renderDashboard();
+  renderRound();
+  simAnnounce('Simulation restarted.');
+}
+
+function simAnnounce(msg) {
+  var el = document.getElementById('sim-announce');
+  if (el) el.textContent = msg;
+}
+</script>

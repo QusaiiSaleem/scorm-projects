@@ -1,0 +1,586 @@
+<!-- Word Bank Component (Cloze Test)
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A paragraph is shown with inline blank spaces (gaps)
+     - A bank of draggable word chips sits below the paragraph
+     - Learner drags words into the correct blanks
+     - Words snap into position within the text flow
+     - Keyboard accessible: click a word, then click a blank to place it
+     - Check button validates all placements
+
+     ACCESSIBILITY:
+     - Word chips are <button> elements (keyboard-focusable)
+     - Blanks are also <button> elements
+     - Tab to select a word, Tab to a blank, Enter to place it
+     - Screen reader announces placements
+     - Touch events for mobile drag
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+     - learner_response = "blank1[.]word1,blank2[.]word2,..."
+-->
+
+<style>
+  /* === Word Bank Activity Container === */
+  .word-bank-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Passage with Blanks === */
+  .word-bank-passage {
+    font-size: var(--font-size-body);
+    line-height: 2.2; /* Extra line height to fit blank slots */
+    margin: var(--space-md) 0 var(--space-lg);
+    color: var(--color-text);
+  }
+
+  /* Inline blank slot within the passage */
+  .word-blank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 36px;
+    border: 2px dashed var(--color-primary-light);
+    border-radius: var(--radius-sm);
+    background: var(--color-growth-bg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 2px var(--space-sm);
+    vertical-align: middle;
+    margin: 0 4px;
+    font-family: var(--font-body);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--color-primary);
+    position: relative;
+  }
+
+  .word-blank:hover {
+    border-color: var(--color-primary);
+    background: rgba(108, 92, 231, 0.1);
+  }
+
+  /* When a word is placed in the blank */
+  .word-blank.filled {
+    border-style: solid;
+    border-color: var(--color-primary);
+    background: var(--color-growth-bg);
+    cursor: pointer; /* Can click to remove */
+  }
+
+  /* Active: receiving a drop or keyboard selection */
+  .word-blank.active {
+    border-color: var(--color-accent);
+    background: rgba(249, 115, 22, 0.1);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  }
+
+  /* Correct blank */
+  .word-blank.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+
+  /* Incorrect blank */
+  .word-blank.incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    animation: incorrectShake 0.4s ease;
+  }
+
+  /* Placeholder text inside empty blank */
+  .word-blank .blank-placeholder {
+    color: var(--color-text-secondary);
+    font-weight: 400;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+
+  /* === Word Bank (chips below passage) === */
+  .word-bank-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    min-height: 60px;
+    margin: var(--space-md) 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Individual word chip */
+  .word-chip {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-full);
+    cursor: grab;
+    user-select: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--color-primary);
+    transition: all var(--transition-fast);
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .word-chip:hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 12px rgba(108, 92, 231, 0.2);
+  }
+
+  .word-chip:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+  }
+
+  /* Selected chip (keyboard mode) */
+  .word-chip.selected {
+    background: var(--color-primary);
+    color: white;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+  }
+
+  /* Used chip: hidden or dimmed */
+  .word-chip.used {
+    opacity: 0.3;
+    pointer-events: none;
+    transform: scale(0.9);
+  }
+
+  .word-chip:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* === Instructions === */
+  .word-bank-instruction {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin-bottom: var(--space-sm);
+  }
+
+  /* === Actions === */
+  .word-bank-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* === Feedback === */
+  .word-bank-feedback {
+    margin-top: var(--space-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .word-bank-feedback.show {
+    display: block;
+  }
+
+  /* === Touch Drag Clone === */
+  .word-touch-clone {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.85;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: var(--font-size-small);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .word-blank {
+      min-width: 80px;
+      height: 32px;
+    }
+    .word-chip {
+      padding: 6px var(--space-sm);
+      font-size: 13px;
+    }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .word-blank.incorrect { animation: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="word-bank-activity" role="region" aria-label="Word bank activity">
+  <p class="question-stem">Fill in the blanks with the correct words:</p>
+  <p class="word-bank-instruction">
+    Click a word, then click a blank to place it. Or drag words into blanks.
+  </p>
+
+  <!-- Passage with inline blanks.
+       data-accept = the correct word chip's data-word value -->
+  <div class="word-bank-passage" id="wb-passage">
+    The process of
+    <button class="word-blank" data-accept="photosynthesis" data-blank-id="b1"
+            aria-label="Blank 1: click to place a word"
+            onclick="handleBlankClick(this)">
+      <span class="blank-placeholder">___</span>
+    </button>
+    converts sunlight into chemical energy. This occurs in the
+    <button class="word-blank" data-accept="chloroplast" data-blank-id="b2"
+            aria-label="Blank 2: click to place a word"
+            onclick="handleBlankClick(this)">
+      <span class="blank-placeholder">___</span>
+    </button>
+    of plant cells. The primary pigment involved is
+    <button class="word-blank" data-accept="chlorophyll" data-blank-id="b3"
+            aria-label="Blank 3: click to place a word"
+            onclick="handleBlankClick(this)">
+      <span class="blank-placeholder">___</span>
+    </button>.
+  </div>
+
+  <!-- Word bank: draggable/clickable chips.
+       data-word must match a blank's data-accept for correct answers.
+       Include distractors (extra words) for challenge. -->
+  <div class="word-bank-chips" id="wb-chips" role="listbox" aria-label="Available words">
+    <button class="word-chip" data-word="chlorophyll" draggable="true" role="option"
+            onclick="handleChipClick(this)"
+            ondragstart="wbDragStart(event)"
+            ontouchstart="wbTouchStart(event)"
+            ontouchmove="wbTouchMove(event)"
+            ontouchend="wbTouchEnd(event)">
+      chlorophyll
+    </button>
+    <button class="word-chip" data-word="mitochondria" draggable="true" role="option"
+            onclick="handleChipClick(this)"
+            ondragstart="wbDragStart(event)"
+            ontouchstart="wbTouchStart(event)"
+            ontouchmove="wbTouchMove(event)"
+            ontouchend="wbTouchEnd(event)">
+      mitochondria
+    </button>
+    <button class="word-chip" data-word="photosynthesis" draggable="true" role="option"
+            onclick="handleChipClick(this)"
+            ondragstart="wbDragStart(event)"
+            ontouchstart="wbTouchStart(event)"
+            ontouchmove="wbTouchMove(event)"
+            ontouchend="wbTouchEnd(event)">
+      photosynthesis
+    </button>
+    <button class="word-chip" data-word="chloroplast" draggable="true" role="option"
+            onclick="handleChipClick(this)"
+            ondragstart="wbDragStart(event)"
+            ontouchstart="wbTouchStart(event)"
+            ontouchmove="wbTouchMove(event)"
+            ontouchend="wbTouchEnd(event)">
+      chloroplast
+    </button>
+    <button class="word-chip" data-word="nucleus" draggable="true" role="option"
+            onclick="handleChipClick(this)"
+            ondragstart="wbDragStart(event)"
+            ontouchstart="wbTouchStart(event)"
+            ontouchmove="wbTouchMove(event)"
+            ontouchend="wbTouchEnd(event)">
+      nucleus
+    </button>
+  </div>
+
+  <!-- Actions -->
+  <div class="word-bank-actions">
+    <button class="btn-primary" onclick="checkWordBank()">Check Answers</button>
+    <button class="btn-secondary" onclick="resetWordBank()">Reset</button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="word-bank-feedback" id="wb-feedback" role="alert" aria-live="polite"></div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="wb-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   WORD BANK COMPONENT — Cloze test (fill-in-the-blanks)
+   ============================================================
+   Supports three interaction modes:
+   1. Click chip → click blank (keyboard accessible)
+   2. HTML5 drag-and-drop (desktop)
+   3. Touch drag (mobile/tablet)
+   ============================================================ */
+
+/* Currently selected chip (for click-to-place mode) */
+var wbSelectedChip = null;
+
+/* === CLICK-TO-PLACE MODE === */
+
+/**
+ * Handle clicking a word chip.
+ * If no chip is selected, select this one.
+ * If this chip is already selected, deselect it.
+ */
+function handleChipClick(chip) {
+  if (chip.classList.contains('used')) return;
+
+  /* Deselect previous */
+  var prev = document.querySelector('.word-chip.selected');
+  if (prev && prev !== chip) prev.classList.remove('selected');
+
+  /* Toggle selection */
+  if (chip.classList.contains('selected')) {
+    chip.classList.remove('selected');
+    wbSelectedChip = null;
+  } else {
+    chip.classList.add('selected');
+    wbSelectedChip = chip;
+    announceWB('Selected word: ' + chip.getAttribute('data-word') + '. Now click a blank to place it.');
+  }
+}
+
+/**
+ * Handle clicking a blank.
+ * If a chip is selected, place it here.
+ * If this blank already has a word, remove it first (return chip to bank).
+ */
+function handleBlankClick(blank) {
+  /* If blank already has a word, remove it */
+  if (blank.classList.contains('filled')) {
+    var currentWord = blank.getAttribute('data-placed-word');
+    returnChipToBank(currentWord);
+    blank.classList.remove('filled', 'correct', 'incorrect');
+    blank.setAttribute('data-placed-word', '');
+    blank.innerHTML = '<span class="blank-placeholder">___</span>';
+    blank.setAttribute('aria-label', 'Blank: click to place a word');
+    return;
+  }
+
+  /* If a chip is selected, place it in this blank */
+  if (wbSelectedChip) {
+    placeWordInBlank(wbSelectedChip, blank);
+    wbSelectedChip = null;
+  }
+}
+
+/**
+ * Place a word chip into a blank slot.
+ */
+function placeWordInBlank(chip, blank) {
+  var word = chip.getAttribute('data-word');
+
+  /* Fill the blank */
+  blank.classList.add('filled');
+  blank.classList.remove('correct', 'incorrect');
+  blank.setAttribute('data-placed-word', word);
+  blank.innerHTML = word;
+  blank.setAttribute('aria-label', 'Blank filled with: ' + word + '. Click to remove.');
+
+  /* Mark chip as used */
+  chip.classList.add('used');
+  chip.classList.remove('selected');
+
+  announceWB('Placed "' + word + '" in blank.');
+}
+
+/**
+ * Return a word chip to the bank (make it available again).
+ */
+function returnChipToBank(word) {
+  var chips = document.querySelectorAll('.word-chip');
+  chips.forEach(function(chip) {
+    if (chip.getAttribute('data-word') === word) {
+      chip.classList.remove('used');
+    }
+  });
+}
+
+/* === HTML5 DRAG AND DROP (Desktop) === */
+
+function wbDragStart(e) {
+  var chip = e.target.closest('.word-chip');
+  if (!chip || chip.classList.contains('used')) { e.preventDefault(); return; }
+  e.dataTransfer.setData('text/plain', chip.getAttribute('data-word'));
+  chip.style.opacity = '0.4';
+  /* Store ref for dragend */
+  chip._dragging = true;
+}
+
+/* Allow drop on blanks */
+(function() {
+  /* Attach dragover/drop to blanks after DOM is ready */
+  var blanks = document.querySelectorAll('.word-blank');
+  blanks.forEach(function(blank) {
+    blank.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      blank.classList.add('active');
+    });
+    blank.addEventListener('dragleave', function(e) {
+      blank.classList.remove('active');
+    });
+    blank.addEventListener('drop', function(e) {
+      e.preventDefault();
+      blank.classList.remove('active');
+      var word = e.dataTransfer.getData('text/plain');
+      if (!word) return;
+
+      /* If blank already has a word, return it first */
+      if (blank.classList.contains('filled')) {
+        returnChipToBank(blank.getAttribute('data-placed-word'));
+      }
+
+      /* Find the chip and place it */
+      var chip = document.querySelector('.word-chip[data-word="' + word + '"]');
+      if (chip) placeWordInBlank(chip, blank);
+    });
+  });
+
+  /* Reset opacity on dragend for all chips */
+  var chips = document.querySelectorAll('.word-chip');
+  chips.forEach(function(chip) {
+    chip.addEventListener('dragend', function() {
+      chip.style.opacity = '1';
+    });
+  });
+})();
+
+/* === TOUCH DRAG (Mobile/Tablet) === */
+
+var wbTouchChip = null;
+var wbTouchClone = null;
+
+function wbTouchStart(e) {
+  var chip = e.target.closest('.word-chip');
+  if (!chip || chip.classList.contains('used')) return;
+
+  wbTouchChip = chip;
+  var rect = chip.getBoundingClientRect();
+
+  wbTouchClone = document.createElement('div');
+  wbTouchClone.className = 'word-touch-clone';
+  wbTouchClone.textContent = chip.getAttribute('data-word');
+  document.body.appendChild(wbTouchClone);
+
+  chip.style.opacity = '0.3';
+}
+
+function wbTouchMove(e) {
+  e.preventDefault();
+  if (!wbTouchClone) return;
+
+  var touch = e.touches[0];
+  wbTouchClone.style.left = (touch.clientX - 30) + 'px';
+  wbTouchClone.style.top = (touch.clientY - 20) + 'px';
+
+  /* Highlight blank under finger */
+  document.querySelectorAll('.word-blank').forEach(function(blank) {
+    blank.classList.remove('active');
+    var r = blank.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      blank.classList.add('active');
+    }
+  });
+}
+
+function wbTouchEnd(e) {
+  if (!wbTouchChip || !wbTouchClone) return;
+
+  var touch = e.changedTouches[0];
+  document.body.removeChild(wbTouchClone);
+  wbTouchClone = null;
+
+  /* Find blank under final position */
+  document.querySelectorAll('.word-blank').forEach(function(blank) {
+    blank.classList.remove('active');
+    var r = blank.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      /* If blank already has a word, return it */
+      if (blank.classList.contains('filled')) {
+        returnChipToBank(blank.getAttribute('data-placed-word'));
+      }
+      placeWordInBlank(wbTouchChip, blank);
+    }
+  });
+
+  wbTouchChip.style.opacity = '1';
+  wbTouchChip = null;
+}
+
+/* === CHECK ANSWERS === */
+
+/**
+ * Validate all blank placements against data-accept.
+ */
+function checkWordBank() {
+  var blanks = document.querySelectorAll('.word-blank');
+  var correctCount = 0;
+  var totalCount = blanks.length;
+
+  blanks.forEach(function(blank) {
+    var expected = blank.getAttribute('data-accept');
+    var placed = blank.getAttribute('data-placed-word') || '';
+    blank.classList.remove('correct', 'incorrect');
+
+    if (placed === expected) {
+      blank.classList.add('correct');
+      correctCount++;
+    } else if (placed) {
+      blank.classList.add('incorrect');
+    }
+  });
+
+  /* Show feedback */
+  var feedbackEl = document.getElementById('wb-feedback');
+  if (feedbackEl) {
+    feedbackEl.classList.add('show');
+    if (correctCount === totalCount) {
+      feedbackEl.innerHTML = '<div class="feedback-correct"><span aria-hidden="true">&#10004;</span> ' +
+        '<span>All blanks filled correctly!</span></div>';
+    } else {
+      feedbackEl.innerHTML = '<div class="feedback-incorrect"><span aria-hidden="true">&#128161;</span> ' +
+        '<span>You got ' + correctCount + ' of ' + totalCount + ' correct. Review the highlighted blanks and try again!</span></div>';
+    }
+  }
+
+  announceWB(correctCount + ' of ' + totalCount + ' blanks are correct.');
+}
+
+/**
+ * Reset all blanks and return all chips to the bank.
+ */
+function resetWordBank() {
+  var blanks = document.querySelectorAll('.word-blank');
+  blanks.forEach(function(blank) {
+    if (blank.classList.contains('filled')) {
+      returnChipToBank(blank.getAttribute('data-placed-word'));
+    }
+    blank.classList.remove('filled', 'correct', 'incorrect');
+    blank.setAttribute('data-placed-word', '');
+    blank.innerHTML = '<span class="blank-placeholder">___</span>';
+  });
+
+  var feedbackEl = document.getElementById('wb-feedback');
+  if (feedbackEl) { feedbackEl.classList.remove('show'); feedbackEl.innerHTML = ''; }
+
+  wbSelectedChip = null;
+}
+
+function announceWB(msg) {
+  var el = document.getElementById('wb-announce');
+  if (el) el.textContent = msg;
+}
+</script>

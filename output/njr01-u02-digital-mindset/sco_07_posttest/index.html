@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الاختبار البعدي | الذهنية الرقمية وممارسات الابتكار التقني</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-nav">تخطي إلى المحتوى الرئيسي</a>
+
+  <div class="sco-container">
+    <header class="nav-bar">
+      <span class="course-title">الاختبار البعدي</span>
+      <div class="points-badge elastic-click" id="pointsBadge" aria-label="النقاط">
+        <span>&#11088;</span>
+        <span class="points-count" id="pointsDisplay">0</span>
+      </div>
+    </header>
+    <div class="progress-bar" role="progressbar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <main class="sco-content" id="main-content">
+
+      <!-- Slide 0: Intro -->
+      <div class="slide" data-slide="0">
+        <div class="slide-inner">
+          <div class="text-center">
+            <h1 class="stagger-item">الاختبار البعدي</h1>
+            <div class="callout callout-info stagger-item" style="max-width:600px; margin:20px auto;">
+              <span class="callout-icon" aria-hidden="true">&#128221;</span>
+              <div>
+                <p><strong>10 أسئلة شاملة</strong> تغطي جميع أهداف الوحدة.</p>
+                <p style="margin-top:8px;"><strong>درجة النجاح:</strong> 70% (7 من 10 إجابات صحيحة)</p>
+                <p style="margin-top:4px;"><strong>المحاولات:</strong> محاولتان مسموح بهما</p>
+              </div>
+            </div>
+            <p class="text-secondary stagger-item">ستحصل على تغذية راجعة فورية بعد كل سؤال.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions 1-10: one per slide -->
+      <div class="slide" data-slide="1"><div class="slide-inner"><div class="quiz-container" id="q-container-0"></div></div></div>
+      <div class="slide" data-slide="2"><div class="slide-inner"><div class="quiz-container" id="q-container-1"></div></div></div>
+      <div class="slide" data-slide="3"><div class="slide-inner"><div class="quiz-container" id="q-container-2"></div></div></div>
+      <div class="slide" data-slide="4"><div class="slide-inner"><div class="quiz-container" id="q-container-3"></div></div></div>
+      <div class="slide" data-slide="5"><div class="slide-inner"><div class="quiz-container" id="q-container-4"></div></div></div>
+      <div class="slide" data-slide="6"><div class="slide-inner"><div class="quiz-container" id="q-container-5"></div></div></div>
+      <div class="slide" data-slide="7"><div class="slide-inner"><div class="quiz-container" id="q-container-6"></div></div></div>
+      <div class="slide" data-slide="8"><div class="slide-inner"><div class="quiz-container" id="q-container-7"></div></div></div>
+      <div class="slide" data-slide="9"><div class="slide-inner"><div class="quiz-container" id="q-container-8"></div></div></div>
+      <div class="slide" data-slide="10"><div class="slide-inner"><div class="quiz-container" id="q-container-9"></div></div></div>
+
+      <!-- Slide 11: Results -->
+      <div class="slide" data-slide="11">
+        <div class="slide-inner">
+          <div class="quiz-score text-center" id="resultArea">
+            <!-- Filled dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <nav class="sco-nav" aria-label="تنقل الاختبار">
+      <button class="btn-prev elastic-click" id="prevBtn" disabled>السابق</button>
+      <span class="page-indicator" id="pageIndicator">1 / 12</span>
+      <button class="btn-next elastic-click" id="nextBtn" data-next-text="التالي" data-complete-text="إنهاء">التالي</button>
+    </nav>
+  </div>
+
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="../shared/engine/confetti.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+
+  <script>
+  (function() {
+    'use strict';
+
+    var scorm = new SCORMWrapper(); scorm.initialize();
+    var cs = scorm.getValue('cmi.core.lesson_status');
+    if (!cs || cs === 'not attempted') scorm.setValue('cmi.core.lesson_status', 'incomplete');
+
+    var sounds = new SoundEffects(); var confetti = new Confetti();
+    var startTime = new Date(); var points = 0; var streak = 0;
+    var pointsDisplay = document.getElementById('pointsDisplay');
+    var pointsBadge = document.getElementById('pointsBadge');
+
+    function awardPoints(n) { points += n; pointsDisplay.textContent = points; pointsBadge.classList.add('glow'); setTimeout(function() { pointsBadge.classList.remove('glow'); }, 600); }
+
+    // --- Questions Data ---
+    var questions = [
+      { id:'post_q01', stem:'يرتبط الابتكار <span class="ltr-inline">(Innovation)</span> بريادة الأعمال <span class="ltr-inline">(Entrepreneurship)</span> لأن:', type:'mcq',
+        options:[
+          {id:'a', text:'الابتكار يوفر الحلول الجديدة، وريادة الأعمال تحوّل هذه الحلول إلى مشاريع ناجحة في السوق'},
+          {id:'b', text:'كلاهما يتطلب رأس مال كبير للبدء'},
+          {id:'c', text:'الابتكار لا يحدث إلا داخل شركات التكنولوجيا الكبرى'},
+          {id:'d', text:'ريادة الأعمال تعتمد فقط على الحظ وليس الابتكار'}
+        ], correct:'a',
+        feedbackCorrect:'رائع! الابتكار يُنتج الأفكار والحلول، وريادة الأعمال تحوّلها إلى مشاريع حقيقية.',
+        feedbackIncorrect:'ليس بعد — أنت تتعلم! الابتكار يوفر الحلول الجديدة وريادة الأعمال تحوّلها إلى مشاريع ناجحة.'
+      },
+      { id:'post_q02', stem:'طريقة سكامبر <span class="ltr-inline">(SCAMPER)</span> هي أداة منهجية لتوليد الأفكار. أي من التالي يمثل العناصر السبعة الصحيحة؟', type:'mcq',
+        options:[
+          {id:'a', text:'بحث، تخطيط، تنفيذ، مراقبة، تقييم، تحسين، إغلاق'},
+          {id:'b', text:'استبدال (Substitute)، دمج (Combine)، تكيف (Adapt)، تعديل (Modify)، استخدام آخر (Put to other use)، حذف (Eliminate)، عكس (Reverse)'},
+          {id:'c', text:'تحليل، تصميم، تطوير، تنفيذ، تقييم، صيانة، توثيق'},
+          {id:'d', text:'ملاحظة، مقابلة، تصور، نمذجة، اختبار، تكرار، نشر'}
+        ], correct:'b',
+        feedbackCorrect:'ممتاز! SCAMPER = Substitute, Combine, Adapt, Modify, Put to other use, Eliminate, Reverse.',
+        feedbackIncorrect:'ليس بعد — أنت تتعلم! عناصر SCAMPER السبعة هي: استبدال، دمج، تكيف، تعديل، استخدام آخر، حذف، عكس.'
+      },
+      { id:'post_q03', stem:'رائد الأعمال <span class="ltr-inline">(Entrepreneur)</span> الناجح يتجنب المخاطرة تماماً ويعمل فقط على الأفكار المضمونة النجاح.', type:'tf', correct:'false',
+        feedbackCorrect:'أحسنت! رواد الأعمال يتقبلون المخاطرة المحسوبة — لا يوجد مشروع مضمون بالكامل.',
+        feedbackIncorrect:'ليس بعد! رواد الأعمال يحددون الفرص ويخاطرون — المخاطرة المحسوبة جزء أساسي.'
+      },
+      { id:'post_q04', stem:'عقلية الابتكار التقني <span class="ltr-inline">(Technology Innovation Mindset)</span> تتطلب ثلاثة متطلبات رئيسية. ما هي؟', type:'mcq',
+        options:[
+          {id:'a', text:'البرمجة، والتصميم الجرافيكي، وإدارة قواعد البيانات'},
+          {id:'b', text:'التمويل، والتسويق، والمبيعات'},
+          {id:'c', text:'التفكير التصميمي (Design Thinking)، والمرونة والقدرة على التكيف (Agility & Adaptability)، وملاءمة التكنولوجيا للسوق (Technology-Market Fit)'},
+          {id:'d', text:'الذكاء الاصطناعي، والحوسبة السحابية، وإنترنت الأشياء'}
+        ], correct:'c',
+        feedbackCorrect:'رائع! المتطلبات الثلاثة هي: التفكير التصميمي، المرونة والتكيف، ملاءمة التكنولوجيا للسوق.',
+        feedbackIncorrect:'ليس بعد! المتطلبات: (1) التفكير التصميمي، (2) المرونة والتكيف، (3) ملاءمة التكنولوجيا للسوق.'
+      },
+      { id:'post_q05', stem:'يريد فريق تطوير بناء تطبيق لخدمة طلاب الجامعة. ما الترتيب الصحيح لمراحل التفكير التصميمي <span class="ltr-inline">(Design Thinking)</span>؟', type:'mcq',
+        options:[
+          {id:'a', text:'النموذج الأولي ← الاختبار ← التعاطف ← التحديد ← التفكير'},
+          {id:'b', text:'التحديد ← التعاطف ← التفكير ← الاختبار ← النموذج الأولي'},
+          {id:'c', text:'التفكير ← التعاطف ← التحديد ← النموذج الأولي ← الاختبار'},
+          {id:'d', text:'التعاطف (Empathize) ← التحديد (Define) ← التفكير (Ideate) ← النموذج الأولي (Prototype) ← الاختبار (Test)'}
+        ], correct:'d',
+        feedbackCorrect:'ممتاز! الترتيب الصحيح: تعاطف ← تحديد ← تفكير ← نموذج أولي ← اختبار.',
+        feedbackIncorrect:'ليس بعد! الترتيب: تعاطف ← تحديد ← تفكير ← نموذج أولي ← اختبار. نبدأ بفهم المستخدم.'
+      },
+      { id:'post_q06', stem:'المرونة <span class="ltr-inline">(Agility)</span> والقدرة على التكيف <span class="ltr-inline">(Adaptability)</span> مفهومان متطابقان — كلاهما يعني الاستجابة السريعة للتغيرات الفورية.', type:'tf', correct:'false',
+        feedbackCorrect:'أحسنت! المرونة = استجابة فورية قصيرة المدى. التكيف = تطور طويل الأمد.',
+        feedbackIncorrect:'ليس بعد! المرونة = الاستجابة للتحديات الفورية. التكيف = التطور مع التحولات الجذرية طويلة الأمد.'
+      },
+      { id:'post_q07', stem:'شركة ناشئة طورت تطبيقاً بتقنية متقدمة لكن عدد المستخدمين ظل منخفضاً رغم جودته التقنية. ما السبب الأكثر احتمالاً؟', type:'mcq',
+        options:[
+          {id:'a', text:'التطبيق يحتاج مزيداً من الميزات التقنية'},
+          {id:'b', text:'ضعف ملاءمة التكنولوجيا للسوق — التطبيق لا يلبي احتياجات المستخدمين الفعلية'},
+          {id:'c', text:'المنافسة الشديدة هي السبب الوحيد دائماً'},
+          {id:'d', text:'التطبيق يحتاج فقط إلى مزيد من الإعلانات'}
+        ], correct:'b',
+        feedbackCorrect:'تحليل ممتاز! التكنولوجيا المتقدمة وحدها لا تكفي — يجب أن تتوافق مع احتياجات المستخدم.',
+        feedbackIncorrect:'ليس بعد! السبب الأكثر احتمالاً: ضعف ملاءمة التكنولوجيا للسوق. التكنولوجيا يجب أن تلبي احتياجات فعلية.'
+      },
+      { id:'post_q08', stem:'يريد مصمم اختبار فكرة تطبيق جوال بسرعة وبأقل تكلفة قبل البرمجة. أي نوع نموذج أولي <span class="ltr-inline">(Prototype)</span> هو الأنسب؟', type:'mcq',
+        options:[
+          {id:'a', text:'نموذج مادي (Physical) — بناء جهاز فعلي'},
+          {id:'b', text:'نموذج ورقي (Paper) — رسومات تخطيطية للشاشات'},
+          {id:'c', text:'نموذج رقمي كامل — تطبيق مبرمج بالكامل'},
+          {id:'d', text:'لا يحتاج نموذجاً — يبدأ البرمجة مباشرة'}
+        ], correct:'b',
+        feedbackCorrect:'ممتاز! النموذج الورقي هو الأسرع والأقل تكلفة لاختبار الأفكار الأولية.',
+        feedbackIncorrect:'ليس بعد! النموذج الورقي هو الأنسب: الأسرع، الأقل تكلفة، وسهل التعديل فورًا.'
+      },
+      { id:'post_q09', stem:'منهجية الشركات الناشئة المرنة <span class="ltr-inline">(Lean Startup)</span> تعتمد على تطوير المنتج بالكامل أولاً ثم إطلاقه دفعة واحدة.', type:'tf', correct:'false',
+        feedbackCorrect:'أحسنت! Lean Startup تعتمد على بناء ← قياس ← تعلم — وليس تطوير المنتج بالكامل أولاً.',
+        feedbackIncorrect:'ليس بعد! Lean Startup تعتمد على التطوير التكراري السريع: بناء → قياس → تعلم.'
+      },
+      { id:'post_q10', stem:'فريق يواجه مقاومة شديدة للتغيير وخوفاً من الفشل عند محاولة تطبيق ابتكار تقني جديد. أي استراتيجية هي الأكثر فعالية؟', type:'mcq',
+        options:[
+          {id:'a', text:'فرض التغيير بقرار إداري دون مناقشة'},
+          {id:'b', text:'تشجيع التجربة في بيئة آمنة وتعزيز ثقافة الانفتاح والتواصل المفتوح للتعلم من الأخطاء'},
+          {id:'c', text:'تجاهل المقاومة والاستمرار دون تغيير'},
+          {id:'d', text:'الانتظار حتى تختفي المقاومة من تلقاء نفسها'}
+        ], correct:'b',
+        feedbackCorrect:'تقييم ممتاز! تشجيع التجربة في بيئة آمنة وتعزيز ثقافة الانفتاح هما أفضل الاستراتيجيات.',
+        feedbackIncorrect:'ليس بعد! الحل: تشجيع التجربة في بيئة آمنة + تعزيز ثقافة الانفتاح والتواصل المفتوح.'
+      }
+    ];
+
+    // Render questions
+    questions.forEach(function(q, i) {
+      var container = document.getElementById('q-container-' + i);
+      var html = '<p class="quiz-progress stagger-item">السؤال ' + (i+1) + ' من 10</p>';
+      html += '<h3 class="question-stem stagger-item">' + q.stem + '</h3>';
+      html += '<div id="opts-' + i + '">';
+
+      if (q.type === 'tf') {
+        html += '<button class="btn-quiz-option elastic-click stagger-item" data-id="true" onclick="answerQ('+i+',this,\'true\')">صحيح</button>';
+        html += '<button class="btn-quiz-option elastic-click stagger-item" data-id="false" onclick="answerQ('+i+',this,\'false\')">خطأ</button>';
+      } else {
+        q.options.forEach(function(opt) {
+          html += '<button class="btn-quiz-option elastic-click stagger-item" data-id="'+opt.id+'" onclick="answerQ('+i+',this,\''+opt.id+'\')">' + opt.text + '</button>';
+        });
+      }
+      html += '</div>';
+      html += '<div id="fb-' + i + '" class="hidden" style="margin-top:16px;"></div>';
+      container.innerHTML = html;
+    });
+
+    var answered = {};
+    var correctCount = 0;
+
+    window.answerQ = function(qi, btn, sel) {
+      if (answered[qi] !== undefined) return;
+      answered[qi] = sel;
+
+      var q = questions[qi];
+      var isCorrect = sel === q.correct;
+      if (isCorrect) { correctCount++; streak++; } else { streak = 0; }
+
+      var opts = document.querySelectorAll('#opts-' + qi + ' .btn-quiz-option');
+      opts.forEach(function(o) { o.disabled = true; });
+      btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+      if (!isCorrect) opts.forEach(function(o) { if (o.getAttribute('data-id') === q.correct) o.classList.add('correct'); });
+
+      // Points
+      if (isCorrect) awardPoints(5);
+      if (streak >= 3) awardPoints(5); // streak bonus
+
+      sounds.playSound(isCorrect ? 'success' : 'error');
+
+      var fb = document.getElementById('fb-' + qi); fb.classList.remove('hidden');
+      fb.className = isCorrect ? 'feedback-correct' : 'feedback-incorrect';
+      fb.innerHTML = '<span>' + (isCorrect ? '&#10004;' : '&#128161;') + '</span><div>' + (isCorrect ? q.feedbackCorrect : q.feedbackIncorrect) + '</div>';
+
+      // SCORM interaction
+      try {
+        scorm.setValue('cmi.interactions.'+qi+'.id', q.id);
+        scorm.setValue('cmi.interactions.'+qi+'.type', q.type === 'tf' ? 'true-false' : 'choice');
+        scorm.setValue('cmi.interactions.'+qi+'.student_response', sel);
+        scorm.setValue('cmi.interactions.'+qi+'.correct_responses.0.pattern', q.correct);
+        scorm.setValue('cmi.interactions.'+qi+'.result', isCorrect ? 'correct' : 'wrong');
+        scorm.commit();
+      } catch(e) {}
+    };
+
+    var slideController = new SlideController({
+      onSlideChange: function(index) {
+        sounds.playSound('whoosh');
+        if (index === 11) showResults();
+      },
+      onComplete: function() {
+        // Final SCORM save
+        var percentage = Math.round((correctCount / 10) * 100);
+        var passed = percentage >= 70;
+
+        scorm.setValue('cmi.core.score.raw', String(percentage));
+        scorm.setValue('cmi.core.score.max', '100');
+        scorm.setValue('cmi.core.score.min', '0');
+        scorm.setValue('cmi.core.lesson_status', passed ? 'passed' : 'failed');
+
+        var d = Math.floor((new Date()-startTime)/1000);
+        var h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
+        scorm.setValue('cmi.core.session_time',(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s);
+
+        try { scorm.setValue('cmi.suspend_data',JSON.stringify({points:points,score:percentage,passed:passed})); } catch(e) {}
+        scorm.commit();
+      }
+    });
+
+    function showResults() {
+      var percentage = Math.round((correctCount / 10) * 100);
+      var passed = percentage >= 70;
+      var area = document.getElementById('resultArea');
+
+      if (passed) {
+        awardPoints(25);
+        if (percentage === 100) awardPoints(50);
+        sounds.playSound('celebration');
+        confetti.fire();
+      }
+
+      area.className = 'quiz-score text-center ' + (passed ? 'pass' : 'fail');
+      var badge = passed ? (percentage === 100 ? '&#127942; خبير الابتكار (100%)' : '&#127942; متعلم معتمد') : '';
+      area.innerHTML =
+        '<div class="score-circle stagger-item" style="font-size:2rem;">' + percentage + '%</div>' +
+        '<h2 class="stagger-item">' + (passed ? 'تهانينا! اجتزت الاختبار' : 'لم تجتز بعد — لكنك تتعلم!') + '</h2>' +
+        '<p class="stagger-item" style="font-size:1.1rem;">' + correctCount + ' من 10 إجابات صحيحة</p>' +
+        (badge ? '<div class="badge-earned stagger-item" style="margin-top:16px;">' + badge + '</div>' : '') +
+        '<div class="callout ' + (passed ? 'callout-success' : 'callout-tip') + ' stagger-item" style="margin-top:20px; max-width:500px; margin-left:auto; margin-right:auto; text-align:right;">' +
+        '<span class="callout-icon" aria-hidden="true">' + (passed ? '&#127775;' : '&#128170;') + '</span>' +
+        '<div>' + (passed ?
+          '<strong>أتممت وحدة الذهنية الرقمية!</strong><p style="margin-top:4px;">أنت جاهز لتحويل الأفكار إلى ابتكار حقيقي.</p>' :
+          '<strong>أنت بحاجة إلى 70% للنجاح.</strong><p style="margin-top:4px;">راجع الوحدات وأعد المحاولة. كل محاولة تقرّبك من الإتقان!</p>'
+        ) + '</div></div>';
+    }
+
+    var bk = scorm.getValue('cmi.core.lesson_location');
+    if (bk) { var sv=parseInt(bk,10); if(!isNaN(sv)&&sv>0) slideController.resumeFrom(sv); }
+    window.addEventListener('beforeunload', function() { scorm.setValue('cmi.core.lesson_location',String(slideController.currentIndex)); scorm.commit(); });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!-- Labeled Graphic Component (Enhanced Markers)
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A large image with positioned numbered pin markers
+     - Click a pin → expands a label panel with title + description
+     - Numbered pins (1, 2, 3...) pulse on unvisited, solid on visited
+     - Visited pins track discovery progress ("Explored 3 of 6")
+     - Optional zoom: pinch/scroll zoom on the image
+     - Info panel appears as slide-in sidebar or overlay
+
+     DIFFERENCES FROM markers.html:
+     - Numbered labels (not just dots) with explicit count display
+     - Discovery tracking with progress bar
+     - Info panel slides in from the side (richer content area)
+     - Optional image zoom via CSS transform
+     - Completion gate: all labels explored to unlock next
+
+     CUSTOMIZATION:
+     - Position pins with style="top: X%; left: Y%"
+     - Set data-pin-id, data-pin-title, data-pin-number on each pin
+     - Info panel content goes in .lg-info-panel matching data-panel-id
+     - Set data-zoom="true" on .labeled-graphic to enable zoom
+     - Adjust --lg-pin-size for pin sizing
+
+     ACCESSIBILITY:
+     - Pins are <button> elements with aria-label
+     - Info panel uses role="dialog" with aria-labelledby
+     - Focus moves to panel on open, returns on close
+     - Escape key closes panel
+     - Progress announced via aria-live
+     - Keyboard: Tab between pins, Enter/Space to open
+-->
+
+<style>
+  /* === Labeled Graphic Container === */
+  .labeled-graphic {
+    --lg-pin-size: 36px;
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    background: var(--color-surface, #f3f4f6);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
+    border: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  /* === Image Viewport === */
+  .lg-viewport {
+    position: relative;
+    flex: 1;
+    min-height: 300px;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  .lg-image-wrapper {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+  }
+
+  .lg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Placeholder when no image */
+  .lg-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0e7ff, #f3f4f6);
+    color: var(--color-text-secondary, #6b7280);
+    font-size: var(--font-size-small, 0.9rem);
+  }
+
+  /* Zoom controls (optional) */
+  .lg-zoom-controls {
+    position: absolute;
+    inset-block-end: var(--space-sm, 8px);
+    inset-inline-end: var(--space-sm, 8px);
+    display: flex;
+    gap: 4px;
+    z-index: 20;
+  }
+
+  .lg-zoom-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid var(--color-border, #d1d5db);
+    background: var(--color-surface-elevated, #fff);
+    color: var(--color-text, #1f2937);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: background 0.2s ease;
+  }
+
+  .lg-zoom-btn:hover { background: var(--color-surface, #f3f4f6); }
+
+  .lg-zoom-btn:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  /* === Numbered Pin === */
+  .lg-pin {
+    position: absolute;
+    width: var(--lg-pin-size);
+    height: var(--lg-pin-size);
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary, #6366f1), var(--color-primary-dark, #4f46e5));
+    color: #fff;
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1)), 0 0 0 0 rgba(99,102,241,0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: var(--font-body, sans-serif);
+    z-index: 10;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    animation: lgPinPulse 2s ease-in-out infinite;
+    padding: 0;
+  }
+
+  .lg-pin:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: var(--shadow-lg, 0 8px 16px rgba(0,0,0,0.15)), 0 0 0 6px rgba(99,102,241,0.2);
+  }
+
+  .lg-pin:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 3px;
+  }
+
+  .lg-pin:active {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  /* Currently active pin */
+  .lg-pin.active {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: var(--shadow-lg, 0 8px 16px rgba(0,0,0,0.15)), 0 0 0 6px rgba(99,102,241,0.3);
+    animation: none;
+  }
+
+  /* Visited pin: green, no pulse */
+  .lg-pin.visited {
+    background: linear-gradient(135deg, var(--color-success, #22c55e), #10b981);
+    animation: none;
+  }
+
+  @keyframes lgPinPulse {
+    0%, 100% { box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1)), 0 0 0 0 rgba(99,102,241,0.4); }
+    50% { box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1)), 0 0 0 8px rgba(99,102,241,0); }
+  }
+
+  /* === Info Panel (slide-in sidebar) === */
+  .lg-info-panel {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    width: 320px;
+    max-width: 80%;
+    height: 100%;
+    background: var(--color-surface-elevated, #fff);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.12);
+    z-index: 30;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* RTL: flip the slide direction */
+  [dir="rtl"] .lg-info-panel {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.12);
+  }
+
+  .lg-info-panel.open {
+    transform: translateX(0);
+  }
+
+  .lg-info-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md, 16px);
+    background: linear-gradient(135deg, var(--color-primary, #6366f1), var(--color-primary-dark, #4f46e5));
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .lg-info-panel-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .lg-info-panel-title {
+    flex: 1;
+    margin: 0;
+    margin-inline-start: var(--space-sm, 8px);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+
+  .lg-info-panel-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+  }
+
+  .lg-info-panel-close:hover { background: rgba(255,255,255,0.4); }
+
+  .lg-info-panel-close:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  .lg-info-panel-body {
+    flex: 1;
+    padding: var(--space-md, 16px);
+    overflow-y: auto;
+    font-size: var(--font-size-small, 0.9rem);
+    color: var(--color-text, #1f2937);
+    line-height: 1.7;
+  }
+
+  .lg-info-panel-body p { margin: 0 0 var(--space-sm, 8px); }
+  .lg-info-panel-body p:last-child { margin-block-end: 0; }
+
+  /* === Progress Bar (below the graphic) === */
+  .lg-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 8px);
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    background: var(--color-surface-elevated, #fff);
+    border-block-start: 1px solid var(--color-border, #e5e7eb);
+    font-size: var(--font-size-small, 0.85rem);
+    color: var(--color-text-secondary, #6b7280);
+    font-weight: 600;
+  }
+
+  .lg-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--color-border, #e5e7eb);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .lg-progress-fill {
+    height: 100%;
+    background: var(--color-primary, #6366f1);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .lg-progress-text .lg-count {
+    color: var(--color-primary, #6366f1);
+  }
+
+  /* === Responsive === */
+  @media (max-width: 600px) {
+    .labeled-graphic { flex-direction: column; }
+    .lg-pin { --lg-pin-size: 30px; font-size: 11px; }
+    .lg-info-panel {
+      position: fixed;
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: 100%;
+      height: 50%;
+      transform: translateY(100%);
+      border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
+    }
+    .lg-info-panel.open { transform: translateY(0); }
+    [dir="rtl"] .lg-info-panel {
+      transform: translateY(100%);
+    }
+    [dir="rtl"] .lg-info-panel.open { transform: translateY(0); }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .lg-pin { animation: none; }
+    .lg-info-panel { transition: none; }
+    .lg-progress-fill { transition: none; }
+    .lg-image-wrapper { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="labeled-graphic" role="region" aria-label="Interactive labeled graphic" data-zoom="true">
+  <!-- Image viewport with pins -->
+  <div class="lg-viewport">
+    <div class="lg-image-wrapper" id="lg-image-wrapper">
+      <div class="lg-image-placeholder" aria-hidden="true">
+        Replace with your image
+      </div>
+    </div>
+
+    <!-- Pin 1 -->
+    <button class="lg-pin" data-pin-id="p1" data-panel-id="lg-panel-1" data-pin-number="1"
+            style="top: 25%; left: 20%;"
+            aria-label="Label 1: Overview — click to explore"
+            aria-expanded="false"
+            onclick="openLGPanel(this)">1</button>
+
+    <!-- Pin 2 -->
+    <button class="lg-pin" data-pin-id="p2" data-panel-id="lg-panel-2" data-pin-number="2"
+            style="top: 40%; left: 50%;"
+            aria-label="Label 2: Key Feature — click to explore"
+            aria-expanded="false"
+            onclick="openLGPanel(this)">2</button>
+
+    <!-- Pin 3 -->
+    <button class="lg-pin" data-pin-id="p3" data-panel-id="lg-panel-3" data-pin-number="3"
+            style="top: 60%; left: 35%;"
+            aria-label="Label 3: Details — click to explore"
+            aria-expanded="false"
+            onclick="openLGPanel(this)">3</button>
+
+    <!-- Pin 4 -->
+    <button class="lg-pin" data-pin-id="p4" data-panel-id="lg-panel-4" data-pin-number="4"
+            style="top: 30%; left: 75%;"
+            aria-label="Label 4: Important Note — click to explore"
+            aria-expanded="false"
+            onclick="openLGPanel(this)">4</button>
+
+    <!-- Pin 5 -->
+    <button class="lg-pin" data-pin-id="p5" data-panel-id="lg-panel-5" data-pin-number="5"
+            style="top: 70%; left: 65%;"
+            aria-label="Label 5: Summary — click to explore"
+            aria-expanded="false"
+            onclick="openLGPanel(this)">5</button>
+
+    <!-- Info Panel 1 -->
+    <div class="lg-info-panel" id="lg-panel-1" role="dialog" aria-labelledby="lg-title-1">
+      <div class="lg-info-panel-header">
+        <span class="lg-info-panel-number">1</span>
+        <h4 class="lg-info-panel-title" id="lg-title-1">Overview</h4>
+        <button class="lg-info-panel-close" aria-label="Close panel" onclick="closeLGPanel()">&times;</button>
+      </div>
+      <div class="lg-info-panel-body">
+        <p>This is the overview section. Add detailed content here including text, images, or lists that explain this part of the graphic.</p>
+      </div>
+    </div>
+
+    <!-- Info Panel 2 -->
+    <div class="lg-info-panel" id="lg-panel-2" role="dialog" aria-labelledby="lg-title-2">
+      <div class="lg-info-panel-header">
+        <span class="lg-info-panel-number">2</span>
+        <h4 class="lg-info-panel-title" id="lg-title-2">Key Feature</h4>
+        <button class="lg-info-panel-close" aria-label="Close panel" onclick="closeLGPanel()">&times;</button>
+      </div>
+      <div class="lg-info-panel-body">
+        <p>Explain the key feature shown at this location on the graphic. Include any relevant details the learner needs to understand.</p>
+      </div>
+    </div>
+
+    <!-- Info Panel 3 -->
+    <div class="lg-info-panel" id="lg-panel-3" role="dialog" aria-labelledby="lg-title-3">
+      <div class="lg-info-panel-header">
+        <span class="lg-info-panel-number">3</span>
+        <h4 class="lg-info-panel-title" id="lg-title-3">Details</h4>
+        <button class="lg-info-panel-close" aria-label="Close panel" onclick="closeLGPanel()">&times;</button>
+      </div>
+      <div class="lg-info-panel-body">
+        <p>Provide detailed information about this element. You can include multiple paragraphs, bullet lists, or even small images.</p>
+      </div>
+    </div>
+
+    <!-- Info Panel 4 -->
+    <div class="lg-info-panel" id="lg-panel-4" role="dialog" aria-labelledby="lg-title-4">
+      <div class="lg-info-panel-header">
+        <span class="lg-info-panel-number">4</span>
+        <h4 class="lg-info-panel-title" id="lg-title-4">Important Note</h4>
+        <button class="lg-info-panel-close" aria-label="Close panel" onclick="closeLGPanel()">&times;</button>
+      </div>
+      <div class="lg-info-panel-body">
+        <p>Highlight important information that the learner should pay special attention to. This could be a safety warning, key concept, or critical detail.</p>
+      </div>
+    </div>
+
+    <!-- Info Panel 5 -->
+    <div class="lg-info-panel" id="lg-panel-5" role="dialog" aria-labelledby="lg-title-5">
+      <div class="lg-info-panel-header">
+        <span class="lg-info-panel-number">5</span>
+        <h4 class="lg-info-panel-title" id="lg-title-5">Summary</h4>
+        <button class="lg-info-panel-close" aria-label="Close panel" onclick="closeLGPanel()">&times;</button>
+      </div>
+      <div class="lg-info-panel-body">
+        <p>Wrap up with a summary of what this graphic illustrates. Tie together the key points from all the labeled areas.</p>
+      </div>
+    </div>
+
+    <!-- Zoom controls (optional, shown when data-zoom="true") -->
+    <div class="lg-zoom-controls" id="lg-zoom-controls" style="display: none;">
+      <button class="lg-zoom-btn" aria-label="Zoom in" onclick="lgZoom(1)">+</button>
+      <button class="lg-zoom-btn" aria-label="Zoom out" onclick="lgZoom(-1)">&minus;</button>
+      <button class="lg-zoom-btn" aria-label="Reset zoom" onclick="lgZoom(0)">&#8634;</button>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="lg-progress" aria-live="polite">
+    <span class="lg-progress-text">
+      Explored <span class="lg-count" id="lg-visited-count">0</span> of
+      <span id="lg-total-count">5</span>
+    </span>
+    <div class="lg-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="lg-progress-bar">
+      <div class="lg-progress-fill" id="lg-progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div class="sr-only" aria-live="polite" id="lg-announce"></div>
+
+<script>
+/* ============================================================
+   LABELED GRAPHIC — Enhanced explore-the-image with discovery
+   ============================================================
+   - Numbered pins on an image, click to reveal info panel
+   - Tracks visited/unvisited for discovery progress
+   - Optional zoom via CSS transform
+   - Slide-in panel for rich content display
+   ============================================================ */
+
+var lgVisited = {};
+var lgCurrentPin = null;
+var lgZoomLevel = 1;
+
+(function initLG() {
+  /* Count total pins */
+  var pins = document.querySelectorAll('.lg-pin');
+  var totalEl = document.getElementById('lg-total-count');
+  if (totalEl) totalEl.textContent = pins.length;
+
+  /* Show zoom controls if enabled */
+  var container = document.querySelector('.labeled-graphic');
+  if (container && container.getAttribute('data-zoom') === 'true') {
+    var controls = document.getElementById('lg-zoom-controls');
+    if (controls) controls.style.display = 'flex';
+  }
+})();
+
+/**
+ * Open an info panel for a specific pin.
+ */
+function openLGPanel(pinBtn) {
+  var panelId = pinBtn.getAttribute('data-panel-id');
+  var pinId = pinBtn.getAttribute('data-pin-id');
+  var panel = document.getElementById(panelId);
+
+  /* Close any currently open panel */
+  closeLGPanel();
+
+  if (!panel) return;
+
+  /* Open panel */
+  panel.classList.add('open');
+  pinBtn.classList.add('active');
+  pinBtn.setAttribute('aria-expanded', 'true');
+  lgCurrentPin = pinBtn;
+
+  /* Mark as visited */
+  if (!lgVisited[pinId]) {
+    lgVisited[pinId] = true;
+    pinBtn.classList.add('visited');
+    updateLGProgress();
+  }
+
+  /* Move focus to close button */
+  var closeBtn = panel.querySelector('.lg-info-panel-close');
+  if (closeBtn) closeBtn.focus();
+
+  /* Announce */
+  var title = panel.querySelector('.lg-info-panel-title');
+  lgAnnounce('Opened: ' + (title ? title.textContent : 'Label ' + pinBtn.textContent));
+}
+
+/**
+ * Close any open info panel.
+ */
+function closeLGPanel() {
+  var openPanels = document.querySelectorAll('.lg-info-panel.open');
+  openPanels.forEach(function(p) { p.classList.remove('open'); });
+
+  var activePins = document.querySelectorAll('.lg-pin.active');
+  activePins.forEach(function(p) {
+    p.classList.remove('active');
+    p.setAttribute('aria-expanded', 'false');
+  });
+
+  /* Return focus to the pin that was active */
+  if (lgCurrentPin) {
+    lgCurrentPin.focus();
+    lgCurrentPin = null;
+  }
+}
+
+/**
+ * Update discovery progress bar and count.
+ */
+function updateLGProgress() {
+  var visitedCount = Object.keys(lgVisited).length;
+  var total = document.querySelectorAll('.lg-pin').length;
+  var pct = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
+
+  var countEl = document.getElementById('lg-visited-count');
+  if (countEl) countEl.textContent = visitedCount;
+
+  var fill = document.getElementById('lg-progress-fill');
+  if (fill) fill.style.width = pct + '%';
+
+  var bar = document.getElementById('lg-progress-bar');
+  if (bar) bar.setAttribute('aria-valuenow', pct);
+
+  if (visitedCount === total && total > 0) {
+    lgAnnounce('All labels explored! You have discovered all ' + total + ' areas.');
+  }
+}
+
+/**
+ * Zoom the image in/out or reset.
+ * dir: 1 = zoom in, -1 = zoom out, 0 = reset
+ */
+function lgZoom(dir) {
+  var wrapper = document.getElementById('lg-image-wrapper');
+  if (!wrapper) return;
+
+  if (dir === 0) {
+    lgZoomLevel = 1;
+  } else {
+    lgZoomLevel = Math.max(1, Math.min(3, lgZoomLevel + dir * 0.25));
+  }
+
+  wrapper.style.transform = 'scale(' + lgZoomLevel + ')';
+}
+
+/**
+ * Announce message to screen readers.
+ */
+function lgAnnounce(msg) {
+  var el = document.getElementById('lg-announce');
+  if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+}
+
+/* Close panel on Escape key */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var openPanel = document.querySelector('.lg-info-panel.open');
+    if (openPanel) closeLGPanel();
+  }
+});
+
+/* Close panel when clicking outside pins and panels */
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.lg-pin') && !e.target.closest('.lg-info-panel') &&
+      !e.target.closest('.lg-zoom-btn')) {
+    var openPanel = document.querySelector('.lg-info-panel.open');
+    if (openPanel) closeLGPanel();
+  }
+});
+</script>

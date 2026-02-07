@@ -1,0 +1,88 @@
+<!-- Scrolling Panel Component
+     Usage: Copy into lesson HTML for scrollable content areas.
+     Requires: base.css (.scroll-panel styles)
+
+     A fixed-height container with overflow-y: auto for long content.
+     Shows a gradient fade indicator at the bottom when more content
+     is available to scroll.
+
+     Customization:
+     - Adjust height via inline style or CSS class
+     - Default height: 300px
+     - data-height="400px" — Set custom height
+
+     WCAG: tabindex="0" for keyboard scrolling, role="region" with label
+-->
+
+<div class="scroll-panel"
+     role="region"
+     aria-label="Scrollable content panel"
+     tabindex="0"
+     data-height="300px"
+     style="--panel-height: 300px;">
+
+  <div class="scroll-panel-content">
+    <!-- Replace with your content -->
+    <h3>Terms and Conditions</h3>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
+    <h4>Section 1: Introduction</h4>
+    <p>Sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+    <p>Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+    <h4>Section 2: Responsibilities</h4>
+    <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+    <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
+    <h4>Section 3: Compliance</h4>
+    <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores.</p>
+    <p>Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio.</p>
+  </div>
+
+  <!-- Scroll indicator: gradient fade at bottom (shown via CSS/JS) -->
+  <div class="scroll-panel-fade" aria-hidden="true"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // Initialize all scroll panels on the page
+  var panels = document.querySelectorAll('.scroll-panel');
+
+  panels.forEach(function(panel) {
+    var fade = panel.querySelector('.scroll-panel-fade');
+    var content = panel.querySelector('.scroll-panel-content');
+
+    // Apply custom height from data attribute
+    var customHeight = panel.dataset.height;
+    if (customHeight) {
+      panel.style.setProperty('--panel-height', customHeight);
+    }
+
+    // Check if content overflows (needs scroll)
+    function updateFade() {
+      if (!fade) return;
+
+      var scrollTop = panel.scrollTop;
+      var scrollHeight = panel.scrollHeight;
+      var clientHeight = panel.clientHeight;
+
+      // Show fade if there is more content to scroll
+      var hasMoreBelow = (scrollTop + clientHeight) < (scrollHeight - 4);
+      fade.classList.toggle('visible', hasMoreBelow);
+    }
+
+    // Update on scroll
+    panel.addEventListener('scroll', updateFade, { passive: true });
+
+    // Initial check (after content loads)
+    // Use requestAnimationFrame to ensure layout is computed
+    requestAnimationFrame(function() {
+      updateFade();
+    });
+
+    // Also check on window resize
+    window.addEventListener('resize', updateFade, { passive: true });
+  });
+
+})();
+</script>

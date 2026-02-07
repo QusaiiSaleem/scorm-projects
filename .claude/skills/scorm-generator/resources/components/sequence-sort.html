@@ -1,0 +1,592 @@
+<!-- Sequence/Sorting Component (Drag-to-Reorder)
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A list of items is displayed in a random or given order
+     - Learner drags items to reorder them OR uses up/down arrow buttons
+     - A "Check" button validates whether the order is correct
+     - Growth mindset feedback on correct/incorrect
+
+     ACCESSIBILITY:
+     - Each item has Up/Down arrow buttons for keyboard reordering
+     - Screen reader announces position changes
+     - Tab through items, use buttons or arrow keys to move
+     - ARIA: role="listbox" with aria-roledescription="sortable list"
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "sequencing"
+     - learner_response = comma-separated item IDs in submitted order
+
+     TOUCH SUPPORT:
+     - HTML5 drag events for desktop
+     - Touch events (touchstart/touchmove/touchend) for mobile/tablet
+-->
+
+<style>
+  /* === Sort Activity Container === */
+  .sequence-sort-activity {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* === Sortable List === */
+  .sort-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-md) 0;
+  }
+
+  /* === Individual Sort Item === */
+  .sort-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-sm);
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: grab;
+    user-select: none;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+                border-color var(--transition-fast), background var(--transition-fast);
+    position: relative;
+    min-height: 56px;
+  }
+
+  /* Hover effect */
+  .sort-item:hover {
+    border-color: var(--color-primary-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* While being dragged */
+  .sort-item.dragging {
+    opacity: 0.4;
+    border-style: dashed;
+  }
+
+  /* Drop placeholder: shows where the item will land */
+  .sort-item.drag-over {
+    border-color: var(--color-primary);
+    background: var(--color-growth-bg);
+    transform: scale(1.02);
+  }
+
+  /* Correct answer state */
+  .sort-item.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+  }
+
+  /* Incorrect answer state */
+  .sort-item.incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+    animation: incorrectShake 0.4s ease;
+  }
+
+  /* Drag handle (grip icon) */
+  .sort-handle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: grab;
+    padding: var(--space-xs);
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .sort-handle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+
+  /* Item number badge */
+  .sort-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Item text content */
+  .sort-text {
+    flex: 1;
+    font-size: var(--font-size-body);
+    line-height: 1.5;
+  }
+
+  /* === Arrow Buttons (keyboard accessible alternative) === */
+  .sort-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .sort-arrow-btn {
+    width: 32px;
+    height: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+    padding: 0;
+  }
+
+  .sort-arrow-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-growth-bg);
+  }
+
+  .sort-arrow-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .sort-arrow-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  /* === Touch Drag Clone === */
+  .sort-touch-clone {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.85;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-primary);
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  /* === Feedback === */
+  .sort-feedback {
+    margin-top: var(--space-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .sort-feedback.show {
+    display: block;
+  }
+
+  /* === Actions Row === */
+  .sort-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .sort-item.incorrect { animation: none; }
+    .sort-item { transition: none; }
+  }
+
+  /* === Mobile: slightly smaller items === */
+  @media (max-width: 600px) {
+    .sort-item {
+      padding: var(--space-sm) var(--space-md);
+      gap: var(--space-sm);
+    }
+    .sort-arrows {
+      gap: 1px;
+    }
+    .sort-arrow-btn {
+      width: 28px;
+      height: 22px;
+    }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="sequence-sort-activity" role="region" aria-label="Sequence sorting activity">
+  <p class="question-stem">Drag the items into the correct order:</p>
+
+  <!-- Sortable list. data-correct-order defines the right sequence. -->
+  <ul class="sort-list" id="sort-list" role="listbox"
+      aria-roledescription="sortable list"
+      data-correct-order="step-1,step-2,step-3,step-4">
+
+    <!-- Item 1 (data-id used for order checking) -->
+    <li class="sort-item" data-id="step-3" draggable="true" role="option"
+        aria-label="Step 3: Review and finalize"
+        tabindex="0">
+      <div class="sort-handle" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span class="sort-number" aria-hidden="true">1</span>
+      <span class="sort-text">Review and finalize</span>
+      <div class="sort-arrows">
+        <button class="sort-arrow-btn sort-up" aria-label="Move up" onclick="moveItem(this, -1)">&#9650;</button>
+        <button class="sort-arrow-btn sort-down" aria-label="Move down" onclick="moveItem(this, 1)">&#9660;</button>
+      </div>
+    </li>
+
+    <li class="sort-item" data-id="step-1" draggable="true" role="option"
+        aria-label="Step 1: Gather requirements"
+        tabindex="0">
+      <div class="sort-handle" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span class="sort-number" aria-hidden="true">2</span>
+      <span class="sort-text">Gather requirements</span>
+      <div class="sort-arrows">
+        <button class="sort-arrow-btn sort-up" aria-label="Move up" onclick="moveItem(this, -1)">&#9650;</button>
+        <button class="sort-arrow-btn sort-down" aria-label="Move down" onclick="moveItem(this, 1)">&#9660;</button>
+      </div>
+    </li>
+
+    <li class="sort-item" data-id="step-4" draggable="true" role="option"
+        aria-label="Step 4: Deploy to production"
+        tabindex="0">
+      <div class="sort-handle" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span class="sort-number" aria-hidden="true">3</span>
+      <span class="sort-text">Deploy to production</span>
+      <div class="sort-arrows">
+        <button class="sort-arrow-btn sort-up" aria-label="Move up" onclick="moveItem(this, -1)">&#9650;</button>
+        <button class="sort-arrow-btn sort-down" aria-label="Move down" onclick="moveItem(this, 1)">&#9660;</button>
+      </div>
+    </li>
+
+    <li class="sort-item" data-id="step-2" draggable="true" role="option"
+        aria-label="Step 2: Design the solution"
+        tabindex="0">
+      <div class="sort-handle" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span class="sort-number" aria-hidden="true">4</span>
+      <span class="sort-text">Design the solution</span>
+      <div class="sort-arrows">
+        <button class="sort-arrow-btn sort-up" aria-label="Move up" onclick="moveItem(this, -1)">&#9650;</button>
+        <button class="sort-arrow-btn sort-down" aria-label="Move down" onclick="moveItem(this, 1)">&#9660;</button>
+      </div>
+    </li>
+  </ul>
+
+  <!-- Actions: Check Answer and Reset -->
+  <div class="sort-actions">
+    <button class="btn-primary" onclick="checkSortOrder()">Check Order</button>
+    <button class="btn-secondary" onclick="resetSortOrder()">Reset</button>
+  </div>
+
+  <!-- Feedback area -->
+  <div class="sort-feedback" id="sort-feedback" role="alert" aria-live="polite"></div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="sort-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   SEQUENCE SORT COMPONENT — Drag-to-reorder interaction
+   ============================================================
+   Supports:
+   - HTML5 Drag & Drop (desktop)
+   - Touch drag (mobile/tablet)
+   - Arrow button keyboard reordering
+   - SCORM sequencing type
+   ============================================================ */
+
+var sortDragItem = null;
+
+/* ------ HTML5 Drag Events (Desktop) ------ */
+
+/* Attach drag events to all sort items */
+(function initSortDrag() {
+  var items = document.querySelectorAll('.sort-item');
+  items.forEach(function(item) {
+    item.addEventListener('dragstart', sortDragStart);
+    item.addEventListener('dragover', sortDragOver);
+    item.addEventListener('dragleave', sortDragLeave);
+    item.addEventListener('drop', sortDrop);
+    item.addEventListener('dragend', sortDragEnd);
+    /* Touch events */
+    item.addEventListener('touchstart', sortTouchStart, { passive: false });
+    item.addEventListener('touchmove', sortTouchMove, { passive: false });
+    item.addEventListener('touchend', sortTouchEnd);
+  });
+  updateSortNumbers();
+  updateArrowButtons();
+})();
+
+function sortDragStart(e) {
+  sortDragItem = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function sortDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  if (this !== sortDragItem) {
+    this.classList.add('drag-over');
+  }
+}
+
+function sortDragLeave(e) {
+  this.classList.remove('drag-over');
+}
+
+function sortDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+
+  if (sortDragItem && sortDragItem !== this) {
+    var list = this.parentNode;
+    var items = Array.from(list.children);
+    var fromIndex = items.indexOf(sortDragItem);
+    var toIndex = items.indexOf(this);
+
+    /* Insert before or after depending on direction */
+    if (fromIndex < toIndex) {
+      list.insertBefore(sortDragItem, this.nextSibling);
+    } else {
+      list.insertBefore(sortDragItem, this);
+    }
+
+    updateSortNumbers();
+    updateArrowButtons();
+    clearSortFeedback();
+    announceSortMove(sortDragItem);
+  }
+}
+
+function sortDragEnd(e) {
+  this.classList.remove('dragging');
+  sortDragItem = null;
+  /* Clear all drag-over states */
+  document.querySelectorAll('.sort-item.drag-over').forEach(function(el) {
+    el.classList.remove('drag-over');
+  });
+}
+
+/* ------ Touch Events (Mobile/Tablet) ------ */
+
+var sortTouchItem = null;
+var sortTouchClone = null;
+
+function sortTouchStart(e) {
+  /* Only start drag from the handle or the item itself */
+  sortTouchItem = this;
+  var rect = this.getBoundingClientRect();
+
+  sortTouchClone = document.createElement('div');
+  sortTouchClone.className = 'sort-touch-clone';
+  sortTouchClone.textContent = this.querySelector('.sort-text').textContent;
+  sortTouchClone.style.width = rect.width + 'px';
+  document.body.appendChild(sortTouchClone);
+
+  this.classList.add('dragging');
+}
+
+function sortTouchMove(e) {
+  e.preventDefault();
+  if (!sortTouchClone) return;
+
+  var touch = e.touches[0];
+  sortTouchClone.style.left = (touch.clientX - 40) + 'px';
+  sortTouchClone.style.top = (touch.clientY - 25) + 'px';
+
+  /* Highlight item under finger */
+  var items = document.querySelectorAll('.sort-item');
+  items.forEach(function(item) {
+    item.classList.remove('drag-over');
+    if (item === sortTouchItem) return;
+    var r = item.getBoundingClientRect();
+    if (touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      item.classList.add('drag-over');
+    }
+  });
+}
+
+function sortTouchEnd(e) {
+  if (!sortTouchItem || !sortTouchClone) return;
+
+  /* Find the item under the final touch position */
+  var touch = e.changedTouches[0];
+  var target = null;
+  var items = document.querySelectorAll('.sort-item');
+  items.forEach(function(item) {
+    item.classList.remove('drag-over');
+    if (item === sortTouchItem) return;
+    var r = item.getBoundingClientRect();
+    if (touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      target = item;
+    }
+  });
+
+  /* Move the item */
+  if (target) {
+    var list = sortTouchItem.parentNode;
+    var allItems = Array.from(list.children);
+    var fromIndex = allItems.indexOf(sortTouchItem);
+    var toIndex = allItems.indexOf(target);
+    if (fromIndex < toIndex) {
+      list.insertBefore(sortTouchItem, target.nextSibling);
+    } else {
+      list.insertBefore(sortTouchItem, target);
+    }
+    updateSortNumbers();
+    updateArrowButtons();
+    clearSortFeedback();
+    announceSortMove(sortTouchItem);
+  }
+
+  sortTouchItem.classList.remove('dragging');
+  document.body.removeChild(sortTouchClone);
+  sortTouchClone = null;
+  sortTouchItem = null;
+}
+
+/* ------ Arrow Button Keyboard Reordering ------ */
+
+/**
+ * Move an item up (-1) or down (+1) in the list.
+ * Called by the arrow buttons on each sort item.
+ */
+function moveItem(btn, direction) {
+  var item = btn.closest('.sort-item');
+  var list = item.parentNode;
+  var items = Array.from(list.children);
+  var index = items.indexOf(item);
+  var newIndex = index + direction;
+
+  /* Boundary check */
+  if (newIndex < 0 || newIndex >= items.length) return;
+
+  /* Move the DOM element */
+  if (direction === -1) {
+    list.insertBefore(item, items[newIndex]);
+  } else {
+    list.insertBefore(item, items[newIndex].nextSibling);
+  }
+
+  updateSortNumbers();
+  updateArrowButtons();
+  clearSortFeedback();
+  announceSortMove(item);
+
+  /* Keep focus on the same arrow button after move */
+  btn.focus();
+}
+
+/* ------ Utility Functions ------ */
+
+/**
+ * Update the visual number badges (1, 2, 3...) to reflect current order.
+ */
+function updateSortNumbers() {
+  var items = document.querySelectorAll('.sort-list .sort-item');
+  items.forEach(function(item, i) {
+    var num = item.querySelector('.sort-number');
+    if (num) num.textContent = (i + 1);
+  });
+}
+
+/**
+ * Disable up arrow on first item and down arrow on last item.
+ */
+function updateArrowButtons() {
+  var items = document.querySelectorAll('.sort-list .sort-item');
+  items.forEach(function(item, i) {
+    var upBtn = item.querySelector('.sort-up');
+    var downBtn = item.querySelector('.sort-down');
+    if (upBtn) upBtn.disabled = (i === 0);
+    if (downBtn) downBtn.disabled = (i === items.length - 1);
+  });
+}
+
+/**
+ * Check if the current order matches the correct order.
+ */
+function checkSortOrder() {
+  var list = document.getElementById('sort-list');
+  var correctOrder = list.getAttribute('data-correct-order').split(',');
+  var items = list.querySelectorAll('.sort-item');
+  var allCorrect = true;
+
+  items.forEach(function(item, i) {
+    var itemId = item.getAttribute('data-id');
+    item.classList.remove('correct', 'incorrect');
+
+    if (itemId === correctOrder[i]) {
+      item.classList.add('correct');
+    } else {
+      item.classList.add('incorrect');
+      allCorrect = false;
+    }
+  });
+
+  /* Show feedback */
+  var feedbackEl = document.getElementById('sort-feedback');
+  if (feedbackEl) {
+    feedbackEl.classList.add('show');
+    if (allCorrect) {
+      feedbackEl.className = 'sort-feedback show';
+      feedbackEl.innerHTML = '<div class="feedback-correct"><span aria-hidden="true">&#10004;</span> ' +
+        '<span>Excellent! You got the correct order!</span></div>';
+    } else {
+      feedbackEl.className = 'sort-feedback show';
+      feedbackEl.innerHTML = '<div class="feedback-incorrect"><span aria-hidden="true">&#128161;</span> ' +
+        '<span>Not quite yet — items highlighted in red are not in the right position. Keep trying!</span></div>';
+    }
+  }
+
+  announceSortResult(allCorrect);
+}
+
+/**
+ * Reset the sort activity — clear feedback and styling.
+ */
+function resetSortOrder() {
+  var items = document.querySelectorAll('.sort-item');
+  items.forEach(function(item) {
+    item.classList.remove('correct', 'incorrect');
+  });
+  clearSortFeedback();
+}
+
+function clearSortFeedback() {
+  var el = document.getElementById('sort-feedback');
+  if (el) {
+    el.classList.remove('show');
+    el.innerHTML = '';
+  }
+  /* Also clear correct/incorrect styling */
+  document.querySelectorAll('.sort-item').forEach(function(item) {
+    item.classList.remove('correct', 'incorrect');
+  });
+}
+
+function announceSortMove(item) {
+  var text = item.querySelector('.sort-text').textContent;
+  var num = item.querySelector('.sort-number').textContent;
+  var el = document.getElementById('sort-announce');
+  if (el) el.textContent = text + ' moved to position ' + num;
+}
+
+function announceSortResult(allCorrect) {
+  var el = document.getElementById('sort-announce');
+  if (el) el.textContent = allCorrect ? 'All items are in the correct order!' : 'Some items are not in the right position. Try again.';
+}
+</script>

@@ -1,0 +1,603 @@
+<!-- Jigsaw Puzzle Component (Image Grid Assembly)
+     Usage: Copy into lesson HTML. Customize JIGSAW_DATA object.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Image divided into grid pieces (configurable rows x cols)
+     - Pieces scattered randomly in a holding area
+     - Drag pieces to grid slots (snap-to-grid on drop)
+     - Correct position = locks in place with green border
+     - Wrong position = bounces back to holding area
+     - Touch drag support for mobile/tablet
+     - Progress: "Placed X of Y pieces"
+     - Completion celebration on finish
+
+     ACCESSIBILITY:
+     - Keyboard: Tab to pieces, Enter to grab, Tab to slot, Enter to place
+     - aria-grabbed and aria-dropeffect attributes
+     - Live region announces placements and progress
+     - Focus management between grab and drop
+
+     CUSTOMIZATION POINTS marked with [CUSTOMIZE]
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+     - learner_response = piece-to-slot mappings
+-->
+
+<style>
+  /* === Jigsaw Container === */
+  .jigsaw-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .jigsaw-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-lg, 1.5rem);
+    align-items: start;
+    margin-bottom: var(--space-lg, 1.5rem);
+  }
+
+  /* === Puzzle Grid (Drop Zone) === */
+  .jigsaw-grid {
+    display: grid;
+    gap: 2px;
+    background: var(--color-border, #d1d5db);
+    border: 2px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    aspect-ratio: auto;
+  }
+
+  .jigsaw-slot {
+    background: var(--color-surface, #fff);
+    aspect-ratio: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #999);
+    min-height: 60px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .jigsaw-slot.highlight {
+    background: var(--color-growth-bg, #eff6ff);
+    box-shadow: inset 0 0 0 2px var(--color-primary, #2563eb);
+  }
+
+  .jigsaw-slot.filled {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .jigsaw-slot.filled .jigsaw-slot-piece {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-size-body, 1rem);
+    color: var(--color-text, #222);
+    background: var(--color-success-bg, #dcfce7);
+    border: 2px solid var(--color-success, #16a34a);
+    animation: slotLock 0.3s ease;
+  }
+
+  @keyframes slotLock {
+    0% { transform: scale(1.1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  /* === Holding Area (Piece Source) === */
+  .jigsaw-pieces {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 0.5rem);
+    padding: var(--space-md, 1rem);
+    background: var(--color-surface-elevated, #f9fafb);
+    border: 2px dashed var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    min-width: 120px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* === Draggable Piece === */
+  .jigsaw-piece {
+    padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+    background: var(--color-surface, #fff);
+    border: 2px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-sm, 4px);
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    font-weight: 600;
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text, #222);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jigsaw-piece:hover {
+    border-color: var(--color-primary, #2563eb);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+  }
+
+  .jigsaw-piece:focus-visible {
+    outline: 3px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+  }
+
+  .jigsaw-piece.dragging {
+    opacity: 0.4;
+  }
+
+  .jigsaw-piece.kb-grabbed {
+    border-color: var(--color-accent, #f97316);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+    animation: kbPulse 1.5s ease infinite;
+  }
+
+  @keyframes kbPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.15); }
+  }
+
+  .jigsaw-piece.wrong {
+    animation: wrongBounce 0.4s ease;
+    border-color: var(--color-error, #dc2626);
+  }
+
+  @keyframes wrongBounce {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* === Touch Clone === */
+  .jigsaw-touch-clone {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.85;
+    box-shadow: var(--shadow-lg, 0 4px 16px rgba(0,0,0,0.15));
+    border-radius: var(--radius-sm, 4px);
+    background: var(--color-surface, #fff);
+    border: 2px solid var(--color-primary, #2563eb);
+    padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+    font-weight: 600;
+  }
+
+  /* === Progress === */
+  .jigsaw-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 0.5rem);
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #666);
+    margin-bottom: var(--space-md, 1rem);
+  }
+
+  .jigsaw-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .jigsaw-progress-fill {
+    height: 100%;
+    background: var(--color-success, #16a34a);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* === Keyboard hint === */
+  .jigsaw-kb-hint {
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #666);
+    font-style: italic;
+    display: none;
+    margin-bottom: var(--space-sm, 0.5rem);
+  }
+
+  .jigsaw-kb-hint.show { display: block; }
+
+  /* === Mobile === */
+  @media (max-width: 600px) {
+    .jigsaw-layout {
+      grid-template-columns: 1fr;
+    }
+    .jigsaw-pieces {
+      flex-direction: row;
+      flex-wrap: wrap;
+      max-height: none;
+    }
+    .jigsaw-piece {
+      flex: 0 0 auto;
+    }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .jigsaw-slot.filled .jigsaw-slot-piece { animation: none; }
+    .jigsaw-piece.wrong { animation: none; }
+    .jigsaw-piece.kb-grabbed { animation: none; }
+    .jigsaw-progress-fill { transition: none; }
+  }
+</style>
+
+<div class="jigsaw-activity" role="region" aria-label="Jigsaw puzzle activity">
+
+  <!-- Progress -->
+  <div class="jigsaw-progress">
+    <span id="jigsaw-progress-text">Placed 0 of 0 pieces</span>
+    <div class="jigsaw-progress-bar">
+      <div class="jigsaw-progress-fill" id="jigsaw-progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Keyboard hint -->
+  <p class="jigsaw-kb-hint" id="jigsaw-kb-hint" aria-live="polite">
+    Piece selected. Tab to a grid slot and press Enter to place it. Press Escape to cancel.
+  </p>
+
+  <!-- Layout: Grid + Pieces -->
+  <div class="jigsaw-layout">
+    <div class="jigsaw-grid" id="jigsaw-grid" role="grid" aria-label="Puzzle grid"></div>
+    <div class="jigsaw-pieces" id="jigsaw-pieces" role="listbox" aria-label="Available puzzle pieces"></div>
+  </div>
+
+  <!-- Actions -->
+  <div style="display: flex; gap: var(--space-md, 1rem); margin-top: var(--space-md, 1rem);">
+    <button class="btn-secondary" onclick="resetJigsaw()">Reset Puzzle</button>
+  </div>
+
+  <!-- Screen reader announcements -->
+  <div id="jigsaw-announce" class="sr-only" aria-live="polite"></div>
+</div>
+
+<script>
+/* ============================================================
+   JIGSAW PUZZLE COMPONENT — Grid Assembly Interaction
+   ============================================================
+   Pieces scattered in a holding area. Drag to grid slots.
+   Correct placement locks; wrong placement bounces back.
+   Supports: HTML5 DnD, Touch, Keyboard.
+   ============================================================ */
+
+/* [CUSTOMIZE] Define your puzzle pieces.
+   id: unique identifier for matching.
+   label: text shown on the piece and in the grid.
+   row, col: 0-based correct grid position.
+   Adjust gridRows and gridCols to match. */
+var JIGSAW_DATA = {
+  gridRows: 3,
+  gridCols: 3,
+  pieces: [
+    { id: "p1", label: "Step 1: Research",   row: 0, col: 0 },
+    { id: "p2", label: "Step 2: Plan",       row: 0, col: 1 },
+    { id: "p3", label: "Step 3: Design",     row: 0, col: 2 },
+    { id: "p4", label: "Step 4: Develop",    row: 1, col: 0 },
+    { id: "p5", label: "Step 5: Test",       row: 1, col: 1 },
+    { id: "p6", label: "Step 6: Review",     row: 1, col: 2 },
+    { id: "p7", label: "Step 7: Deploy",     row: 2, col: 0 },
+    { id: "p8", label: "Step 8: Monitor",    row: 2, col: 1 },
+    { id: "p9", label: "Step 9: Iterate",    row: 2, col: 2 }
+  ]
+};
+
+/* --- State --- */
+var jgPlaced = 0;
+var jgTotal = JIGSAW_DATA.pieces.length;
+var jgDragPiece = null;  /* HTML5 DnD */
+var jgTouchPiece = null; /* Touch */
+var jgTouchClone = null;
+var jgKbPiece = null;    /* Keyboard mode */
+
+/* --- Initialize --- */
+(function initJigsaw() {
+  buildGrid();
+  buildPieces();
+  updateProgress();
+})();
+
+function buildGrid() {
+  var grid = document.getElementById('jigsaw-grid');
+  grid.style.gridTemplateColumns = 'repeat(' + JIGSAW_DATA.gridCols + ', 1fr)';
+  grid.innerHTML = '';
+
+  for (var r = 0; r < JIGSAW_DATA.gridRows; r++) {
+    for (var c = 0; c < JIGSAW_DATA.gridCols; c++) {
+      /* Find the piece that belongs here */
+      var correctPiece = null;
+      JIGSAW_DATA.pieces.forEach(function(p) {
+        if (p.row === r && p.col === c) correctPiece = p;
+      });
+
+      var slot = document.createElement('div');
+      slot.className = 'jigsaw-slot';
+      slot.dataset.row = r;
+      slot.dataset.col = c;
+      slot.dataset.accept = correctPiece ? correctPiece.id : '';
+      slot.setAttribute('role', 'gridcell');
+      slot.setAttribute('aria-label', 'Grid slot row ' + (r+1) + ' column ' + (c+1));
+
+      /* HTML5 DnD events */
+      slot.addEventListener('dragover', jgDragOver);
+      slot.addEventListener('dragleave', jgDragLeave);
+      slot.addEventListener('drop', jgDrop);
+      /* Keyboard drop target */
+      slot.addEventListener('keydown', jgSlotKeydown);
+
+      grid.appendChild(slot);
+    }
+  }
+}
+
+function buildPieces() {
+  var container = document.getElementById('jigsaw-pieces');
+  container.innerHTML = '';
+
+  /* Shuffle pieces */
+  var shuffled = JIGSAW_DATA.pieces.slice();
+  for (var i = shuffled.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+  }
+
+  shuffled.forEach(function(piece) {
+    var el = document.createElement('div');
+    el.className = 'jigsaw-piece';
+    el.textContent = piece.label;
+    el.dataset.id = piece.id;
+    el.setAttribute('draggable', 'true');
+    el.setAttribute('role', 'option');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-grabbed', 'false');
+    el.setAttribute('aria-label', piece.label);
+
+    /* HTML5 DnD */
+    el.addEventListener('dragstart', jgDragStart);
+    el.addEventListener('dragend', jgDragEnd);
+    /* Touch */
+    el.addEventListener('touchstart', jgTouchStart, { passive: false });
+    el.addEventListener('touchmove', jgTouchMove, { passive: false });
+    el.addEventListener('touchend', jgTouchEnd);
+    /* Keyboard */
+    el.addEventListener('keydown', jgPieceKeydown);
+
+    container.appendChild(el);
+  });
+}
+
+/* --- HTML5 Drag & Drop --- */
+
+function jgDragStart(e) {
+  jgDragPiece = e.target;
+  e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  e.target.classList.add('dragging');
+}
+
+function jgDragEnd(e) {
+  e.target.classList.remove('dragging');
+  jgDragPiece = null;
+}
+
+function jgDragOver(e) {
+  e.preventDefault();
+  if (!e.currentTarget.classList.contains('filled')) {
+    e.currentTarget.classList.add('highlight');
+  }
+}
+
+function jgDragLeave(e) {
+  e.currentTarget.classList.remove('highlight');
+}
+
+function jgDrop(e) {
+  e.preventDefault();
+  var slot = e.currentTarget;
+  slot.classList.remove('highlight');
+  if (jgDragPiece && !slot.classList.contains('filled')) {
+    attemptPlace(jgDragPiece, slot);
+  }
+}
+
+/* --- Touch Events --- */
+
+function jgTouchStart(e) {
+  jgTouchPiece = e.target.closest('.jigsaw-piece');
+  if (!jgTouchPiece) return;
+
+  var rect = jgTouchPiece.getBoundingClientRect();
+  jgTouchClone = document.createElement('div');
+  jgTouchClone.className = 'jigsaw-touch-clone';
+  jgTouchClone.textContent = jgTouchPiece.textContent;
+  jgTouchClone.style.width = rect.width + 'px';
+  document.body.appendChild(jgTouchClone);
+  jgTouchPiece.classList.add('dragging');
+}
+
+function jgTouchMove(e) {
+  e.preventDefault();
+  if (!jgTouchClone) return;
+  var touch = e.touches[0];
+  jgTouchClone.style.left = (touch.clientX - 40) + 'px';
+  jgTouchClone.style.top = (touch.clientY - 20) + 'px';
+
+  /* Highlight slot under finger */
+  document.querySelectorAll('.jigsaw-slot').forEach(function(slot) {
+    slot.classList.remove('highlight');
+    if (slot.classList.contains('filled')) return;
+    var r = slot.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      slot.classList.add('highlight');
+    }
+  });
+}
+
+function jgTouchEnd(e) {
+  if (!jgTouchPiece || !jgTouchClone) return;
+  var touch = e.changedTouches[0];
+  document.body.removeChild(jgTouchClone);
+  jgTouchClone = null;
+
+  document.querySelectorAll('.jigsaw-slot').forEach(function(slot) {
+    slot.classList.remove('highlight');
+    if (slot.classList.contains('filled')) return;
+    var r = slot.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      attemptPlace(jgTouchPiece, slot);
+    }
+  });
+
+  jgTouchPiece.classList.remove('dragging');
+  jgTouchPiece = null;
+}
+
+/* --- Keyboard --- */
+
+function jgPieceKeydown(e) {
+  var piece = e.target;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (jgKbPiece === piece) { cancelKbJigsaw(); return; }
+    if (jgKbPiece) cancelKbJigsaw();
+
+    jgKbPiece = piece;
+    piece.classList.add('kb-grabbed');
+    piece.setAttribute('aria-grabbed', 'true');
+
+    /* Make unfilled slots tabbable */
+    document.querySelectorAll('.jigsaw-slot:not(.filled)').forEach(function(slot) {
+      slot.tabIndex = 0;
+    });
+
+    document.getElementById('jigsaw-kb-hint').classList.add('show');
+    jgAnnounce('Grabbed ' + piece.textContent + '. Tab to a grid slot and press Enter.');
+
+    var firstSlot = document.querySelector('.jigsaw-slot:not(.filled)');
+    if (firstSlot) firstSlot.focus();
+  }
+
+  if (e.key === 'Escape' && jgKbPiece) {
+    e.preventDefault();
+    cancelKbJigsaw();
+  }
+}
+
+function jgSlotKeydown(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && jgKbPiece) {
+    e.preventDefault();
+    if (!e.target.classList.contains('filled')) {
+      attemptPlace(jgKbPiece, e.target);
+    }
+    jgKbPiece = null;
+    cleanupKbJigsaw();
+  }
+
+  if (e.key === 'Escape' && jgKbPiece) {
+    e.preventDefault();
+    cancelKbJigsaw();
+  }
+}
+
+function cancelKbJigsaw() {
+  if (jgKbPiece) {
+    jgKbPiece.classList.remove('kb-grabbed');
+    jgKbPiece.setAttribute('aria-grabbed', 'false');
+    jgAnnounce('Cancelled. Piece returned.');
+    jgKbPiece.focus();
+    jgKbPiece = null;
+  }
+  cleanupKbJigsaw();
+}
+
+function cleanupKbJigsaw() {
+  document.querySelectorAll('.jigsaw-slot:not(.filled)').forEach(function(slot) {
+    slot.tabIndex = -1;
+  });
+  document.getElementById('jigsaw-kb-hint').classList.remove('show');
+}
+
+/* --- Placement Logic --- */
+
+function attemptPlace(pieceEl, slotEl) {
+  var pieceId = pieceEl.dataset.id;
+  var acceptId = slotEl.dataset.accept;
+
+  pieceEl.classList.remove('kb-grabbed');
+  pieceEl.setAttribute('aria-grabbed', 'false');
+
+  if (pieceId === acceptId) {
+    /* Correct! Lock piece in slot */
+    slotEl.classList.add('filled');
+    var inner = document.createElement('div');
+    inner.className = 'jigsaw-slot-piece';
+    inner.textContent = pieceEl.textContent;
+    slotEl.innerHTML = '';
+    slotEl.appendChild(inner);
+
+    pieceEl.style.display = 'none';
+    jgPlaced++;
+    updateProgress();
+    jgAnnounce('Correct! ' + pieceEl.textContent + ' placed. ' + jgPlaced + ' of ' + jgTotal + ' complete.');
+
+    if (jgPlaced === jgTotal) {
+      jgAnnounce('Congratulations! Puzzle complete!');
+    }
+  } else {
+    /* Wrong — bounce back */
+    pieceEl.classList.add('wrong');
+    setTimeout(function() { pieceEl.classList.remove('wrong'); }, 500);
+    jgAnnounce('Not the right spot. Try another position!');
+  }
+}
+
+/* --- Progress --- */
+
+function updateProgress() {
+  var pct = jgTotal > 0 ? (jgPlaced / jgTotal) * 100 : 0;
+  var textEl = document.getElementById('jigsaw-progress-text');
+  if (textEl) textEl.textContent = 'Placed ' + jgPlaced + ' of ' + jgTotal + ' pieces';
+  var fillEl = document.getElementById('jigsaw-progress-fill');
+  if (fillEl) fillEl.style.width = pct + '%';
+}
+
+/* --- Reset --- */
+
+function resetJigsaw() {
+  jgPlaced = 0;
+  jgDragPiece = null;
+  jgTouchPiece = null;
+  jgKbPiece = null;
+  buildGrid();
+  buildPieces();
+  updateProgress();
+  jgAnnounce('Puzzle reset. Pieces shuffled.');
+}
+
+function jgAnnounce(msg) {
+  var el = document.getElementById('jigsaw-announce');
+  if (el) el.textContent = msg;
+}
+
+/* Global escape handler */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && jgKbPiece) cancelKbJigsaw();
+});
+</script>

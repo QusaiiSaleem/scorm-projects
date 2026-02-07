@@ -1,0 +1,34 @@
+<!-- Click-to-Reveal Component
+     Usage: Copy into lesson HTML.
+     Requires: base.css (reveal styles are included)
+
+     Accessible: Uses aria-expanded and keyboard support.
+-->
+
+<div class="reveal-container">
+  <div class="reveal-trigger" role="button" tabindex="0" aria-expanded="false"
+       onclick="toggleReveal(this)"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal(this)}">
+    <span class="hint-text">Click to reveal the answer</span>
+  </div>
+  <div class="reveal-content">
+    <p>Hidden content appears here when the trigger is clicked. Add any HTML: text, images, lists, callouts, etc.</p>
+  </div>
+</div>
+
+<script>
+function toggleReveal(trigger) {
+  var content = trigger.nextElementSibling;
+  var isVisible = content.classList.contains('visible');
+
+  if (isVisible) {
+    content.classList.remove('visible');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.querySelector('.hint-text').textContent = 'Click to reveal the answer';
+  } else {
+    content.classList.add('visible');
+    trigger.setAttribute('aria-expanded', 'true');
+    trigger.querySelector('.hint-text').textContent = 'Click to hide';
+  }
+}
+</script>

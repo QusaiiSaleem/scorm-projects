@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الاختبار القبلي | الذهنية الرقمية وممارسات الابتكار التقني</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-nav">تخطي إلى المحتوى الرئيسي</a>
+
+  <div class="sco-container">
+    <header class="nav-bar">
+      <span class="course-title">الاختبار القبلي</span>
+      <div class="points-badge elastic-click" id="pointsBadge" aria-label="النقاط">
+        <span>&#11088;</span>
+        <span class="points-count" id="pointsDisplay">0</span>
+      </div>
+    </header>
+
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <main class="sco-content" id="main-content">
+
+      <!-- Slide 0: Intro -->
+      <div class="slide" data-slide="0">
+        <div class="slide-inner">
+          <div class="text-center">
+            <h1 class="stagger-item">الاختبار القبلي</h1>
+            <div class="callout callout-info stagger-item" style="max-width:600px; margin:20px auto;">
+              <span class="callout-icon" aria-hidden="true">&#128161;</span>
+              <div>
+                <strong>هذا اختبار تشخيصي فقط — لا توجد إجابات خاطئة في البداية!</strong>
+                <p style="margin-top:8px;">الهدف هو معرفة مستوى معرفتك الحالية قبل بدء التعلم. أجب حسب ما تعرفه الآن.</p>
+              </div>
+            </div>
+            <p class="text-secondary stagger-item">5 أسئلة &bull; ~5 دقائق</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 1: Q1 -->
+      <div class="slide" data-slide="1">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">السؤال 1 من 5</p>
+            <h3 class="question-stem stagger-item">ما المقصود بالابتكار <span class="ltr-inline">(Innovation)</span>؟</h3>
+            <div id="q1-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="selectOption('q1', this)">نسخ أفكار الآخرين وتطبيقها كما هي</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="selectOption('q1', this)">إيجاد حلول جديدة للمشكلات الواقعية أو تحسين العمليات والمنتجات والخدمات الحالية</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="selectOption('q1', this)">استخدام التكنولوجيا الحديثة فقط دون تغيير الأساليب</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="selectOption('q1', this)">إنفاق مبالغ كبيرة على البحث والتطوير</button>
+            </div>
+            <div id="q1-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Q2 -->
+      <div class="slide" data-slide="2">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">السؤال 2 من 5</p>
+            <h3 class="question-stem stagger-item">العصف الذهني <span class="ltr-inline">(Brainstorming)</span> هو تقنية لتوليد الأفكار تعتمد على الحكم الفوري على كل فكرة قبل الانتقال للفكرة التالية.</h3>
+            <div id="q2-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="true" onclick="selectOption('q2', this)">صحيح</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="false" onclick="selectOption('q2', this)">خطأ</button>
+            </div>
+            <div id="q2-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Q3 -->
+      <div class="slide" data-slide="3">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">السؤال 3 من 5</p>
+            <h3 class="question-stem stagger-item">التفكير التصميمي <span class="ltr-inline">(Design Thinking)</span> هو نهج ابتكاري يركز بشكل أساسي على:</h3>
+            <div id="q3-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="selectOption('q3', this)">تطوير التكنولوجيا المتقدمة بأقل تكلفة ممكنة</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="selectOption('q3', this)">فهم احتياجات المستخدم وبناء حلول متمحورة حول الإنسان</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="selectOption('q3', this)">تصميم الشعارات والواجهات الرسومية فقط</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="selectOption('q3', this)">كتابة خطط الأعمال التفصيلية قبل البدء بالتنفيذ</button>
+            </div>
+            <div id="q3-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Q4 -->
+      <div class="slide" data-slide="4">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">السؤال 4 من 5</p>
+            <h3 class="question-stem stagger-item">ريادة الأعمال <span class="ltr-inline">(Entrepreneurship)</span> تعني تحويل الأفكار إلى مشاريع ناجحة، وتتطلب مهارات مثل حل المشكلات والإبداع والمرونة.</h3>
+            <div id="q4-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="true" onclick="selectOption('q4', this)">صحيح</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="false" onclick="selectOption('q4', this)">خطأ</button>
+            </div>
+            <div id="q4-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: Q5 -->
+      <div class="slide" data-slide="5">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">السؤال 5 من 5</p>
+            <h3 class="question-stem stagger-item">لماذا تُعد ملاءمة التكنولوجيا للسوق <span class="ltr-inline">(Technology-Market Fit)</span> مهمة للمنتجات الرقمية؟</h3>
+            <div id="q5-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="selectOption('q5', this)">لأن المنتجات ذات التكنولوجيا المتقدمة تنجح دائمًا بغض النظر عن السوق</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="selectOption('q5', this)">لأنها تضمن استخدام أحدث لغات البرمجة في التطوير</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="selectOption('q5', this)">لأنها تضمن أن المنتج الرقمي يلبي احتياجات السوق الفعلية مما يحقق التبني وقابلية التوسع</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="selectOption('q5', this)">لأنها تقلل من تكلفة التسويق فقط</button>
+            </div>
+            <div id="q5-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: Results -->
+      <div class="slide" data-slide="6">
+        <div class="slide-inner">
+          <div class="text-center">
+            <h2 class="stagger-item">أكملت الاختبار القبلي!</h2>
+            <div class="callout callout-success stagger-item" style="max-width:600px; margin:20px auto;">
+              <span class="callout-icon" aria-hidden="true">&#127775;</span>
+              <div>
+                <strong>شكرًا لإكمالك الاختبار التشخيصي.</strong>
+                <p style="margin-top:8px;">سنقارن نتائجك مع الاختبار البعدي في نهاية الوحدة لنرى مدى تطورك. الآن، لنبدأ رحلة التعلم!</p>
+              </div>
+            </div>
+            <p class="stagger-item" id="resultSummary" style="font-size:1.1rem; font-weight:600;"></p>
+            <div class="badge-earned stagger-item" style="margin-top:16px;">&#127942; نقطة البداية</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <nav class="sco-nav" aria-label="تنقل الاختبار">
+      <button class="btn-prev elastic-click" id="prevBtn" disabled>السابق</button>
+      <span class="page-indicator" id="pageIndicator">1 / 7</span>
+      <button class="btn-next elastic-click" id="nextBtn" data-next-text="التالي" data-complete-text="إكمال">التالي</button>
+    </nav>
+  </div>
+
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="../shared/engine/confetti.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // --- SCORM Init ---
+    var scorm = new SCORMWrapper();
+    scorm.initialize();
+    var currentStatus = scorm.getValue('cmi.core.lesson_status');
+    if (!currentStatus || currentStatus === 'not attempted') {
+      scorm.setValue('cmi.core.lesson_status', 'incomplete');
+    }
+
+    var sounds = new SoundEffects();
+    var confetti = new Confetti();
+    var startTime = new Date();
+
+    // Points
+    var points = 0;
+    var pointsDisplay = document.getElementById('pointsDisplay');
+    var pointsBadge = document.getElementById('pointsBadge');
+
+    function awardPoints(amount) {
+      points += amount;
+      pointsDisplay.textContent = points;
+      pointsBadge.classList.add('glow');
+      setTimeout(function() { pointsBadge.classList.remove('glow'); }, 600);
+    }
+
+    // Questions data
+    var questions = {
+      q1: { correct: 'b', type: 'choice', answered: false },
+      q2: { correct: 'false', type: 'true-false', answered: false },
+      q3: { correct: 'b', type: 'choice', answered: false },
+      q4: { correct: 'true', type: 'true-false', answered: false },
+      q5: { correct: 'c', type: 'choice', answered: false }
+    };
+
+    var correctCount = 0;
+    var interactionIndex = 0;
+
+    // --- Select option ---
+    window.selectOption = function(qId, btn) {
+      var q = questions[qId];
+      if (q.answered) return;
+      q.answered = true;
+
+      var selectedId = btn.getAttribute('data-id');
+      var isCorrect = selectedId === q.correct;
+      if (isCorrect) correctCount++;
+
+      // Disable all options in this question
+      var options = document.querySelectorAll('#' + qId + '-options .btn-quiz-option');
+      options.forEach(function(opt) { opt.disabled = true; });
+
+      // Highlight selected
+      btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      // Show correct if wrong
+      if (!isCorrect) {
+        options.forEach(function(opt) {
+          if (opt.getAttribute('data-id') === q.correct) {
+            opt.classList.add('correct');
+          }
+        });
+      }
+
+      // Sound
+      sounds.playSound(isCorrect ? 'success' : 'pop');
+
+      // No detailed feedback for pre-test (diagnostic)
+
+      // SCORM interaction reporting
+      try {
+        scorm.setValue('cmi.interactions.' + interactionIndex + '.id', 'pre_' + qId);
+        scorm.setValue('cmi.interactions.' + interactionIndex + '.type', q.type === 'true-false' ? 'true-false' : 'choice');
+        scorm.setValue('cmi.interactions.' + interactionIndex + '.student_response', selectedId);
+        scorm.setValue('cmi.interactions.' + interactionIndex + '.correct_responses.0.pattern', q.correct);
+        scorm.setValue('cmi.interactions.' + interactionIndex + '.result', isCorrect ? 'correct' : 'wrong');
+        interactionIndex++;
+        scorm.commit();
+      } catch(e) {}
+    };
+
+    // --- Slide Controller ---
+    var slideController = new SlideController({
+      onSlideChange: function(index, total) {
+        sounds.playSound('whoosh');
+        // Show results on last slide
+        if (index === 6) {
+          document.getElementById('resultSummary').textContent =
+            'أجبت بشكل صحيح على ' + correctCount + ' من 5 أسئلة';
+        }
+      },
+      onComplete: function() {
+        awardPoints(5);
+        sounds.playSound('celebration');
+        confetti.fire();
+
+        scorm.setValue('cmi.core.lesson_status', 'completed');
+        scorm.setValue('cmi.core.score.raw', String(Math.round((correctCount / 5) * 100)));
+        scorm.setValue('cmi.core.score.max', '100');
+        scorm.setValue('cmi.core.score.min', '0');
+
+        var duration = Math.floor((new Date() - startTime) / 1000);
+        var h = Math.floor(duration / 3600);
+        var m = Math.floor((duration % 3600) / 60);
+        var s = duration % 60;
+        scorm.setValue('cmi.core.session_time',
+          (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+
+        try {
+          scorm.setValue('cmi.suspend_data', JSON.stringify({ points: points, score: correctCount }));
+        } catch(e) {}
+
+        scorm.commit();
+      }
+    });
+
+    // Resume
+    var bookmark = scorm.getValue('cmi.core.lesson_location');
+    if (bookmark) {
+      var saved = parseInt(bookmark, 10);
+      if (!isNaN(saved) && saved > 0) slideController.resumeFrom(saved);
+    }
+
+    window.addEventListener('beforeunload', function() {
+      scorm.setValue('cmi.core.lesson_location', String(slideController.currentIndex));
+      scorm.commit();
+    });
+
+  })();
+  </script>
+</body>
+</html>

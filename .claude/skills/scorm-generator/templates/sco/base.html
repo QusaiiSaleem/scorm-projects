@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" dir="{{DIR}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{LESSON_DESCRIPTION}}">
+  <title>{{LESSON_TITLE}} | {{COURSE_TITLE}}</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../shared/styles.css">
+  {{#if RTL}}
+  <link rel="stylesheet" href="../shared/rtl.css">
+  {{/if}}
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="../shared/scorm-api.js" as="script">
+</head>
+<body>
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="sr-only">Skip to main content</a>
+
+  <div class="sco-container" role="main">
+    <!-- Header -->
+    <header class="sco-header">
+      <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-fill" id="progress" style="width: 0%"></div>
+      </div>
+      <h1 class="lesson-title">{{LESSON_TITLE}}</h1>
+      {{#if LESSON_SUBTITLE}}
+      <p class="lesson-subtitle">{{LESSON_SUBTITLE}}</p>
+      {{/if}}
+    </header>
+
+    <!-- Main Content -->
+    <main class="sco-content" id="main-content" tabindex="-1">
+      <!-- Content sections loaded dynamically -->
+      <div id="content-container">
+        <!-- Loading state -->
+        <div class="loading" aria-live="polite">
+          <p>Loading content...</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Navigation -->
+    <nav class="sco-nav" aria-label="Lesson navigation">
+      <button class="btn btn-secondary btn-prev" id="prevBtn" disabled aria-label="Previous section">
+        <span aria-hidden="true">←</span> Previous
+      </button>
+      <span class="page-indicator" id="pageIndicator" aria-live="polite">1 / 1</span>
+      <button class="btn btn-primary btn-next" id="nextBtn" aria-label="Next section">
+        Next <span aria-hidden="true">→</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- SCORM API -->
+  <script src="../shared/scorm-api.js"></script>
+
+  <!-- Lesson Content -->
+  <script src="content.js"></script>
+</body>
+</html>

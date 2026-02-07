@@ -1,0 +1,72 @@
+<!-- Fill in the Blank Question Template -->
+<div class="question fib-question" data-question-id="{{QUESTION_ID}}" data-type="fill-blank">
+  <p class="question-stem">{{QUESTION_STEM_BEFORE}}</p>
+
+  <div class="fib-container">
+    {{#each BLANKS}}
+    <div class="fib-blank-group">
+      <label for="blank_{{../QUESTION_ID}}_{{position}}" class="sr-only">
+        Fill in blank {{position}}
+      </label>
+      <input type="text"
+             id="blank_{{../QUESTION_ID}}_{{position}}"
+             class="fib-input"
+             data-blank-position="{{position}}"
+             placeholder="Type your answer"
+             autocomplete="off"
+             aria-describedby="feedback_{{../QUESTION_ID}}">
+    </div>
+    {{/each}}
+  </div>
+
+  <p class="question-stem">{{QUESTION_STEM_AFTER}}</p>
+
+  <div class="feedback" id="feedback_{{QUESTION_ID}}" style="display: none;" aria-live="polite">
+    <div class="feedback-correct" style="display: none;">
+      <strong>✓ Correct!</strong>
+      <p>{{FEEDBACK_CORRECT}}</p>
+    </div>
+    <div class="feedback-incorrect" style="display: none;">
+      <strong>✗ Not quite.</strong>
+      <p>The correct answer is: <strong>{{CORRECT_ANSWER}}</strong></p>
+      <p>{{FEEDBACK_INCORRECT}}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.fib-container {
+  margin: var(--space-lg) 0;
+}
+
+.fib-blank-group {
+  display: inline-block;
+  margin: var(--space-xs);
+}
+
+.fib-input {
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  min-width: 150px;
+  transition: all var(--transition-fast);
+}
+
+.fib-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.fib-input.correct {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+
+.fib-input.incorrect {
+  border-color: var(--error);
+  background: var(--error-bg);
+}
+</style>

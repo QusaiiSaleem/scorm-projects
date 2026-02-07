@@ -1,0 +1,58 @@
+<!-- True/False Question Template -->
+<div class="question tf-question" data-question-id="{{QUESTION_ID}}" data-type="true-false">
+  <p class="question-stem">{{QUESTION_STEM}}</p>
+
+  <div class="options tf-options" role="radiogroup" aria-label="True or False">
+    <label class="option tf-option" data-option-id="true">
+      <input type="radio" name="q_{{QUESTION_ID}}" value="true">
+      <span class="tf-icon">✓</span>
+      <span class="option-text">True</span>
+    </label>
+
+    <label class="option tf-option" data-option-id="false">
+      <input type="radio" name="q_{{QUESTION_ID}}" value="false">
+      <span class="tf-icon">✗</span>
+      <span class="option-text">False</span>
+    </label>
+  </div>
+
+  <div class="feedback" id="feedback_{{QUESTION_ID}}" style="display: none;" aria-live="polite">
+    <div class="feedback-correct" style="display: none;">
+      <strong>✓ Correct!</strong>
+      <p>{{FEEDBACK_CORRECT}}</p>
+    </div>
+    <div class="feedback-incorrect" style="display: none;">
+      <strong>✗ Not quite.</strong>
+      <p>{{FEEDBACK_INCORRECT}}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.tf-options {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+.tf-option {
+  flex: 1;
+  max-width: 200px;
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+.tf-icon {
+  display: block;
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-sm);
+}
+
+.tf-option[data-option-id="true"] .tf-icon {
+  color: var(--success);
+}
+
+.tf-option[data-option-id="false"] .tf-icon {
+  color: var(--error);
+}
+</style>

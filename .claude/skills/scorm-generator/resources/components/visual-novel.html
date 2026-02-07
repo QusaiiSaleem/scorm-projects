@@ -1,0 +1,494 @@
+<!-- Visual Novel / Dialogue System Component
+     Usage: Copy into lesson HTML. Character dialogue with choices.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Character portrait on left (image URL or emoji)
+     - Dialogue text area with typewriter effect
+     - Character name label above dialogue
+     - Choice buttons when dialogue reaches a decision point
+     - Scene background (full-width behind dialogue)
+     - Fade transitions between scenes
+     - Data structure: dialogue script as JSON array
+
+     CUSTOMIZATION:
+     - Edit SCRIPT array: each entry is a dialogue line or choice point
+     - Define CHARACTERS object with name, portrait, and color
+     - Set SCENES for background images/colors
+     - Adjust TYPEWRITER_SPEED for text reveal speed
+
+     ACCESSIBILITY:
+     - Dialogue text in aria-live region
+     - Choice buttons are proper <button> elements
+     - Keyboard: Space/Enter to advance, Tab for choices
+     - Screen reader: announces dialogue and choices
+
+     SCORM REPORTING:
+     - Choices tracked for path analysis
+-->
+
+<style>
+  /* === Visual Novel Container === */
+  .visual-novel {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    background: #1a1a2e;
+    aspect-ratio: 16 / 9;
+    min-height: 400px;
+  }
+
+  /* Scene background */
+  .vn-scene-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 0.6s ease;
+  }
+
+  .vn-scene-bg.fading {
+    opacity: 0;
+  }
+
+  /* Scene gradient overlay for readability */
+  .vn-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 100%);
+    pointer-events: none;
+  }
+
+  /* Character portrait */
+  .vn-portrait-area {
+    position: absolute;
+    bottom: 140px;
+    left: var(--space-lg, 24px);
+    z-index: 2;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  [dir="rtl"] .vn-portrait-area {
+    left: auto;
+    right: var(--space-lg, 24px);
+  }
+
+  .vn-portrait-area.hidden {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  .vn-portrait {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--color-primary, #6c5ce7);
+    object-fit: cover;
+    background: rgba(30, 30, 60, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    overflow: hidden;
+  }
+
+  .vn-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Dialogue box at bottom */
+  .vn-dialogue-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    padding: var(--space-md, 16px) var(--space-lg, 24px) var(--space-lg, 24px);
+    background: rgba(10, 10, 30, 0.9);
+    backdrop-filter: blur(8px);
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    min-height: 120px;
+  }
+
+  /* Character name tag */
+  .vn-char-name {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: var(--radius-sm, 4px) var(--radius-sm, 4px) 0 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #fff;
+    background: var(--color-primary, #6c5ce7);
+    position: absolute;
+    top: -26px;
+    left: var(--space-lg, 24px);
+  }
+
+  [dir="rtl"] .vn-char-name {
+    left: auto;
+    right: var(--space-lg, 24px);
+  }
+
+  /* Dialogue text */
+  .vn-text {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1rem;
+    line-height: 1.7;
+    min-height: 3em;
+  }
+
+  /* Typewriter cursor */
+  .vn-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: rgba(255, 255, 255, 0.7);
+    vertical-align: middle;
+    margin-inline-start: 2px;
+    animation: vnBlink 0.8s step-end infinite;
+  }
+
+  @keyframes vnBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Continue indicator */
+  .vn-continue {
+    position: absolute;
+    bottom: var(--space-sm, 8px);
+    right: var(--space-lg, 24px);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    animation: vnBounce 1.5s ease infinite;
+  }
+
+  [dir="rtl"] .vn-continue {
+    right: auto;
+    left: var(--space-lg, 24px);
+  }
+
+  @keyframes vnBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Choice buttons */
+  .vn-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 8px);
+    margin-top: var(--space-md, 16px);
+  }
+
+  .vn-choice-btn {
+    display: block;
+    width: 100%;
+    text-align: start;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md, 8px);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    min-height: 44px;
+  }
+
+  .vn-choice-btn:hover {
+    background: rgba(108, 92, 231, 0.3);
+    border-color: var(--color-primary, #6c5ce7);
+    transform: translateX(4px);
+  }
+
+  [dir="rtl"] .vn-choice-btn:hover {
+    transform: translateX(-4px);
+  }
+
+  .vn-choice-btn:focus-visible {
+    outline: 2px solid var(--color-accent, #f97316);
+    outline-offset: 2px;
+  }
+
+  /* Progress dots */
+  .vn-progress {
+    position: absolute;
+    top: var(--space-md, 16px);
+    right: var(--space-md, 16px);
+    display: flex;
+    gap: 4px;
+    z-index: 4;
+  }
+
+  [dir="rtl"] .vn-progress {
+    right: auto;
+    left: var(--space-md, 16px);
+  }
+
+  .vn-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: background 0.3s;
+  }
+
+  .vn-progress-dot.active {
+    background: var(--color-primary, #6c5ce7);
+  }
+
+  .vn-progress-dot.done {
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .vn-cursor { animation: none; opacity: 0; }
+    .vn-continue { animation: none; }
+    .vn-scene-bg { transition: none; }
+    .vn-portrait-area { transition: none; }
+    .vn-choice-btn:hover { transform: none; }
+  }
+</style>
+
+<div class="visual-novel" role="application" aria-label="Visual novel dialogue"
+     tabindex="0" id="vn-container">
+
+  <!-- Scene background -->
+  <div class="vn-scene-bg" id="vn-bg"></div>
+  <div class="vn-gradient" aria-hidden="true"></div>
+
+  <!-- Progress dots -->
+  <div class="vn-progress" id="vn-progress" aria-hidden="true"></div>
+
+  <!-- Character portrait -->
+  <div class="vn-portrait-area" id="vn-portrait-area">
+    <div class="vn-portrait" id="vn-portrait" aria-hidden="true"></div>
+  </div>
+
+  <!-- Dialogue box -->
+  <div class="vn-dialogue-box">
+    <div class="vn-char-name" id="vn-char-name"></div>
+    <div class="vn-text" id="vn-text" role="status" aria-live="polite"></div>
+    <div class="vn-continue" id="vn-continue" aria-hidden="true">Click to continue &#9660;</div>
+    <div class="vn-choices" id="vn-choices" role="group" aria-label="Dialogue choices"></div>
+  </div>
+</div>
+
+<div id="vn-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   VISUAL NOVEL / DIALOGUE SYSTEM COMPONENT
+   ============================================================
+   Edit CHARACTERS, SCENES, and SCRIPT to create your story.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Characters === */
+  var CHARACTERS = {
+    teacher: { name: 'Ms. Rivera', portrait: '&#128105;&#8205;&#127979;', color: '#6c5ce7' },
+    student: { name: 'Alex',       portrait: '&#129489;&#8205;&#127891;', color: '#00b894' },
+    mentor:  { name: 'Dr. Chen',   portrait: '&#128104;&#8205;&#128300;', color: '#e17055' }
+  };
+
+  /* === CUSTOMIZE: Scene backgrounds === */
+  var SCENES = {
+    classroom:  { bg: 'linear-gradient(135deg, #1a1a3e 0%, #2d2d5e 100%)' },
+    lab:        { bg: 'linear-gradient(135deg, #1a2a1a 0%, #2d4d2d 100%)' },
+    office:     { bg: 'linear-gradient(135deg, #2a1a1a 0%, #4d2d2d 100%)' }
+  };
+
+  /* === CUSTOMIZE: Dialogue script ===
+     type: "dialogue" = character speaks
+     type: "choice"   = player picks a response
+     type: "narration" = no character, just text */
+  var SCRIPT = [
+    { type: 'dialogue', character: 'teacher', scene: 'classroom',
+      text: 'Welcome to the lab orientation! Before we begin, I need to know something about your experience level.' },
+    { type: 'dialogue', character: 'teacher', scene: 'classroom',
+      text: 'Have you worked in a laboratory environment before?' },
+    { type: 'choice', character: 'student', scene: 'classroom',
+      text: 'How do you respond?',
+      choices: [
+        { label: 'Yes, I have two years of experience in a chemistry lab.', next: 3 },
+        { label: 'No, this is my first time in a lab setting.', next: 5 },
+        { label: 'I have some experience, but I could use a refresher.', next: 7 }
+      ]
+    },
+    /* Branch: Experienced */
+    { type: 'dialogue', character: 'teacher', scene: 'classroom',
+      text: 'Excellent! Then you already know the importance of safety protocols. Let me quiz you on a few key rules.' },
+    { type: 'dialogue', character: 'teacher', scene: 'lab',
+      text: 'What is the first thing you should do when entering the lab? (End of demo - add more script entries to continue!)' },
+    /* Branch: Beginner */
+    { type: 'dialogue', character: 'teacher', scene: 'classroom',
+      text: 'No worries at all! Everyone starts somewhere. Let me walk you through the basics step by step.' },
+    { type: 'dialogue', character: 'teacher', scene: 'lab',
+      text: 'First rule: always wear your personal protective equipment. That means goggles, lab coat, and gloves. (End of demo)' },
+    /* Branch: Refresher */
+    { type: 'dialogue', character: 'teacher', scene: 'classroom',
+      text: 'A refresher is always a good idea. Safety protocols get updated, and it never hurts to review.' },
+    { type: 'dialogue', character: 'mentor', scene: 'office',
+      text: 'I am Dr. Chen. I will be supervising your lab work this semester. Let us make sure you are fully prepared. (End of demo)' }
+  ];
+
+  var TYPEWRITER_SPEED = 25; /* ms per character */
+
+  /* === State === */
+  var currentLine = 0;
+  var isTyping = false;
+  var typeInterval = null;
+  var fullText = '';
+
+  var container = document.getElementById('vn-container');
+  var bgEl = document.getElementById('vn-bg');
+  var portraitArea = document.getElementById('vn-portrait-area');
+  var portraitEl = document.getElementById('vn-portrait');
+  var charNameEl = document.getElementById('vn-char-name');
+  var textEl = document.getElementById('vn-text');
+  var choicesEl = document.getElementById('vn-choices');
+  var continueEl = document.getElementById('vn-continue');
+  var progressEl = document.getElementById('vn-progress');
+
+  /* === Build progress dots === */
+  function buildProgress() {
+    progressEl.innerHTML = '';
+    for (var i = 0; i < SCRIPT.length; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'vn-progress-dot';
+      if (i < currentLine) dot.classList.add('done');
+      if (i === currentLine) dot.classList.add('active');
+      progressEl.appendChild(dot);
+    }
+  }
+
+  /* === Render current line === */
+  function renderLine() {
+    if (currentLine >= SCRIPT.length) return;
+    var line = SCRIPT[currentLine];
+
+    buildProgress();
+
+    /* Set scene background */
+    if (line.scene && SCENES[line.scene]) {
+      bgEl.style.background = SCENES[line.scene].bg;
+    }
+
+    /* Set character */
+    choicesEl.innerHTML = '';
+    continueEl.style.display = 'none';
+
+    if (line.character && CHARACTERS[line.character]) {
+      var char = CHARACTERS[line.character];
+      portraitArea.classList.remove('hidden');
+      portraitEl.innerHTML = char.portrait;
+      charNameEl.textContent = char.name;
+      charNameEl.style.background = char.color;
+    } else {
+      portraitArea.classList.add('hidden');
+      charNameEl.textContent = '';
+    }
+
+    /* Typewriter text */
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    fullText = line.text;
+
+    if (reducedMotion || line.type === 'choice') {
+      textEl.textContent = fullText;
+      isTyping = false;
+      onTextComplete(line);
+    } else {
+      isTyping = true;
+      textEl.innerHTML = '<span class="vn-cursor"></span>';
+      var charIndex = 0;
+
+      typeInterval = setInterval(function() {
+        if (charIndex < fullText.length) {
+          textEl.innerHTML = fullText.substring(0, charIndex + 1) + '<span class="vn-cursor"></span>';
+          charIndex++;
+        } else {
+          clearInterval(typeInterval);
+          textEl.innerHTML = fullText;
+          isTyping = false;
+          onTextComplete(line);
+        }
+      }, TYPEWRITER_SPEED);
+    }
+
+    announce(line.text);
+  }
+
+  /* === After text finishes typing === */
+  function onTextComplete(line) {
+    if (line.type === 'choice' && line.choices) {
+      /* Show choice buttons */
+      line.choices.forEach(function(choice) {
+        var btn = document.createElement('button');
+        btn.className = 'vn-choice-btn';
+        btn.textContent = choice.label;
+        btn.addEventListener('click', function() {
+          currentLine = choice.next;
+          renderLine();
+        });
+        choicesEl.appendChild(btn);
+      });
+    } else {
+      /* Show continue prompt */
+      continueEl.style.display = 'block';
+    }
+  }
+
+  /* === Click/key to advance === */
+  function advance() {
+    if (isTyping) {
+      /* Skip to end of typewriter */
+      clearInterval(typeInterval);
+      textEl.textContent = fullText;
+      isTyping = false;
+      onTextComplete(SCRIPT[currentLine]);
+      return;
+    }
+
+    /* Only advance on non-choice lines */
+    var line = SCRIPT[currentLine];
+    if (line && line.type !== 'choice') {
+      currentLine++;
+      if (currentLine < SCRIPT.length) {
+        renderLine();
+      }
+    }
+  }
+
+  container.addEventListener('click', function(e) {
+    /* Do not advance if clicking a choice button */
+    if (e.target.classList.contains('vn-choice-btn')) return;
+    advance();
+  });
+
+  container.addEventListener('keydown', function(e) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      /* Do not advance if focused on a choice button */
+      if (e.target.classList.contains('vn-choice-btn')) return;
+      e.preventDefault();
+      advance();
+    }
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('vn-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Start === */
+  renderLine();
+})();
+</script>

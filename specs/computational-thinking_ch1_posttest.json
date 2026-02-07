@@ -1,0 +1,981 @@
+{
+  "assessment": {
+    "id": "sco_18_posttest",
+    "title": {
+      "en": "Chapter 1 Post-test: Computational Thinking",
+      "ar": "الاختبار البعدي: الوحدة الأولى - التفكير الحاسوبي"
+    },
+    "description": {
+      "en": "Summative assessment measuring mastery of all Chapter 1 objectives. 15 questions, 70% passing score.",
+      "ar": "اختبار تقييمي يقيس إتقان جميع أهداف الوحدة الأولى. 15 سؤالاً، درجة النجاح 70%."
+    },
+    "type": "post-test",
+    "total_questions": 15,
+    "total_points": 150,
+    "points_per_question": 10,
+    "passing_score_percent": 70,
+    "passing_score_points": 105,
+    "time_limit_minutes": 15,
+    "retries_allowed": true,
+    "shuffle_questions": true,
+    "shuffle_options": true,
+    "show_feedback_after_submit": true,
+    "show_correct_answer_on_incorrect": true,
+    "gamification": {
+      "points_correct": 10,
+      "streak_bonus_threshold": 3,
+      "streak_bonus_points": 5,
+      "pass_bonus_points": 200,
+      "perfect_score_bonus_points": 300,
+      "badge_pass": "Chapter Champion",
+      "badge_perfect": "Perfectionist"
+    },
+    "bloom_distribution": {
+      "remember": 2,
+      "understand": 4,
+      "apply": 6,
+      "evaluate": 3,
+      "summary": "40% Remember/Understand (6), 40% Apply (6), 20% Evaluate (3)"
+    },
+    "objective_coverage": {
+      "TO-1": { "questions": ["q_post_01", "q_post_02", "q_post_03", "q_post_04"], "weight_percent": 27 },
+      "TO-2": { "questions": ["q_post_05", "q_post_06", "q_post_07", "q_post_08"], "weight_percent": 27 },
+      "TO-3": { "questions": ["q_post_09", "q_post_10", "q_post_11", "q_post_12"], "weight_percent": 27 },
+      "TO-4": { "questions": ["q_post_13", "q_post_14", "q_post_15"], "weight_percent": 20 }
+    },
+    "scorm_tracking": {
+      "score_raw": "cmi.core.score.raw",
+      "score_min": "cmi.core.score.min",
+      "score_max": "cmi.core.score.max",
+      "lesson_status": "cmi.core.lesson_status",
+      "interactions": "cmi.interactions.n.*",
+      "status_passed": "passed",
+      "status_failed": "failed"
+    },
+    "behavioral_tracking": {
+      "time_per_question": true,
+      "answer_changes": true,
+      "time_to_first_click": true,
+      "option_position_patterns": true,
+      "hint_usage": false
+    }
+  },
+
+  "questions": [
+
+    {
+      "id": "q_post_01",
+      "type": "multiple-choice",
+      "objective_id": "TO-1",
+      "bloom_level": "remember",
+      "difficulty": "easy",
+      "points": 10,
+      "topic": "Definition of computational thinking",
+      "stem": {
+        "en": "Which of the following best defines Computational Thinking?",
+        "ar": "أي مما يلي يُعرّف التفكير الحاسوبي (Computational Thinking) بأفضل شكل؟"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "The ability to write code in a programming language",
+            "ar": "القدرة على كتابة الكود بلغة برمجة"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "A set of problem-solving methods that involve expressing problems and their solutions in ways that a computer could execute",
+            "ar": "مجموعة من أساليب حل المشكلات تتضمن التعبير عن المسائل وحلولها بطرق يمكن للحاسوب تنفيذها"
+          },
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "Thinking about how computers work internally",
+            "ar": "التفكير في كيفية عمل الحاسوب داخلياً"
+          },
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "Using a computer to solve mathematical equations",
+            "ar": "استخدام الحاسوب لحل المعادلات الرياضية"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! Computational thinking is a set of problem-solving methods -- including decomposition, pattern recognition, abstraction, and algorithmic thinking -- that express problems and solutions in ways a computer could execute. This concept was popularized by Jeanette Wing in 2006.",
+          "ar": "صحيح! التفكير الحاسوبي هو مجموعة من أساليب حل المشكلات -- تشمل التحليل والتعرف على الأنماط والتجريد والتفكير الخوارزمي -- للتعبير عن المسائل وحلولها بطرق يمكن للحاسوب تنفيذها. أشاعت هذا المفهوم جانيت وينغ عام 2006."
+        },
+        "incorrect": {
+          "en": "Not quite yet -- but this is how learning works! Computational thinking is not just about coding or hardware. It is a broader problem-solving approach involving decomposition, pattern recognition, abstraction, and algorithmic thinking. Jeanette Wing described it as skills useful for everyone, not just computer scientists.",
+          "ar": "ليس تماماً -- لكن هذه هي طريقة التعلم! التفكير الحاسوبي ليس مجرد برمجة أو فهم للأجهزة. إنه نهج أوسع لحل المشكلات يتضمن التحليل والتعرف على الأنماط والتجريد والتفكير الخوارزمي. وصفته جانيت وينغ بأنه مهارات مفيدة للجميع وليس فقط لعلماء الحاسوب."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_02",
+      "type": "multiple-choice",
+      "objective_id": "TO-1",
+      "bloom_level": "understand",
+      "difficulty": "easy",
+      "points": 10,
+      "topic": "Decomposition pillar identification",
+      "stem": {
+        "en": "A software team divides a large e-commerce application into smaller modules: user authentication, product catalog, shopping cart, and payment processing. Which computational thinking pillar does this BEST illustrate?",
+        "ar": "قسّم فريق برمجي تطبيق تجارة إلكترونية كبيراً إلى وحدات أصغر: مصادقة المستخدم، كتالوج المنتجات، سلة التسوق، ومعالجة الدفع. أي ركن من أركان التفكير الحاسوبي (CT Pillars) يوضحه هذا بأفضل شكل؟"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "Pattern Recognition",
+            "ar": "التعرف على الأنماط (Pattern Recognition)"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "Abstraction",
+            "ar": "التجريد (Abstraction)"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "Decomposition",
+            "ar": "التحليل (Decomposition)"
+          },
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "Algorithmic Thinking",
+            "ar": "التفكير الخوارزمي (Algorithmic Thinking)"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! Decomposition means breaking a complex problem into smaller, more manageable parts. Splitting a large application into focused modules (auth, catalog, cart, payment) is a classic example of decomposition.",
+          "ar": "صحيح! التحليل (Decomposition) يعني تقسيم مشكلة معقدة إلى أجزاء أصغر يمكن إدارتها. تقسيم تطبيق كبير إلى وحدات متخصصة (مصادقة، كتالوج، سلة، دفع) هو مثال كلاسيكي على التحليل."
+        },
+        "incorrect": {
+          "en": "Not quite yet -- but you are building understanding! The key action here is BREAKING DOWN a big system into smaller parts. That is decomposition. Pattern recognition finds similarities, abstraction removes unnecessary details, and algorithmic thinking creates step-by-step solutions.",
+          "ar": "ليس تماماً -- لكنك تبني فهمك! الإجراء الأساسي هنا هو تقسيم نظام كبير إلى أجزاء أصغر. هذا هو التحليل. التعرف على الأنماط يجد التشابهات، والتجريد يزيل التفاصيل غير الضرورية، والتفكير الخوارزمي يصنع حلولاً خطوة بخطوة."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_03",
+      "type": "matching",
+      "objective_id": "TO-1",
+      "bloom_level": "understand",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Match CT pillars to real-world scenarios",
+      "stem": {
+        "en": "Match each Computational Thinking pillar to the scenario that best represents it:",
+        "ar": "طابق كل ركن من أركان التفكير الحاسوبي (CT Pillars) مع السيناريو الذي يمثله بأفضل شكل:"
+      },
+      "items": [
+        {
+          "id": "1",
+          "term": {
+            "en": "Decomposition",
+            "ar": "التحليل (Decomposition)"
+          }
+        },
+        {
+          "id": "2",
+          "term": {
+            "en": "Pattern Recognition",
+            "ar": "التعرف على الأنماط (Pattern Recognition)"
+          }
+        },
+        {
+          "id": "3",
+          "term": {
+            "en": "Abstraction",
+            "ar": "التجريد (Abstraction)"
+          }
+        },
+        {
+          "id": "4",
+          "term": {
+            "en": "Algorithmic Thinking",
+            "ar": "التفكير الخوارزمي (Algorithmic Thinking)"
+          }
+        }
+      ],
+      "targets": [
+        {
+          "id": "a",
+          "definition": {
+            "en": "A doctor divides a patient's symptoms into categories (respiratory, digestive, neurological) to diagnose the illness",
+            "ar": "طبيب يقسّم أعراض المريض إلى فئات (تنفسية، هضمية، عصبية) لتشخيص المرض"
+          },
+          "matchTo": "1"
+        },
+        {
+          "id": "b",
+          "definition": {
+            "en": "A data analyst notices that sales always increase in December across all product categories",
+            "ar": "محلل بيانات يلاحظ أن المبيعات تزداد دائماً في ديسمبر عبر جميع فئات المنتجات"
+          },
+          "matchTo": "2"
+        },
+        {
+          "id": "c",
+          "definition": {
+            "en": "A map of the metro system shows only station names and connections, ignoring the actual geography",
+            "ar": "خريطة المترو تُظهر فقط أسماء المحطات والتوصيلات متجاهلةً الجغرافيا الفعلية"
+          },
+          "matchTo": "3"
+        },
+        {
+          "id": "d",
+          "definition": {
+            "en": "A recipe lists exact steps in order: boil water, add pasta, cook for 8 minutes, drain, serve",
+            "ar": "وصفة طبخ تسرد خطوات دقيقة بالترتيب: اغلِ الماء، أضف المعكرونة، اطبخ 8 دقائق، صفِّ الماء، قدّم"
+          },
+          "matchTo": "4"
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Excellent matching! You clearly understand how each CT pillar applies in real-world contexts. Decomposition breaks problems apart, pattern recognition spots trends, abstraction simplifies by removing unnecessary detail, and algorithmic thinking creates precise step-by-step procedures.",
+          "ar": "مطابقة ممتازة! أنت تفهم بوضوح كيف يُطبَّق كل ركن من أركان التفكير الحاسوبي في سياقات واقعية. التحليل يقسّم المشكلات، والتعرف على الأنماط يكتشف الاتجاهات، والتجريد يبسّط بإزالة التفاصيل غير الضرورية، والتفكير الخوارزمي يصنع إجراءات دقيقة خطوة بخطوة."
+        },
+        "incorrect": {
+          "en": "Some matches need adjustment -- let's review! Decomposition = breaking into parts (doctor categorizing symptoms). Pattern recognition = noticing repeated trends (December sales spike). Abstraction = simplifying by removing irrelevant detail (metro map ignores geography). Algorithmic thinking = precise ordered steps (recipe instructions).",
+          "ar": "بعض المطابقات تحتاج تعديلاً -- لنراجع معاً! التحليل = التقسيم إلى أجزاء (الطبيب يصنف الأعراض). التعرف على الأنماط = ملاحظة الاتجاهات المتكررة (ارتفاع مبيعات ديسمبر). التجريد = التبسيط بإزالة التفاصيل غير المهمة (خريطة المترو تتجاهل الجغرافيا). التفكير الخوارزمي = خطوات مرتبة ودقيقة (تعليمات الوصفة)."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_04",
+      "type": "multiple-choice",
+      "objective_id": "TO-1",
+      "bloom_level": "apply",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Identifying the correct CT pillar for a scenario",
+      "stem": {
+        "en": "You are designing a mobile app and decide to focus only on the core user flow (sign up, browse, purchase) while ignoring secondary features like themes and social sharing for now. Which computational thinking pillar are you applying?",
+        "ar": "أنت تصمم تطبيقاً للهاتف وقررت التركيز فقط على تدفق المستخدم الأساسي (التسجيل، التصفح، الشراء) مع تجاهل الميزات الثانوية مثل السمات والمشاركة الاجتماعية حالياً. أي ركن من أركان التفكير الحاسوبي تُطبّقه؟"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "Decomposition",
+            "ar": "التحليل (Decomposition)"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "Pattern Recognition",
+            "ar": "التعرف على الأنماط (Pattern Recognition)"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "Abstraction",
+            "ar": "التجريد (Abstraction)"
+          },
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "Algorithmic Thinking",
+            "ar": "التفكير الخوارزمي (Algorithmic Thinking)"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! Abstraction is about focusing on what is essential and ignoring irrelevant details. By concentrating on the core user flow and setting aside secondary features, you are abstracting away complexity to focus on what matters most.",
+          "ar": "صحيح! التجريد (Abstraction) يعني التركيز على ما هو جوهري وتجاهل التفاصيل غير المهمة. بالتركيز على تدفق المستخدم الأساسي وتأجيل الميزات الثانوية، أنت تجرّد التعقيد للتركيز على الأهم."
+        },
+        "incorrect": {
+          "en": "Not quite yet -- think about what the ACTION is here. You are not breaking the app into parts (decomposition) or finding repeating trends (pattern recognition) or writing step-by-step instructions (algorithmic thinking). You are REMOVING what is not essential and FOCUSING on what matters. That is abstraction.",
+          "ar": "ليس تماماً -- فكّر في الإجراء هنا. أنت لا تقسّم التطبيق إلى أجزاء (تحليل) ولا تجد أنماطاً متكررة (تعرف على الأنماط) ولا تكتب خطوات مرتبة (تفكير خوارزمي). أنت تزيل ما ليس ضرورياً وتركّز على ما يهم. هذا هو التجريد."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_05",
+      "type": "true-false",
+      "objective_id": "TO-2",
+      "bloom_level": "remember",
+      "difficulty": "easy",
+      "points": 10,
+      "topic": "Definition of logical thinking",
+      "stem": {
+        "en": "Logical thinking is the process of using structured, consistent reasoning to draw valid conclusions from given premises.",
+        "ar": "التفكير المنطقي (Logical Thinking) هو عملية استخدام تفكير منظم ومتسق لاستخلاص نتائج صحيحة من مقدمات معطاة."
+      },
+      "correct": true,
+      "feedback": {
+        "correct": {
+          "en": "Correct! Logical thinking involves structured, rule-based reasoning where conclusions follow necessarily from premises. It is the foundation of both mathematical proofs and algorithm design.",
+          "ar": "صحيح! التفكير المنطقي يتضمن تفكيراً منظماً قائماً على قواعد حيث تتبع النتائج بالضرورة من المقدمات. وهو أساس البراهين الرياضية وتصميم الخوارزميات."
+        },
+        "incorrect": {
+          "en": "Actually, this statement IS true! Logical thinking is indeed about using structured, consistent reasoning to reach valid conclusions. It forms the backbone of computational thinking -- without logic, algorithms cannot make correct decisions.",
+          "ar": "في الواقع، هذه العبارة صحيحة! التفكير المنطقي هو فعلاً استخدام تفكير منظم ومتسق للوصول إلى نتائج صحيحة. وهو يشكّل العمود الفقري للتفكير الحاسوبي -- بدون المنطق لا تستطيع الخوارزميات اتخاذ قرارات صحيحة."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_06",
+      "type": "multiple-choice",
+      "objective_id": "TO-2",
+      "bloom_level": "apply",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Evaluating logical argument validity",
+      "stem": {
+        "en": "Consider this argument:\n\nPremise 1: All databases store data.\nPremise 2: MySQL is a database.\nConclusion: Therefore, MySQL stores data.\n\nIs this argument logically valid?",
+        "ar": "تأمّل هذه الحجة:\n\nالمقدمة 1: جميع قواعد البيانات (Databases) تخزّن البيانات.\nالمقدمة 2: MySQL هو قاعدة بيانات.\nالاستنتاج: إذن، MySQL يخزّن البيانات.\n\nهل هذه الحجة صحيحة منطقياً (Logically Valid)؟"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "Valid -- the conclusion follows logically from the premises",
+            "ar": "صحيحة -- الاستنتاج يتبع منطقياً من المقدمات"
+          },
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "Invalid -- the conclusion does not follow from the premises",
+            "ar": "غير صحيحة -- الاستنتاج لا يتبع من المقدمات"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "Invalid -- it commits the fallacy of affirming the consequent",
+            "ar": "غير صحيحة -- ترتكب مغالطة تأكيد التالي (Affirming the Consequent)"
+          },
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "Cannot be determined without more information",
+            "ar": "لا يمكن تحديدها بدون معلومات إضافية"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! This is a valid syllogism (deductive reasoning). If ALL databases store data (universal premise), and MySQL IS a database (specific case), then MySQL necessarily stores data. The structure is: All A are B. X is A. Therefore, X is B. This is always valid.",
+          "ar": "صحيح! هذا قياس منطقي صحيح (استنتاج استنباطي). إذا كانت جميع قواعد البيانات تخزّن البيانات (مقدمة كلية)، و MySQL قاعدة بيانات (حالة خاصة)، فإن MySQL بالضرورة تخزّن البيانات. البنية هي: كل أ هو ب. س هو أ. إذن، س هو ب. وهذا صحيح دائماً."
+        },
+        "incorrect": {
+          "en": "Not quite yet -- let's trace the logic together! The structure is: 'All A are B. X is A. Therefore, X is B.' This is a valid deductive syllogism. Since ALL databases store data, and MySQL IS a database, the conclusion that MySQL stores data MUST be true. This is different from 'All A are B. X is B. Therefore, X is A' -- which WOULD be the fallacy of affirming the consequent.",
+          "ar": "ليس تماماً -- لنتتبع المنطق معاً! البنية هي: 'كل أ هو ب. س هو أ. إذن، س هو ب.' هذا قياس استنباطي صحيح. بما أن جميع قواعد البيانات تخزّن البيانات، و MySQL قاعدة بيانات، فإن الاستنتاج بأن MySQL تخزّن البيانات يجب أن يكون صحيحاً. هذا يختلف عن 'كل أ هو ب. س هو ب. إذن، س هو أ' -- والتي ستكون مغالطة تأكيد التالي."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_07",
+      "type": "matching",
+      "objective_id": "TO-2",
+      "bloom_level": "apply",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Boolean logic / truth table evaluation",
+      "stem": {
+        "en": "Given: x = TRUE, y = FALSE. Match each Boolean expression to its correct result:",
+        "ar": "بافتراض: x = TRUE ، y = FALSE. طابق كل تعبير منطقي (Boolean Expression) بنتيجته الصحيحة:"
+      },
+      "items": [
+        {
+          "id": "1",
+          "term": {
+            "en": "x AND y",
+            "ar": "x AND y"
+          }
+        },
+        {
+          "id": "2",
+          "term": {
+            "en": "x OR y",
+            "ar": "x OR y"
+          }
+        },
+        {
+          "id": "3",
+          "term": {
+            "en": "NOT x",
+            "ar": "NOT x"
+          }
+        },
+        {
+          "id": "4",
+          "term": {
+            "en": "NOT y",
+            "ar": "NOT y"
+          }
+        }
+      ],
+      "targets": [
+        {
+          "id": "a",
+          "definition": {
+            "en": "FALSE",
+            "ar": "FALSE (خطأ)"
+          },
+          "matchTo": "1"
+        },
+        {
+          "id": "b",
+          "definition": {
+            "en": "TRUE",
+            "ar": "TRUE (صحيح)"
+          },
+          "matchTo": "2"
+        },
+        {
+          "id": "c",
+          "definition": {
+            "en": "FALSE",
+            "ar": "FALSE (خطأ)"
+          },
+          "matchTo": "3"
+        },
+        {
+          "id": "d",
+          "definition": {
+            "en": "TRUE",
+            "ar": "TRUE (صحيح)"
+          },
+          "matchTo": "4"
+        }
+      ],
+      "matching_note": "Two expressions evaluate to FALSE (items 1 and 3) and two evaluate to TRUE (items 2 and 4). The renderer should present all four target slots individually even though some share the same label.",
+      "feedback": {
+        "correct": {
+          "en": "Excellent! You correctly evaluated all Boolean expressions. With x=TRUE, y=FALSE: AND requires both true (FALSE), OR requires at least one true (TRUE), NOT flips the value (NOT TRUE = FALSE, NOT FALSE = TRUE).",
+          "ar": "ممتاز! قيّمت جميع التعبيرات المنطقية بشكل صحيح. عندما x=TRUE و y=FALSE: العملية AND تتطلب كليهما صحيحاً (FALSE)، و OR تتطلب واحداً على الأقل صحيحاً (TRUE)، و NOT تعكس القيمة (NOT TRUE = FALSE ، NOT FALSE = TRUE)."
+        },
+        "incorrect": {
+          "en": "Let's review Boolean logic step by step -- you are getting closer! With x=TRUE, y=FALSE: (1) x AND y: TRUE AND FALSE = FALSE (AND needs BOTH true). (2) x OR y: TRUE OR FALSE = TRUE (OR needs at least ONE true). (3) NOT x: NOT TRUE = FALSE (NOT flips the value). (4) NOT y: NOT FALSE = TRUE (NOT flips the value).",
+          "ar": "لنراجع المنطق البولياني خطوة بخطوة -- أنت تقترب! عندما x=TRUE و y=FALSE: (1) x AND y: TRUE AND FALSE = FALSE (العملية AND تحتاج كليهما صحيحاً). (2) x OR y: TRUE OR FALSE = TRUE (العملية OR تحتاج واحداً على الأقل صحيحاً). (3) NOT x: NOT TRUE = FALSE (العملية NOT تعكس القيمة). (4) NOT y: NOT FALSE = TRUE (العملية NOT تعكس القيمة)."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_08",
+      "type": "ordering",
+      "objective_id": "TO-2",
+      "bloom_level": "apply",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Ordering algorithm steps correctly",
+      "stem": {
+        "en": "Arrange the following steps of a linear search algorithm in the correct order to find a target value in a list:",
+        "ar": "رتّب الخطوات التالية لخوارزمية البحث الخطي (Linear Search) بالترتيب الصحيح للعثور على قيمة مستهدفة في قائمة:"
+      },
+      "items": [
+        {
+          "id": "s1",
+          "text": {
+            "en": "Start at the first element of the list",
+            "ar": "ابدأ من العنصر الأول في القائمة"
+          },
+          "correct_position": 1
+        },
+        {
+          "id": "s2",
+          "text": {
+            "en": "Compare the current element with the target value",
+            "ar": "قارن العنصر الحالي بالقيمة المستهدفة"
+          },
+          "correct_position": 2
+        },
+        {
+          "id": "s3",
+          "text": {
+            "en": "If they match, return the current position",
+            "ar": "إذا تطابقا، أرجع الموضع الحالي"
+          },
+          "correct_position": 3
+        },
+        {
+          "id": "s4",
+          "text": {
+            "en": "If they do not match, move to the next element",
+            "ar": "إذا لم يتطابقا، انتقل إلى العنصر التالي"
+          },
+          "correct_position": 4
+        },
+        {
+          "id": "s5",
+          "text": {
+            "en": "Repeat until the target is found or the end of the list is reached",
+            "ar": "كرّر حتى يُعثر على المستهدف أو يُصل إلى نهاية القائمة"
+          },
+          "correct_position": 5
+        },
+        {
+          "id": "s6",
+          "text": {
+            "en": "If the end of the list is reached without finding the target, report 'not found'",
+            "ar": "إذا وصلت إلى نهاية القائمة بدون العثور على المستهدف، أبلغ 'غير موجود'"
+          },
+          "correct_position": 6
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Perfect order! A linear search starts at the beginning, checks each element, returns if found, moves forward if not, repeats until found or exhausted, and reports 'not found' if the target is absent. This is one of the simplest yet most fundamental search algorithms.",
+          "ar": "ترتيب مثالي! البحث الخطي يبدأ من البداية، يفحص كل عنصر، يرجع الموضع إذا عُثر عليه، ينتقل للأمام إذا لم يُعثر عليه، يكرر حتى يُعثر عليه أو تنتهي القائمة، ويبلغ 'غير موجود' إذا كان المستهدف غائباً. هذه من أبسط وأهم خوارزميات البحث."
+        },
+        "incorrect": {
+          "en": "Close, but the order needs adjustment -- keep practicing! Think of it like checking students in a classroom one by one: (1) Start at the first student, (2) Check if this student is the one you are looking for, (3) If yes -- done!, (4) If no -- move to the next, (5) Repeat until found or you have checked everyone, (6) If nobody matched -- report 'not here'.",
+          "ar": "قريب، لكن الترتيب يحتاج تعديلاً -- استمر في التدريب! فكّر فيه كفحص الطلاب في صف واحداً تلو الآخر: (1) ابدأ من أول طالب، (2) تحقق إن كان هو المطلوب، (3) إذا نعم -- انتهيت!، (4) إذا لا -- انتقل للتالي، (5) كرر حتى تجده أو تفحص الجميع، (6) إذا لم يتطابق أحد -- أبلغ 'غير موجود'."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_09",
+      "type": "true-false",
+      "objective_id": "TO-3",
+      "bloom_level": "understand",
+      "difficulty": "easy",
+      "points": 10,
+      "topic": "Purpose of iteration in algorithms",
+      "stem": {
+        "en": "In algorithm design, iteration (loops) allows a block of instructions to be executed repeatedly until a specified condition is met.",
+        "ar": "في تصميم الخوارزميات، التكرار (Iteration / Loops) يسمح بتنفيذ كتلة من التعليمات بشكل متكرر حتى يتحقق شرط محدد."
+      },
+      "correct": true,
+      "feedback": {
+        "correct": {
+          "en": "Correct! Iteration (or looping) is a control structure that repeats a block of code while or until a condition is satisfied. FOR loops repeat a set number of times; WHILE loops repeat as long as a condition remains true.",
+          "ar": "صحيح! التكرار (أو الحلقات) هو بنية تحكم تُعيد تنفيذ كتلة من الكود بينما أو حتى يتحقق شرط. حلقات FOR تكرر عدداً محدداً من المرات؛ حلقات WHILE تكرر طالما بقي الشرط صحيحاً."
+        },
+        "incorrect": {
+          "en": "Actually, this statement IS true! Iteration means repeating instructions. A FOR loop repeats a specific number of times, and a WHILE loop repeats as long as its condition is true. Without iteration, you would need to write the same instructions hundreds of times to process a list.",
+          "ar": "في الواقع، هذه العبارة صحيحة! التكرار يعني إعادة تنفيذ التعليمات. حلقة FOR تكرر عدداً محدداً من المرات، وحلقة WHILE تكرر طالما شرطها صحيح. بدون التكرار، ستحتاج لكتابة نفس التعليمات مئات المرات لمعالجة قائمة."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_10",
+      "type": "multiple-choice",
+      "objective_id": "TO-3",
+      "bloom_level": "apply",
+      "difficulty": "hard",
+      "points": 10,
+      "topic": "Predict loop output (trace execution)",
+      "stem": {
+        "en": "What is the value of 'total' after this pseudocode executes?\n\ntotal = 0\nFOR i = 1 TO 4\n    total = total + (i * 2)\nEND FOR",
+        "ar": "ما قيمة 'total' بعد تنفيذ هذا الكود الوهمي (Pseudocode)؟\n\ntotal = 0\nFOR i = 1 TO 4\n    total = total + (i * 2)\nEND FOR"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "8",
+            "ar": "8"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "10",
+            "ar": "10"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "20",
+            "ar": "20"
+          },
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "24",
+            "ar": "24"
+          },
+          "correct": false
+        }
+      ],
+      "trace_table": {
+        "note": "This trace table is included for the feedback explanation and for the content renderer to optionally display after submission.",
+        "headers": ["Iteration", "i", "i * 2", "total"],
+        "rows": [
+          ["1", "1", "2", "2"],
+          ["2", "2", "4", "6"],
+          ["3", "3", "6", "12"],
+          ["4", "4", "8", "20"]
+        ]
+      },
+      "feedback": {
+        "correct": {
+          "en": "Correct! Tracing the loop: i=1: total = 0 + 2 = 2. i=2: total = 2 + 4 = 6. i=3: total = 6 + 6 = 12. i=4: total = 12 + 8 = 20. The final value is 20. Great algorithm tracing skills!",
+          "ar": "صحيح! تتبع الحلقة: i=1: total = 0 + 2 = 2. i=2: total = 2 + 4 = 6. i=3: total = 6 + 6 = 12. i=4: total = 12 + 8 = 20. القيمة النهائية هي 20. مهارات تتبع خوارزميات ممتازة!"
+        },
+        "incorrect": {
+          "en": "Not quite yet -- trace tables are your best friend here! Let's go step by step: (1) i=1: total = 0 + (1*2) = 0 + 2 = 2. (2) i=2: total = 2 + (2*2) = 2 + 4 = 6. (3) i=3: total = 6 + (3*2) = 6 + 6 = 12. (4) i=4: total = 12 + (4*2) = 12 + 8 = 20. The answer is 20. Tip: always write out the trace table when predicting loop output.",
+          "ar": "ليس تماماً -- جداول التتبع هي أفضل صديق لك هنا! لنتابع خطوة بخطوة: (1) i=1: total = 0 + (1*2) = 0 + 2 = 2. (2) i=2: total = 2 + (2*2) = 2 + 4 = 6. (3) i=3: total = 6 + (3*2) = 6 + 6 = 12. (4) i=4: total = 12 + (4*2) = 12 + 8 = 20. الجواب هو 20. نصيحة: اكتب دائماً جدول التتبع عند توقع مخرجات الحلقة."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_11",
+      "type": "multiple-choice",
+      "objective_id": "TO-3",
+      "bloom_level": "apply",
+      "difficulty": "medium",
+      "points": 10,
+      "topic": "Trace an if/else conditional branch",
+      "stem": {
+        "en": "What does the following pseudocode output when score = 75?\n\nIF score >= 90 THEN\n    PRINT \"A\"\nELSE IF score >= 80 THEN\n    PRINT \"B\"\nELSE IF score >= 70 THEN\n    PRINT \"C\"\nELSE\n    PRINT \"F\"\nEND IF",
+        "ar": "ما مخرجات الكود الوهمي التالي عندما score = 75؟\n\nIF score >= 90 THEN\n    PRINT \"A\"\nELSE IF score >= 80 THEN\n    PRINT \"B\"\nELSE IF score >= 70 THEN\n    PRINT \"C\"\nELSE\n    PRINT \"F\"\nEND IF"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "A",
+            "ar": "A"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "B",
+            "ar": "B"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "C",
+            "ar": "C"
+          },
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "F",
+            "ar": "F"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! With score = 75: (1) Is 75 >= 90? No. (2) Is 75 >= 80? No. (3) Is 75 >= 70? Yes! So it prints \"C\". The ELSE IF chain stops at the first true condition and does not check further.",
+          "ar": "صحيح! عندما score = 75: (1) هل 75 >= 90؟ لا. (2) هل 75 >= 80؟ لا. (3) هل 75 >= 70؟ نعم! فيطبع \"C\". سلسلة ELSE IF تتوقف عند أول شرط صحيح ولا تفحص المزيد."
+        },
+        "incorrect": {
+          "en": "Let's trace through it together -- you are learning! With score = 75, the algorithm checks each condition from top to bottom: (1) 75 >= 90? FALSE -- skip. (2) 75 >= 80? FALSE -- skip. (3) 75 >= 70? TRUE -- execute this branch: print \"C\". Once a true condition is found, the rest are skipped. The answer is C.",
+          "ar": "لنتتبعها معاً -- أنت تتعلم! عندما score = 75، تفحص الخوارزمية كل شرط من الأعلى للأسفل: (1) 75 >= 90؟ خطأ -- تخطي. (2) 75 >= 80؟ خطأ -- تخطي. (3) 75 >= 70؟ صحيح -- نفّذ هذا الفرع: اطبع \"C\". بمجرد إيجاد شرط صحيح، يتم تخطي الباقي. الجواب هو C."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_12",
+      "type": "multiple-choice",
+      "objective_id": "TO-3",
+      "bloom_level": "apply",
+      "difficulty": "hard",
+      "points": 10,
+      "topic": "Combined iteration + selection: trace output",
+      "stem": {
+        "en": "What is the value of 'count' after this pseudocode executes?\n\nnumbers = [4, 7, 2, 9, 1, 8]\ncount = 0\nFOR each num in numbers\n    IF num > 5 THEN\n        count = count + 1\n    END IF\nEND FOR",
+        "ar": "ما قيمة 'count' بعد تنفيذ هذا الكود الوهمي؟\n\nnumbers = [4, 7, 2, 9, 1, 8]\ncount = 0\nFOR each num in numbers\n    IF num > 5 THEN\n        count = count + 1\n    END IF\nEND FOR"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "2",
+            "ar": "2"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "3",
+            "ar": "3"
+          },
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "4",
+            "ar": "4"
+          },
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "6",
+            "ar": "6"
+          },
+          "correct": false
+        }
+      ],
+      "trace_table": {
+        "headers": ["num", "num > 5?", "count"],
+        "rows": [
+          ["4", "No", "0"],
+          ["7", "Yes", "1"],
+          ["2", "No", "1"],
+          ["9", "Yes", "2"],
+          ["1", "No", "2"],
+          ["8", "Yes", "3"]
+        ]
+      },
+      "feedback": {
+        "correct": {
+          "en": "Correct! The loop checks each number: 4 (no), 7 (yes, count=1), 2 (no), 9 (yes, count=2), 1 (no), 8 (yes, count=3). Three numbers (7, 9, 8) are greater than 5, so count = 3. You successfully combined iteration with selection tracing!",
+          "ar": "صحيح! الحلقة تفحص كل رقم: 4 (لا)، 7 (نعم، count=1)، 2 (لا)، 9 (نعم، count=2)، 1 (لا)، 8 (نعم، count=3). ثلاثة أرقام (7، 9، 8) أكبر من 5، لذا count = 3. نجحت في دمج تتبع التكرار مع الاختيار!"
+        },
+        "incorrect": {
+          "en": "Not quite yet -- let's trace through every element! The loop processes [4, 7, 2, 9, 1, 8] one by one: 4 > 5? No. 7 > 5? Yes (count becomes 1). 2 > 5? No. 9 > 5? Yes (count becomes 2). 1 > 5? No. 8 > 5? Yes (count becomes 3). Final count = 3. Tip: check each element against the condition individually.",
+          "ar": "ليس تماماً -- لنتتبع كل عنصر! الحلقة تعالج [4, 7, 2, 9, 1, 8] واحداً تلو الآخر: 4 > 5؟ لا. 7 > 5؟ نعم (count يصبح 1). 2 > 5؟ لا. 9 > 5؟ نعم (count يصبح 2). 1 > 5؟ لا. 8 > 5؟ نعم (count يصبح 3). القيمة النهائية = 3. نصيحة: افحص كل عنصر مقابل الشرط بشكل فردي."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_13",
+      "type": "multiple-choice",
+      "objective_id": "TO-4",
+      "bloom_level": "evaluate",
+      "difficulty": "hard",
+      "points": 10,
+      "topic": "Identify bug in pseudocode (infinite loop)",
+      "stem": {
+        "en": "This algorithm is supposed to count down from 10 to 1, but it has a bug. What is the problem?\n\nx = 10\nWHILE x > 0\n    PRINT x\n    x = x + 1\nEND WHILE",
+        "ar": "هذه الخوارزمية من المفترض أن تعد تنازلياً من 10 إلى 1، لكن فيها خطأ. ما المشكلة؟\n\nx = 10\nWHILE x > 0\n    PRINT x\n    x = x + 1\nEND WHILE"
+      },
+      "options": [
+        {
+          "id": "a",
+          "text": {
+            "en": "The WHILE condition should be x < 0",
+            "ar": "شرط WHILE يجب أن يكون x < 0"
+          },
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": {
+            "en": "The variable x should start at 1 instead of 10",
+            "ar": "المتغير x يجب أن يبدأ من 1 بدلاً من 10"
+          },
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": {
+            "en": "The update step should be x = x - 1 (subtract instead of add), causing an infinite loop",
+            "ar": "خطوة التحديث يجب أن تكون x = x - 1 (طرح بدل جمع)، مما يسبب حلقة لا نهائية (Infinite Loop)"
+          },
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": {
+            "en": "PRINT should come after the update step",
+            "ar": "PRINT يجب أن تأتي بعد خطوة التحديث"
+          },
+          "correct": false
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Correct! The bug is in the update step: x = x + 1 makes x grow larger (11, 12, 13...), so the condition x > 0 is ALWAYS true, creating an infinite loop. The fix is to change it to x = x - 1, which counts down (10, 9, 8... 1, 0) and eventually makes x > 0 false, ending the loop. This is one of the most common algorithm bugs!",
+          "ar": "صحيح! الخطأ في خطوة التحديث: x = x + 1 تجعل x تكبر (11، 12، 13...)، فيبقى الشرط x > 0 صحيحاً دائماً، مما يسبب حلقة لا نهائية. الإصلاح هو تغييرها إلى x = x - 1 التي تعد تنازلياً (10، 9، 8... 1، 0) وتجعل الشرط x > 0 خاطئاً في النهاية فتنتهي الحلقة. هذا من أشهر أخطاء الخوارزميات!"
+        },
+        "incorrect": {
+          "en": "Not quite yet -- look carefully at what happens to x in each iteration. Starting at x=10, the loop adds 1 each time: x becomes 11, 12, 13... Since x keeps growing, the condition x > 0 is NEVER false, so the loop NEVER stops. This is an infinite loop. The fix: change x = x + 1 to x = x - 1 so that x decreases toward 0.",
+          "ar": "ليس تماماً -- انظر بعناية لما يحدث لـ x في كل تكرار. بدءاً من x=10، الحلقة تضيف 1 كل مرة: x تصبح 11، 12، 13... بما أن x تستمر بالنمو، الشرط x > 0 لا يصبح خاطئاً أبداً، فالحلقة لا تتوقف أبداً. هذه حلقة لا نهائية. الإصلاح: غيّر x = x + 1 إلى x = x - 1 حتى تنقص x نحو 0."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_14",
+      "type": "true-false",
+      "objective_id": "TO-4",
+      "bloom_level": "evaluate",
+      "difficulty": "hard",
+      "points": 10,
+      "topic": "Evaluating a fix for an off-by-one error",
+      "stem": {
+        "en": "Consider this pseudocode that is supposed to print numbers 1 through 5:\n\ni = 1\nWHILE i < 5\n    PRINT i\n    i = i + 1\nEND WHILE\n\nThis algorithm correctly prints 1, 2, 3, 4, and 5.",
+        "ar": "تأمّل هذا الكود الوهمي الذي من المفترض أن يطبع الأرقام من 1 إلى 5:\n\ni = 1\nWHILE i < 5\n    PRINT i\n    i = i + 1\nEND WHILE\n\nهذه الخوارزمية تطبع بشكل صحيح 1، 2، 3، 4، و 5."
+      },
+      "correct": false,
+      "feedback": {
+        "correct": {
+          "en": "Correct -- the statement is FALSE! The loop runs while i < 5, so it prints 1, 2, 3, 4 and then stops when i becomes 5 (because 5 < 5 is false). It misses printing 5! This is a classic off-by-one error. The fix is to change the condition to i <= 5.",
+          "ar": "صحيح -- العبارة خاطئة! الحلقة تعمل بينما i < 5، فتطبع 1، 2، 3، 4 ثم تتوقف عندما i تصبح 5 (لأن 5 < 5 خاطئة). لا تطبع 5! هذا خطأ الواحد الزائد أو الناقص (Off-by-one Error) الكلاسيكي. الإصلاح هو تغيير الشرط إلى i <= 5."
+        },
+        "incorrect": {
+          "en": "Not quite -- let's trace it carefully. Starting at i=1, the loop checks: is i < 5? The loop prints: i=1 (1<5? yes, print 1), i=2 (2<5? yes, print 2), i=3 (3<5? yes, print 3), i=4 (4<5? yes, print 4), i=5 (5<5? NO -- stop!). It only prints 1 through 4, missing 5. This is an off-by-one error. The condition should be i <= 5 to include 5.",
+          "ar": "ليس تماماً -- لنتتبعها بعناية. بدءاً من i=1، تفحص الحلقة: هل i < 5؟ الحلقة تطبع: i=1 (1<5؟ نعم، اطبع 1)، i=2 (2<5؟ نعم، اطبع 2)، i=3 (3<5؟ نعم، اطبع 3)، i=4 (4<5؟ نعم، اطبع 4)، i=5 (5<5؟ لا -- توقف!). تطبع فقط من 1 إلى 4 وتفوت 5. هذا خطأ الواحد الزائد أو الناقص. الشرط يجب أن يكون i <= 5 لتشمل 5."
+        }
+      }
+    },
+
+    {
+      "id": "q_post_15",
+      "type": "ordering",
+      "objective_id": "TO-4",
+      "bloom_level": "evaluate",
+      "difficulty": "hard",
+      "points": 10,
+      "topic": "Algorithm analysis: reading and predicting output with combined structures",
+      "stem": {
+        "en": "This algorithm finds the smallest number in a list. Arrange the steps in the correct order to fix the BROKEN version shown below:\n\nBROKEN version (reference only -- do NOT sort this):\n  result = 0\n  FOR each num in list\n      IF num < result THEN result = num\n  PRINT result\n\nArrange the CORRECT steps below:",
+        "ar": "هذه الخوارزمية تجد أصغر رقم في قائمة. رتّب الخطوات بالترتيب الصحيح لإصلاح النسخة المعطوبة أدناه:\n\nالنسخة المعطوبة (للمرجع فقط -- لا ترتّب هذه):\n  result = 0\n  FOR each num in list\n      IF num < result THEN result = num\n  PRINT result\n\nرتّب الخطوات الصحيحة أدناه:"
+      },
+      "items": [
+        {
+          "id": "s1",
+          "text": {
+            "en": "Set result = first element of the list",
+            "ar": "اجعل result = العنصر الأول في القائمة"
+          },
+          "correct_position": 1
+        },
+        {
+          "id": "s2",
+          "text": {
+            "en": "FOR each remaining num in the list (starting from the second element)",
+            "ar": "لكل num متبقٍ في القائمة (بدءاً من العنصر الثاني)"
+          },
+          "correct_position": 2
+        },
+        {
+          "id": "s3",
+          "text": {
+            "en": "IF num < result THEN set result = num",
+            "ar": "إذا كان num < result فاجعل result = num"
+          },
+          "correct_position": 3
+        },
+        {
+          "id": "s4",
+          "text": {
+            "en": "END FOR (repeat for all remaining elements)",
+            "ar": "نهاية الحلقة (كرر لجميع العناصر المتبقية)"
+          },
+          "correct_position": 4
+        },
+        {
+          "id": "s5",
+          "text": {
+            "en": "PRINT result (the smallest number found)",
+            "ar": "اطبع result (أصغر رقم تم العثور عليه)"
+          },
+          "correct_position": 5
+        }
+      ],
+      "feedback": {
+        "correct": {
+          "en": "Excellent evaluation and fix! The broken version had two bugs: (1) initializing result to 0 instead of the first list element -- if all numbers are positive and greater than 0, it would incorrectly return 0. (2) Starting the loop from the first element instead of the second, which is redundant but not incorrect. By initializing result to the first element and looping from the second, the algorithm correctly finds the minimum value in any list of numbers.",
+          "ar": "تقييم وإصلاح ممتاز! النسخة المعطوبة كان فيها خطأان: (1) تهيئة result بـ 0 بدلاً من أول عنصر في القائمة -- إذا كانت جميع الأرقام موجبة وأكبر من 0، ستُرجع 0 بشكل خاطئ. (2) بدء الحلقة من العنصر الأول بدل الثاني، وهو زائد لكن ليس خطأ. بتهيئة result بأول عنصر والتكرار من الثاني، تجد الخوارزمية بشكل صحيح أصغر قيمة في أي قائمة أرقام."
+        },
+        "incorrect": {
+          "en": "Close, but the order needs adjustment -- evaluating and fixing algorithms is a skill that improves with practice! The key insight: the BROKEN version starts result at 0. If your list is [3, 7, 2], the broken version returns 0 (which is not even in the list!). The FIX: (1) Initialize result = first element. (2) Loop through REMAINING elements. (3) Update result if a smaller number is found. (4) End loop. (5) Print result. This guarantees result is always an actual list element.",
+          "ar": "قريب، لكن الترتيب يحتاج تعديلاً -- تقييم وإصلاح الخوارزميات مهارة تتحسن بالممارسة! النقطة الأساسية: النسخة المعطوبة تبدأ result بـ 0. إذا كانت قائمتك [3, 7, 2]، النسخة المعطوبة تُرجع 0 (وهو ليس حتى في القائمة!). الإصلاح: (1) هيّئ result = أول عنصر. (2) كرر للعناصر المتبقية. (3) حدّث result إذا وُجد رقم أصغر. (4) نهاية الحلقة. (5) اطبع result. هذا يضمن أن result دائماً عنصر فعلي من القائمة."
+        }
+      }
+    }
+
+  ],
+
+  "results_feedback": {
+    "pass_90_plus": {
+      "en": "Outstanding! You scored {score}% -- you truly understand computational thinking! You have demonstrated mastery of all four objectives. You are ready for Chapter 2!",
+      "ar": "ممتاز! حصلت على {score}% -- أنت تفهم التفكير الحاسوبي حقاً! أثبتت إتقانك لجميع الأهداف الأربعة. أنت جاهز للوحدة الثانية!"
+    },
+    "pass_70_89": {
+      "en": "Well done! You passed with {score}%. To strengthen your understanding further, consider reviewing the topics where you lost points. You can always retry for a higher score!",
+      "ar": "أحسنت! نجحت بنسبة {score}%. لتعزيز فهمك أكثر، راجع المواضيع التي فقدت فيها نقاطاً. يمكنك دائماً إعادة المحاولة للحصول على درجة أعلى!"
+    },
+    "fail_50_69": {
+      "en": "You scored {score}% -- you are getting there! You need 70% to pass. Review the areas below and try again. Every attempt teaches you something new.",
+      "ar": "حصلت على {score}% -- أنت في الطريق الصحيح! تحتاج 70% للنجاح. راجع المجالات أدناه وحاول مرة أخرى. كل محاولة تعلّمك شيئاً جديداً."
+    },
+    "fail_below_50": {
+      "en": "You scored {score}%. This tells us which areas to focus on -- and that is valuable information! We recommend reviewing these SCOs before retrying: {remediation_links}. Remember: understanding grows with each attempt.",
+      "ar": "حصلت على {score}%. هذا يخبرنا أي المجالات نركز عليها -- وهذه معلومة قيّمة! نوصي بمراجعة هذه الدروس قبل إعادة المحاولة: {remediation_links}. تذكّر: الفهم ينمو مع كل محاولة."
+    },
+    "remediation_map": {
+      "TO-1": {
+        "label": { "en": "CT Principles", "ar": "مبادئ التفكير الحاسوبي" },
+        "review_scos": ["sco_04_lecture_ct", "sco_07_activity_ct"]
+      },
+      "TO-2": {
+        "label": { "en": "Logical & Algorithmic Thinking", "ar": "التفكير المنطقي والخوارزمي" },
+        "review_scos": ["sco_06_video_logical", "sco_08_activity_logic", "sco_09_activity_algo"]
+      },
+      "TO-3": {
+        "label": { "en": "Iteration & Selection", "ar": "التكرار والاختيار" },
+        "review_scos": ["sco_10_lecture_control", "sco_12_activity_iteration", "sco_13_activity_selection"]
+      },
+      "TO-4": {
+        "label": { "en": "Algorithm Evaluation", "ar": "تقييم الخوارزميات" },
+        "review_scos": ["sco_14_activity_example", "sco_15_discussion_gotchas"]
+      }
+    }
+  }
+}

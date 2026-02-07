@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نشاط: ما هو التفكير الحاسوبي؟ | التفكير الحاسوبي</title>
+
+  <!-- Layered CSS: base -> theme -> decorations -> course-custom -->
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/decorations.css">
+
+  <style>
+    /* ==========================================================================
+       SCO 07 — Custom Styles (Activity-specific only)
+       ========================================================================== */
+
+    /* -- Activity container (fixed-slide layout) -- */
+    .activity-viewport {
+      width: 100%;
+      max-width: var(--max-content-width, 900px);
+      margin: 0 auto;
+      min-height: calc(100vh - 140px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* -- Step indicator -- */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm, 8px);
+      margin-bottom: var(--space-lg, 24px);
+    }
+
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--color-border-highlight, #334155);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-muted, #64748B);
+      transition: all 0.3s ease;
+    }
+
+    .step-dot.active {
+      border-color: var(--color-primary, #22D3EE);
+      color: var(--color-primary, #22D3EE);
+      box-shadow: var(--glow-primary);
+    }
+
+    .step-dot.completed {
+      border-color: var(--color-success, #34D399);
+      background: var(--color-success, #34D399);
+      color: var(--color-text-on-bright, #0B1120);
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--color-border, #1E293B);
+      max-width: 60px;
+    }
+
+    .step-line.completed {
+      background: var(--color-success, #34D399);
+    }
+
+    /* -- Activity Slide (only one visible at a time) -- */
+    .activity-slide {
+      display: none;
+      flex: 1;
+      animation: slideIn 0.3s var(--ease-snappy, ease) forwards;
+    }
+
+    .activity-slide.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* -- Pillar recap mini cards -- */
+    .pillar-recap {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-sm, 8px);
+      margin-bottom: var(--space-lg, 24px);
+    }
+
+    .pillar-mini {
+      padding: var(--space-sm, 8px) var(--space-md, 16px);
+      border-radius: var(--radius-md, 6px);
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .pillar-mini[data-pillar="decomposition"] {
+      color: var(--syntax-keyword, #22D3EE);
+      border-color: rgba(34, 211, 238, 0.3);
+      background: rgba(34, 211, 238, 0.06);
+    }
+    .pillar-mini[data-pillar="pattern"] {
+      color: var(--syntax-string, #34D399);
+      border-color: rgba(52, 211, 153, 0.3);
+      background: rgba(52, 211, 153, 0.06);
+    }
+    .pillar-mini[data-pillar="abstraction"] {
+      color: var(--syntax-type, #A78BFA);
+      border-color: rgba(167, 139, 250, 0.3);
+      background: rgba(167, 139, 250, 0.06);
+    }
+    .pillar-mini[data-pillar="algorithm"] {
+      color: var(--syntax-function, #F59E0B);
+      border-color: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.06);
+    }
+
+    /* -- Drag-and-Drop Categorization Activity -- */
+    .drag-source-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm, 8px);
+      padding: var(--space-md, 16px);
+      background: var(--color-surface, #141B2D);
+      border: 1px solid var(--color-border, #1E293B);
+      border-radius: var(--radius-md, 6px);
+      min-height: 60px;
+      margin-bottom: var(--space-lg, 24px);
+    }
+
+    .scenario-card {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--color-surface-elevated, #1E293B);
+      border: 1px solid var(--color-border-highlight, #334155);
+      border-radius: var(--radius-sm, 4px);
+      font-family: var(--font-body-ar, Cairo);
+      font-size: 0.85rem;
+      color: var(--color-text, #E2E8F0);
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s ease;
+      max-width: 100%;
+    }
+
+    .scenario-card:hover {
+      border-color: var(--color-primary, #22D3EE);
+      box-shadow: var(--glow-primary);
+    }
+
+    .scenario-card:active { cursor: grabbing; }
+
+    .scenario-card.placed {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .scenario-card .en-term {
+      direction: ltr;
+      unicode-bidi: embed;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-text-secondary, #94A3B8);
+      margin-right: 6px;
+    }
+
+    .pillar-zones {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md, 16px);
+      margin-bottom: var(--space-lg, 24px);
+    }
+
+    .pillar-zone {
+      padding: var(--space-md, 16px);
+      border-radius: var(--radius-md, 6px);
+      min-height: 120px;
+      transition: all 0.2s ease;
+    }
+
+    .pillar-zone[data-pillar="decomposition"] {
+      border: 2px dashed rgba(34, 211, 238, 0.3);
+      background: rgba(34, 211, 238, 0.03);
+    }
+    .pillar-zone[data-pillar="pattern"] {
+      border: 2px dashed rgba(52, 211, 153, 0.3);
+      background: rgba(52, 211, 153, 0.03);
+    }
+    .pillar-zone[data-pillar="abstraction"] {
+      border: 2px dashed rgba(167, 139, 250, 0.3);
+      background: rgba(167, 139, 250, 0.03);
+    }
+    .pillar-zone[data-pillar="algorithm"] {
+      border: 2px dashed rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.03);
+    }
+
+    .pillar-zone.drag-over {
+      transform: scale(1.02);
+      border-style: solid;
+    }
+    .pillar-zone[data-pillar="decomposition"].drag-over { background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 20px rgba(34, 211, 238, 0.15); }
+    .pillar-zone[data-pillar="pattern"].drag-over { background: rgba(52, 211, 153, 0.1); box-shadow: 0 0 20px rgba(52, 211, 153, 0.15); }
+    .pillar-zone[data-pillar="abstraction"].drag-over { background: rgba(167, 139, 250, 0.1); box-shadow: 0 0 20px rgba(167, 139, 250, 0.15); }
+    .pillar-zone[data-pillar="algorithm"].drag-over { background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+
+    .zone-title {
+      font-family: var(--font-heading-ar);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: var(--space-sm, 8px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .zone-title .en-label {
+      direction: ltr;
+      unicode-bidi: embed;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 400;
+      opacity: 0.7;
+    }
+
+    .zone-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 40px;
+    }
+
+    .zone-item {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm, 4px);
+      font-size: 0.8rem;
+      animation: popIn 0.3s var(--ease-spring, ease) forwards;
+    }
+
+    .zone-item.correct {
+      background: var(--color-success-bg);
+      border: 1px solid var(--color-success);
+      color: var(--color-success);
+    }
+
+    .zone-item.incorrect {
+      background: var(--color-error-bg);
+      border: 1px solid var(--color-error);
+      color: var(--color-error);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    /* -- Memory Match overrides for dark theme -- */
+    .mm-card-front {
+      background: linear-gradient(135deg, var(--color-primary, #22D3EE), var(--color-secondary, #A78BFA)) !important;
+      font-size: 1.5rem;
+    }
+
+    .mm-card-back {
+      background: var(--color-surface-elevated, #1E293B) !important;
+      color: var(--color-text, #E2E8F0) !important;
+      border-color: var(--color-border-highlight, #334155) !important;
+      font-family: var(--font-body-ar);
+      font-size: 0.85rem;
+      padding: 10px;
+    }
+
+    .mm-card.matched .mm-card-back {
+      border-color: var(--color-success) !important;
+      background: var(--color-success-bg) !important;
+      color: var(--color-success) !important;
+      box-shadow: var(--glow-accent);
+    }
+
+    .mm-stat {
+      background: var(--color-surface-elevated, #1E293B);
+      color: var(--color-text-secondary, #94A3B8);
+      font-family: var(--font-mono);
+    }
+
+    .mm-stat strong {
+      color: var(--color-primary, #22D3EE);
+    }
+
+    .mm-grid {
+      gap: 10px;
+    }
+
+    .mm-card { aspect-ratio: 1 / 1.15; }
+
+    .mm-complete {
+      background: var(--color-success-bg) !important;
+      border-color: var(--color-success) !important;
+    }
+
+    /* -- Reflection Callout -- */
+    .reflection-card {
+      background: var(--color-surface, #141B2D);
+      border: 1px solid var(--color-border-highlight, #334155);
+      border-radius: var(--radius-md, 6px);
+      padding: var(--space-lg, 24px);
+    }
+
+    .reflection-card .key-insight {
+      background: rgba(34, 211, 238, 0.06);
+      border-right: 3px solid var(--color-primary, #22D3EE);
+      padding: var(--space-md, 16px);
+      border-radius: var(--radius-sm, 4px);
+      margin-top: var(--space-md, 16px);
+    }
+
+    /* -- Terminal feedback -- */
+    .terminal-feedback {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: var(--space-sm, 8px) var(--space-md, 16px);
+      border-radius: var(--radius-sm, 4px);
+      margin-top: var(--space-sm, 8px);
+      direction: ltr;
+      text-align: left;
+    }
+
+    .terminal-feedback.success {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      border: 1px solid var(--color-success);
+    }
+
+    .terminal-feedback.error {
+      background: var(--color-error-bg);
+      color: var(--color-error);
+      border: 1px solid var(--color-error);
+    }
+
+    /* -- Points display -- */
+    .points-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gradient-points);
+      color: var(--color-text-on-bright);
+      padding: 4px 14px;
+      border-radius: var(--radius-pill, 9999px);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .points-float {
+      position: fixed;
+      z-index: 1000;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--color-success);
+      pointer-events: none;
+      animation: floatUp 1s ease forwards;
+    }
+
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-60px); }
+    }
+
+    /* -- Activity header -- */
+    .activity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md, 16px);
+      flex-wrap: wrap;
+      gap: var(--space-sm, 8px);
+    }
+
+    .activity-title {
+      font-family: var(--font-heading-ar);
+      font-size: var(--font-size-h3, 1.25rem);
+      color: var(--color-text, #E2E8F0);
+    }
+
+    /* -- Score summary card -- */
+    .score-summary {
+      background: var(--color-surface, #141B2D);
+      border: 1px solid var(--color-border-highlight, #334155);
+      border-radius: var(--radius-md, 6px);
+      padding: var(--space-lg, 24px);
+      text-align: center;
+      margin-top: var(--space-lg, 24px);
+    }
+
+    .score-big {
+      font-family: var(--font-mono);
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--color-primary, #22D3EE);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.85rem;
+      color: var(--color-text-secondary, #94A3B8);
+      margin-top: var(--space-xs, 4px);
+    }
+
+    /* Keyboard instruction for drag-drop */
+    .kb-instructions {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-top: var(--space-xs);
+      display: none;
+    }
+
+    .kb-instructions.show { display: block; }
+
+    /* -- Responsive -- */
+    @media (max-width: 600px) {
+      .pillar-zones { grid-template-columns: 1fr; }
+      .pillar-recap { grid-template-columns: repeat(2, 1fr); }
+      .mm-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activity-slide { animation: none; }
+      .zone-item { animation: none; }
+      .zone-item.incorrect { animation: none; }
+      .points-float { animation: none; display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Skip navigation -->
+  <a href="#main-content" class="skip-link">تخطي إلى المحتوى الرئيسي</a>
+
+  <div class="sco-container">
+    <!-- Header -->
+    <header class="sco-header" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border);">
+      <div style="flex: 1;">
+        <div class="progress-bar" style="height: 4px; margin-bottom: var(--space-sm);">
+          <div class="progress-fill" id="progress" style="width: 0%; height: 100%;"></div>
+        </div>
+        <h1 class="lesson-title" style="font-size: var(--font-size-h2); margin: 0;">
+          نشاط: ما هو التفكير الحاسوبي؟
+          <span style="font-family: var(--font-mono); font-size: 0.65em; color: var(--color-text-muted); display: block; direction: ltr; text-align: right;">// What is Computational Thinking?</span>
+        </h1>
+      </div>
+      <div class="points-display" id="pointsBadge" aria-live="polite" aria-label="النقاط">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span id="pointsValue">0</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="sco-content" id="main-content" role="main">
+      <div class="activity-viewport">
+
+        <!-- Step Indicator -->
+        <div class="step-indicator" role="navigation" aria-label="خطوات النشاط">
+          <div class="step-dot active" id="step1" aria-current="step">1</div>
+          <div class="step-line" id="line1"></div>
+          <div class="step-dot" id="step2">2</div>
+          <div class="step-line" id="line2"></div>
+          <div class="step-dot" id="step3">3</div>
+        </div>
+
+        <!-- ====================================================
+             ACTIVITY 1: Drag-and-Drop Categorization
+             ==================================================== -->
+        <section class="activity-slide active" id="slide1" aria-label="النشاط الأول: تصنيف السيناريوهات">
+
+          <div class="activity-header">
+            <h2 class="activity-title stagger-item">النشاط 1: صنّف السيناريوهات</h2>
+            <span class="overline overline--comment stagger-item" style="direction: ltr;">ACTIVITY_1</span>
+          </div>
+
+          <p class="stagger-item" style="color: var(--color-text-secondary); margin-bottom: var(--space-md); font-size: 0.95rem;">
+            اسحب كل سيناريو إلى الركن الصحيح من أركان التفكير الحاسوبي (CT Pillars).
+            <br>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-muted); direction: ltr; unicode-bidi: embed;">Drag each scenario to the correct CT pillar zone.</span>
+          </p>
+
+          <!-- Quick recap of the 4 pillars -->
+          <div class="pillar-recap stagger-item">
+            <div class="pillar-mini" data-pillar="decomposition">التحليل<br><span class="en-label" style="direction: ltr; display: block;">Decomposition</span></div>
+            <div class="pillar-mini" data-pillar="pattern">الأنماط<br><span class="en-label" style="direction: ltr; display: block;">Pattern Recognition</span></div>
+            <div class="pillar-mini" data-pillar="abstraction">التجريد<br><span class="en-label" style="direction: ltr; display: block;">Abstraction</span></div>
+            <div class="pillar-mini" data-pillar="algorithm">الخوارزمي<br><span class="en-label" style="direction: ltr; display: block;">Algorithmic Thinking</span></div>
+          </div>
+
+          <!-- Scenario cards (source area) -->
+          <div class="drag-source-area stagger-item" id="scenarioSource" role="listbox" aria-label="السيناريوهات القابلة للسحب">
+            <!-- Cards populated by JS -->
+          </div>
+
+          <!-- Keyboard instructions -->
+          <p class="kb-instructions" id="kbHint" aria-live="polite">
+            تم تحديد العنصر. استخدم Tab للانتقال إلى منطقة الإسقاط واضغط Enter للوضع. اضغط Escape للإلغاء.
+          </p>
+
+          <!-- Drop zones -->
+          <div class="pillar-zones stagger-item">
+            <div class="pillar-zone" data-pillar="decomposition" role="listitem" aria-label="منطقة التحليل">
+              <div class="zone-title">
+                <span style="color: var(--syntax-keyword);">&#9679;</span>
+                التحليل <span class="en-label">(Decomposition)</span>
+              </div>
+              <div class="zone-items" id="zone-decomposition"></div>
+            </div>
+            <div class="pillar-zone" data-pillar="pattern" role="listitem" aria-label="منطقة التعرف على الأنماط">
+              <div class="zone-title">
+                <span style="color: var(--syntax-string);">&#9679;</span>
+                التعرف على الأنماط <span class="en-label">(Pattern Recognition)</span>
+              </div>
+              <div class="zone-items" id="zone-pattern"></div>
+            </div>
+            <div class="pillar-zone" data-pillar="abstraction" role="listitem" aria-label="منطقة التجريد">
+              <div class="zone-title">
+                <span style="color: var(--syntax-type);">&#9679;</span>
+                التجريد <span class="en-label">(Abstraction)</span>
+              </div>
+              <div class="zone-items" id="zone-abstraction"></div>
+            </div>
+            <div class="pillar-zone" data-pillar="algorithm" role="listitem" aria-label="منطقة التفكير الخوارزمي">
+              <div class="zone-title">
+                <span style="color: var(--syntax-function);">&#9679;</span>
+                التفكير الخوارزمي <span class="en-label">(Algorithmic Thinking)</span>
+              </div>
+              <div class="zone-items" id="zone-algorithm"></div>
+            </div>
+          </div>
+
+          <!-- Terminal feedback -->
+          <div id="dragFeedback" aria-live="polite"></div>
+
+          <!-- Score for this activity -->
+          <div id="dragScore" style="margin-top: var(--space-sm); font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-text-muted); direction: ltr; text-align: left;">
+            // score: <span id="dragCorrect">0</span> / <span id="dragTotal">8</span> correct
+          </div>
+
+        </section>
+
+        <!-- ====================================================
+             ACTIVITY 2: Memory Match Game
+             ==================================================== -->
+        <section class="activity-slide" id="slide2" aria-label="النشاط الثاني: لعبة المطابقة">
+
+          <div class="activity-header">
+            <h2 class="activity-title">النشاط 2: طابق الأركان بتعريفاتها</h2>
+            <span class="overline overline--comment" style="direction: ltr;">ACTIVITY_2</span>
+          </div>
+
+          <p style="color: var(--color-text-secondary); margin-bottom: var(--space-md); font-size: 0.95rem;">
+            اقلب البطاقات وطابق كل ركن من أركان التفكير الحاسوبي بتعريفه الصحيح.
+            <br>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-muted); direction: ltr; unicode-bidi: embed;">Flip cards and match each CT pillar to its definition. 4 pairs to find.</span>
+          </p>
+
+          <!-- Memory Match Component (adapted from template) -->
+          <div class="memory-match" role="application" aria-label="لعبة مطابقة البطاقات">
+            <div class="mm-header">
+              <span class="mm-stat">المطابقات: <strong id="mm-matches">0</strong> / <span id="mm-total">4</span></span>
+              <span class="mm-stat">المحاولات: <strong id="mm-attempts">0</strong></span>
+            </div>
+            <div class="mm-grid" id="mm-grid" role="grid" aria-label="شبكة البطاقات" style="grid-template-columns: repeat(4, 1fr);"></div>
+            <div class="mm-complete" id="mm-complete" role="status">
+              <h3 style="color: var(--color-success);">&#10004; ممتاز! تم مطابقة جميع الأزواج!</h3>
+              <p>أكملت اللعبة في <strong id="mm-final-attempts">0</strong> محاولة.</p>
+            </div>
+          </div>
+          <div id="mm-announce" class="sr-only" aria-live="polite"></div>
+
+          <div id="memoryScore" style="margin-top: var(--space-md); font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-text-muted); direction: ltr; text-align: left;">
+            // matches: <span id="memMatchCount">0</span> / 4 | bonus: speed
+          </div>
+
+        </section>
+
+        <!-- ====================================================
+             ACTIVITY 3: Reflection Summary
+             ==================================================== -->
+        <section class="activity-slide" id="slide3" aria-label="النشاط الثالث: التأمل والملخص">
+
+          <div class="activity-header">
+            <h2 class="activity-title">النشاط 3: ماذا تعلمت؟</h2>
+            <span class="overline overline--comment" style="direction: ltr;">REFLECTION</span>
+          </div>
+
+          <div class="reflection-card">
+            <h3 style="color: var(--color-text); font-size: 1.1rem; margin-bottom: var(--space-md);">
+              &#128161; ملخص ما تعلمته
+            </h3>
+
+            <p style="color: var(--color-text-secondary); line-height: 1.8; margin-bottom: var(--space-md);">
+              لقد تدربت على تصنيف المسائل الحقيقية حسب أركان التفكير الحاسوبي الأربعة، وطابقت كل ركن بتعريفه. الآن أنت تستطيع <strong style="color: var(--color-text);">التمييز</strong> بين هذه الأركان وتطبيقها على مشكلات جديدة.
+            </p>
+
+            <div class="key-insight">
+              <h4 style="color: var(--color-primary); font-family: var(--font-heading-ar); font-size: 0.95rem; margin-bottom: var(--space-sm);">
+                &#9889; الفكرة الأساسية (Key Insight)
+              </h4>
+              <p style="color: var(--color-text); font-size: 0.9rem; line-height: 1.8;">
+                التفكير الحاسوبي ليس مجرد برمجة -- إنه طريقة تفكير تستخدمها في حياتك اليومية. كل مرة تقسّم مشكلة كبيرة، تلاحظ نمطاً، تتجاهل التفاصيل غير المهمة، أو تكتب خطوات مرتبة -- أنت تمارس التفكير الحاسوبي!
+              </p>
+            </div>
+
+            <div class="score-summary" id="finalSummary">
+              <div class="score-big" id="totalPointsFinal">0</div>
+              <div class="score-label">النقاط المكتسبة (Total Points)</div>
+              <div style="margin-top: var(--space-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-muted); direction: ltr; text-align: center;">
+                // Activity 1: <span id="a1score">0</span>pts | Activity 2: <span id="a2score">0</span>pts
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+      </div><!-- end activity-viewport -->
+    </main>
+
+    <!-- Navigation -->
+    <nav class="sco-nav" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-md) 0; border-top: 1px solid var(--color-border);">
+      <button class="btn-prev" id="prevBtn" disabled aria-label="السابق">&#8594; السابق</button>
+      <span class="page-indicator" id="pageIndicator" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-text-muted);">
+        <!-- direction: ltr for the indicator text -->
+        <span style="direction: ltr; unicode-bidi: embed;">Activity 1 of 3</span>
+      </span>
+      <button class="btn-next" id="nextBtn" aria-label="التالي">التالي &#8592;</button>
+    </nav>
+  </div>
+
+  <!-- Screen reader live region for announcements -->
+  <div id="srAnnounce" class="sr-only" aria-live="assertive"></div>
+
+  <!-- SCORM & Engine scripts -->
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+
+  <script>
+  /* ==========================================================================
+     SCO 07 — Interactive Activity: What is Computational Thinking?
+     ==========================================================================
+     Three activities:
+     1. Drag-and-Drop Categorization (8 scenarios -> 4 CT pillars)
+     2. Memory Match Game (4 pillar-definition pairs)
+     3. Reflection Summary + Completion
+     ========================================================================== */
+
+  (function() {
+    'use strict';
+
+    // ---- SCORM initialization ----
+    var scorm = new SCORMWrapper();
+    scorm.initialize();
+
+    var startTime = Date.now();
+    var totalPoints = 0;
+    var activity1Points = 0;
+    var activity2Points = 0;
+    var currentSlide = 0;
+    var activitiesCompleted = [false, false, false];
+
+    // ---- Resume from bookmark ----
+    var savedState = null;
+    try {
+      var raw = scorm.getValue('cmi.suspend_data');
+      if (raw) savedState = JSON.parse(raw);
+    } catch(e) { /* ignore parse errors */ }
+
+    if (savedState && savedState.sco === 'sco_07') {
+      totalPoints = savedState.totalPoints || 0;
+      activity1Points = savedState.a1 || 0;
+      activity2Points = savedState.a2 || 0;
+      activitiesCompleted = savedState.completed || [false, false, false];
+      currentSlide = savedState.slide || 0;
+    }
+
+    updatePointsDisplay();
+
+    // ==========================================================================
+    // ACTIVITY 1: Drag-and-Drop Categorization
+    // ==========================================================================
+
+    var scenarios = [
+      { id: 's1', text: 'تقسيم مشروع برمجي كبير إلى وحدات صغيرة', en: 'Breaking a large project into small modules', pillar: 'decomposition' },
+      { id: 's2', text: 'ملاحظة أن جميع مواقع التسوق تحتوي على سلة شراء', en: 'Noticing all shopping sites have a cart', pillar: 'pattern' },
+      { id: 's3', text: 'استخدام خريطة المترو بدلاً من الخريطة الجغرافية', en: 'Using a metro map instead of a geographic map', pillar: 'abstraction' },
+      { id: 's4', text: 'كتابة خطوات مرتبة لعمل كوب شاي', en: 'Writing step-by-step instructions for making tea', pillar: 'algorithm' },
+      { id: 's5', text: 'تفكيك وصفة طبخ معقدة إلى مراحل: التحضير، الطهي، التقديم', en: 'Decomposing a recipe into phases: prep, cook, serve', pillar: 'decomposition' },
+      { id: 's6', text: 'اكتشاف أن المبيعات ترتفع دائماً في رمضان', en: 'Discovering sales always rise during Ramadan', pillar: 'pattern' },
+      { id: 's7', text: 'تجاهل لون الخط عند مقارنة محتوى نصين', en: 'Ignoring font color when comparing two texts', pillar: 'abstraction' },
+      { id: 's8', text: 'ترتيب خطوات البحث في قاموس بالتسلسل الصحيح', en: 'Ordering dictionary search steps in correct sequence', pillar: 'algorithm' }
+    ];
+
+    var dragCorrectCount = 0;
+    var dragTotalAttempts = 0;
+    var placedScenarios = {};
+    var kbGrabbedItem = null;
+
+    function initDragDrop() {
+      var source = document.getElementById('scenarioSource');
+      source.innerHTML = '';
+
+      // Shuffle scenarios
+      var shuffled = scenarios.slice();
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+      }
+
+      shuffled.forEach(function(s) {
+        var card = document.createElement('div');
+        card.className = 'scenario-card';
+        card.draggable = true;
+        card.dataset.id = s.id;
+        card.dataset.pillar = s.pillar;
+        card.setAttribute('role', 'option');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-grabbed', 'false');
+        card.setAttribute('aria-label', s.text);
+        card.innerHTML = s.text;
+
+        // HTML5 Drag
+        card.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', s.id);
+          card.style.opacity = '0.4';
+        });
+        card.addEventListener('dragend', function() {
+          card.style.opacity = '1';
+        });
+
+        // Touch events
+        card.addEventListener('touchstart', handleCardTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleCardTouchMove, { passive: false });
+        card.addEventListener('touchend', handleCardTouchEnd);
+
+        // Keyboard
+        card.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (kbGrabbedItem === card) {
+              cancelKbGrab();
+            } else {
+              if (kbGrabbedItem) cancelKbGrab();
+              kbGrabbedItem = card;
+              card.classList.add('kb-grabbed');
+              card.setAttribute('aria-grabbed', 'true');
+              card.style.boxShadow = '0 0 0 3px rgba(34, 211, 238, 0.5)';
+              document.getElementById('kbHint').classList.add('show');
+              // Make zones focusable
+              document.querySelectorAll('.pillar-zone').forEach(function(z) { z.tabIndex = 0; });
+              srAnnounce('تم تحديد: ' + s.text + '. انتقل إلى منطقة الإسقاط واضغط Enter.');
+            }
+          }
+          if (e.key === 'Escape' && kbGrabbedItem) {
+            e.preventDefault();
+            cancelKbGrab();
+          }
+        });
+
+        if (savedState && savedState.placed && savedState.placed[s.id]) {
+          card.classList.add('placed');
+          placedScenarios[s.id] = true;
+        } else {
+          source.appendChild(card);
+        }
+      });
+
+      // Restore placed items in zones
+      if (savedState && savedState.placed) {
+        scenarios.forEach(function(s) {
+          if (savedState.placed[s.id]) {
+            var zone = document.getElementById('zone-' + s.pillar);
+            if (zone) {
+              var item = document.createElement('span');
+              item.className = 'zone-item correct';
+              item.textContent = s.text;
+              zone.appendChild(item);
+            }
+          }
+        });
+        dragCorrectCount = Object.keys(savedState.placed).length;
+        document.getElementById('dragCorrect').textContent = dragCorrectCount;
+      }
+
+      // Setup drop zones
+      document.querySelectorAll('.pillar-zone').forEach(function(zone) {
+        zone.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          zone.classList.add('drag-over');
+        });
+        zone.addEventListener('dragleave', function() {
+          zone.classList.remove('drag-over');
+        });
+        zone.addEventListener('drop', function(e) {
+          e.preventDefault();
+          zone.classList.remove('drag-over');
+          var sid = e.dataTransfer.getData('text/plain');
+          handleScenarioDrop(sid, zone.dataset.pillar);
+        });
+
+        // Keyboard drop
+        zone.addEventListener('keydown', function(e) {
+          if ((e.key === 'Enter' || e.key === ' ') && kbGrabbedItem) {
+            e.preventDefault();
+            var sid = kbGrabbedItem.dataset.id;
+            handleScenarioDrop(sid, zone.dataset.pillar);
+            kbGrabbedItem = null;
+            cleanupKbMode();
+          }
+          if (e.key === 'Escape' && kbGrabbedItem) {
+            e.preventDefault();
+            cancelKbGrab();
+          }
+        });
+      });
+    }
+
+    // Touch drag state
+    var touchCard = null;
+    var touchClone = null;
+
+    function handleCardTouchStart(e) {
+      touchCard = e.currentTarget;
+      var rect = touchCard.getBoundingClientRect();
+      touchClone = touchCard.cloneNode(true);
+      touchClone.style.position = 'fixed';
+      touchClone.style.width = rect.width + 'px';
+      touchClone.style.zIndex = '9999';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.opacity = '0.85';
+      touchClone.style.boxShadow = 'var(--shadow-lg)';
+      document.body.appendChild(touchClone);
+      touchCard.style.opacity = '0.3';
+    }
+
+    function handleCardTouchMove(e) {
+      e.preventDefault();
+      if (!touchClone) return;
+      var touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - 40) + 'px';
+      touchClone.style.top = (touch.clientY - 20) + 'px';
+      document.querySelectorAll('.pillar-zone').forEach(function(z) {
+        var r = z.getBoundingClientRect();
+        if (touch.clientX >= r.left && touch.clientX <= r.right && touch.clientY >= r.top && touch.clientY <= r.bottom) {
+          z.classList.add('drag-over');
+        } else {
+          z.classList.remove('drag-over');
+        }
+      });
+    }
+
+    function handleCardTouchEnd(e) {
+      if (!touchCard || !touchClone) return;
+      var touch = e.changedTouches[0];
+      document.body.removeChild(touchClone);
+      touchClone = null;
+      document.querySelectorAll('.pillar-zone').forEach(function(z) {
+        z.classList.remove('drag-over');
+        var r = z.getBoundingClientRect();
+        if (touch.clientX >= r.left && touch.clientX <= r.right && touch.clientY >= r.top && touch.clientY <= r.bottom) {
+          handleScenarioDrop(touchCard.dataset.id, z.dataset.pillar);
+        }
+      });
+      if (touchCard) touchCard.style.opacity = '1';
+      touchCard = null;
+    }
+
+    function cancelKbGrab() {
+      if (kbGrabbedItem) {
+        kbGrabbedItem.classList.remove('kb-grabbed');
+        kbGrabbedItem.setAttribute('aria-grabbed', 'false');
+        kbGrabbedItem.style.boxShadow = '';
+        kbGrabbedItem.focus();
+        kbGrabbedItem = null;
+      }
+      cleanupKbMode();
+    }
+
+    function cleanupKbMode() {
+      document.querySelectorAll('.pillar-zone').forEach(function(z) { z.tabIndex = -1; });
+      document.getElementById('kbHint').classList.remove('show');
+    }
+
+    function handleScenarioDrop(scenarioId, targetPillar) {
+      if (placedScenarios[scenarioId]) return;
+
+      var scenario = scenarios.find(function(s) { return s.id === scenarioId; });
+      if (!scenario) return;
+
+      dragTotalAttempts++;
+      var isCorrect = scenario.pillar === targetPillar;
+      var zone = document.getElementById('zone-' + targetPillar);
+
+      if (isCorrect) {
+        // Mark card as placed
+        var card = document.querySelector('.scenario-card[data-id="' + scenarioId + '"]');
+        if (card) card.classList.add('placed');
+        placedScenarios[scenarioId] = true;
+
+        // Add to zone
+        var item = document.createElement('span');
+        item.className = 'zone-item correct';
+        item.textContent = scenario.text;
+        zone.appendChild(item);
+
+        dragCorrectCount++;
+        document.getElementById('dragCorrect').textContent = dragCorrectCount;
+
+        // Award points
+        var pts = 10;
+        activity1Points += pts;
+        totalPoints += pts;
+        updatePointsDisplay();
+        showFloatingPoints(pts);
+
+        showTerminalFeedback('success', '> Pattern matched! +' + pts + 'pts');
+        srAnnounce('صحيح! ' + scenario.text + ' ينتمي إلى ' + targetPillar + '. +' + pts + ' نقاط.');
+
+        // Check if all done
+        if (dragCorrectCount >= scenarios.length) {
+          activitiesCompleted[0] = true;
+          showTerminalFeedback('success', '> All scenarios classified! Activity 1 complete. Score: ' + activity1Points + 'pts');
+          saveState();
+        }
+      } else {
+        // Show error in zone briefly
+        var errItem = document.createElement('span');
+        errItem.className = 'zone-item incorrect';
+        errItem.textContent = scenario.text;
+        zone.appendChild(errItem);
+        setTimeout(function() {
+          if (errItem.parentNode) errItem.parentNode.removeChild(errItem);
+        }, 1200);
+
+        showTerminalFeedback('error', '> Try another zone. This scenario does not belong here.');
+        srAnnounce('ليس تماماً. حاول منطقة أخرى.');
+      }
+
+      saveState();
+    }
+
+    function showTerminalFeedback(type, msg) {
+      var fb = document.getElementById('dragFeedback');
+      fb.innerHTML = '<div class="terminal-feedback ' + type + '">' + msg + '</div>';
+      setTimeout(function() { fb.innerHTML = ''; }, 3000);
+    }
+
+    // ==========================================================================
+    // ACTIVITY 2: Memory Match Game
+    // ==========================================================================
+
+    var PAIRS = [
+      { id: 'p1', front: 'التحليل\n(Decomposition)', back: 'تقسيم المشكلة المعقدة إلى أجزاء أصغر يمكن حلها بشكل مستقل' },
+      { id: 'p2', front: 'التعرف على الأنماط\n(Pattern Recognition)', back: 'إيجاد التشابهات والاتجاهات المتكررة في البيانات أو المشكلات' },
+      { id: 'p3', front: 'التجريد\n(Abstraction)', back: 'التركيز على المعلومات المهمة وتجاهل التفاصيل غير الضرورية' },
+      { id: 'p4', front: 'التفكير الخوارزمي\n(Algorithmic Thinking)', back: 'وضع خطوات مرتبة ودقيقة لحل المشكلة يمكن اتباعها من قبل أي شخص أو حاسوب' }
+    ];
+
+    var FLIP_DELAY = 900;
+    var mmCards = [];
+    var mmFirst = null;
+    var mmSecond = null;
+    var mmLock = false;
+    var mmMatched = 0;
+    var mmAttempts = 0;
+    var mmStartTime = 0;
+
+    function initMemoryMatch() {
+      mmMatched = 0;
+      mmAttempts = 0;
+      mmFirst = null;
+      mmSecond = null;
+      mmLock = false;
+      mmStartTime = Date.now();
+      document.getElementById('mm-matches').textContent = '0';
+      document.getElementById('mm-attempts').textContent = '0';
+      document.getElementById('mm-complete').classList.remove('show');
+
+      var grid = document.getElementById('mm-grid');
+      grid.innerHTML = '';
+
+      // Create two cards per pair
+      mmCards = [];
+      PAIRS.forEach(function(pair) {
+        mmCards.push({ pairId: pair.id, text: pair.front, type: 'front' });
+        mmCards.push({ pairId: pair.id, text: pair.back, type: 'back' });
+      });
+
+      // Shuffle
+      for (var i = mmCards.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = mmCards[i]; mmCards[i] = mmCards[j]; mmCards[j] = tmp;
+      }
+
+      mmCards.forEach(function(card, idx) {
+        var btn = document.createElement('button');
+        btn.className = 'mm-card';
+        btn.dataset.pairId = card.pairId;
+        btn.dataset.index = idx;
+        btn.setAttribute('aria-label', 'بطاقة ' + (idx + 1) + ' (مقلوبة)');
+        btn.innerHTML =
+          '<div class="mm-card-inner">' +
+            '<div class="mm-card-front" aria-hidden="true">?</div>' +
+            '<div class="mm-card-back" style="white-space: pre-line;">' + card.text + '</div>' +
+          '</div>';
+        btn.addEventListener('click', function() { flipMMCard(btn); });
+        grid.appendChild(btn);
+      });
+    }
+
+    function flipMMCard(cardEl) {
+      if (mmLock) return;
+      if (cardEl === mmFirst) return;
+      if (cardEl.classList.contains('matched')) return;
+      if (cardEl.classList.contains('flipped')) return;
+
+      cardEl.classList.add('flipped');
+      cardEl.setAttribute('aria-label', 'بطاقة: ' + cardEl.querySelector('.mm-card-back').textContent);
+
+      if (!mmFirst) {
+        mmFirst = cardEl;
+        return;
+      }
+
+      mmSecond = cardEl;
+      mmLock = true;
+      mmAttempts++;
+      document.getElementById('mm-attempts').textContent = mmAttempts;
+
+      var isMatch = mmFirst.dataset.pairId === mmSecond.dataset.pairId;
+
+      if (isMatch) {
+        mmFirst.classList.add('matched');
+        mmSecond.classList.add('matched');
+        mmMatched++;
+        document.getElementById('mm-matches').textContent = mmMatched;
+        document.getElementById('memMatchCount').textContent = mmMatched;
+
+        // Award points
+        var pts = 15;
+        activity2Points += pts;
+        totalPoints += pts;
+        updatePointsDisplay();
+        showFloatingPoints(pts);
+
+        mmAnnounce('تم المطابقة! ' + mmMatched + ' من 4 أزواج.');
+        mmFirst = null;
+        mmSecond = null;
+        mmLock = false;
+
+        if (mmMatched >= PAIRS.length) {
+          // Speed bonus
+          var elapsed = (Date.now() - mmStartTime) / 1000;
+          var speedBonus = 0;
+          if (elapsed < 30) speedBonus = 20;
+          else if (elapsed < 60) speedBonus = 10;
+
+          if (speedBonus > 0) {
+            activity2Points += speedBonus;
+            totalPoints += speedBonus;
+            updatePointsDisplay();
+          }
+
+          document.getElementById('mm-final-attempts').textContent = mmAttempts;
+          document.getElementById('mm-complete').classList.add('show');
+          activitiesCompleted[1] = true;
+          mmAnnounce('ممتاز! تم مطابقة جميع الأزواج في ' + mmAttempts + ' محاولة!' + (speedBonus > 0 ? ' مكافأة سرعة: +' + speedBonus : ''));
+          saveState();
+        }
+      } else {
+        mmFirst.classList.add('mismatch');
+        mmSecond.classList.add('mismatch');
+        mmAnnounce('لا تطابق. حاول مرة أخرى.');
+        var f = mmFirst, s = mmSecond;
+        setTimeout(function() {
+          f.classList.remove('flipped', 'mismatch');
+          s.classList.remove('flipped', 'mismatch');
+          f.setAttribute('aria-label', 'بطاقة (مقلوبة)');
+          s.setAttribute('aria-label', 'بطاقة (مقلوبة)');
+          mmFirst = null;
+          mmSecond = null;
+          mmLock = false;
+        }, FLIP_DELAY);
+      }
+    }
+
+    function mmAnnounce(msg) {
+      var el = document.getElementById('mm-announce');
+      if (el) el.textContent = msg;
+    }
+
+    // ==========================================================================
+    // NAVIGATION & PROGRESS
+    // ==========================================================================
+
+    var slides = document.querySelectorAll('.activity-slide');
+    var totalSlides = slides.length;
+
+    function showSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      currentSlide = index;
+
+      // Update slides
+      slides.forEach(function(s, i) {
+        s.classList.toggle('active', i === index);
+      });
+
+      // Update step indicator
+      for (var i = 0; i < totalSlides; i++) {
+        var dot = document.getElementById('step' + (i + 1));
+        dot.classList.remove('active', 'completed');
+        dot.removeAttribute('aria-current');
+        if (i < index) dot.classList.add('completed');
+        else if (i === index) { dot.classList.add('active'); dot.setAttribute('aria-current', 'step'); }
+
+        if (i < totalSlides - 1) {
+          var line = document.getElementById('line' + (i + 1));
+          line.classList.toggle('completed', i < index);
+        }
+      }
+
+      // Update progress bar
+      var pct = ((index + 1) / totalSlides) * 100;
+      document.getElementById('progress').style.width = pct + '%';
+
+      // Update page indicator
+      document.getElementById('pageIndicator').innerHTML = '<span style="direction: ltr; unicode-bidi: embed;">Activity ' + (index + 1) + ' of ' + totalSlides + '</span>';
+
+      // Update nav buttons
+      document.getElementById('prevBtn').disabled = index === 0;
+      var nextBtn = document.getElementById('nextBtn');
+      if (index === totalSlides - 1) {
+        nextBtn.textContent = activitiesCompleted[0] && activitiesCompleted[1] ? 'إكمال' : 'التالي';
+        nextBtn.setAttribute('aria-label', activitiesCompleted[0] && activitiesCompleted[1] ? 'إكمال النشاط' : 'التالي');
+      } else {
+        nextBtn.innerHTML = 'التالي &#8592;';
+        nextBtn.setAttribute('aria-label', 'التالي');
+      }
+
+      // Initialize activity if needed
+      if (index === 1 && !mmStartTime) {
+        initMemoryMatch();
+      }
+
+      // Update reflection slide scores
+      if (index === 2) {
+        document.getElementById('totalPointsFinal').textContent = totalPoints;
+        document.getElementById('a1score').textContent = activity1Points;
+        document.getElementById('a2score').textContent = activity2Points;
+        activitiesCompleted[2] = true;
+      }
+
+      saveState();
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', function() {
+      if (currentSlide === totalSlides - 1 && activitiesCompleted[0] && activitiesCompleted[1]) {
+        completeSCO();
+      } else {
+        showSlide(currentSlide + 1);
+      }
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', function() {
+      showSlide(currentSlide - 1);
+    });
+
+    // ==========================================================================
+    // SCORM COMPLETION
+    // ==========================================================================
+
+    function completeSCO() {
+      var duration = Math.floor((Date.now() - startTime) / 1000);
+      var maxPoints = (scenarios.length * 10) + (PAIRS.length * 15) + 20; // 80 + 60 + 20 speed = 160 max
+      var scorePct = Math.min(100, Math.round((totalPoints / maxPoints) * 100));
+
+      scorm.setValue('cmi.core.score.raw', String(scorePct));
+      scorm.setValue('cmi.core.score.min', '0');
+      scorm.setValue('cmi.core.score.max', '100');
+      scorm.setLessonStatus('completed');
+
+      // Format session time
+      var hrs = Math.floor(duration / 3600);
+      var mins = Math.floor((duration % 3600) / 60);
+      var secs = duration % 60;
+      scorm.setValue('cmi.core.session_time',
+        String(hrs).padStart(4, '0') + ':' +
+        String(mins).padStart(2, '0') + ':' +
+        String(secs).padStart(2, '0'));
+
+      scorm.commit();
+
+      // Show completion in reflection
+      var summary = document.getElementById('finalSummary');
+      summary.style.borderColor = 'var(--color-success)';
+      summary.innerHTML =
+        '<div class="score-big" style="color: var(--color-success);">' + totalPoints + '</div>' +
+        '<div class="score-label" style="color: var(--color-success);">&#10004; اكتمل النشاط! (Activity Complete)</div>' +
+        '<div style="margin-top: var(--space-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-muted); direction: ltr; text-align: center;">' +
+        '// BUILD PASSED | score: ' + scorePct + '% | Badge: CT Explorer unlocked</div>';
+
+      srAnnounce('تم إكمال النشاط بنجاح! النقاط: ' + totalPoints);
+    }
+
+    // ==========================================================================
+    // UTILITIES
+    // ==========================================================================
+
+    function updatePointsDisplay() {
+      document.getElementById('pointsValue').textContent = totalPoints;
+    }
+
+    function showFloatingPoints(pts) {
+      var badge = document.getElementById('pointsBadge');
+      var rect = badge.getBoundingClientRect();
+      var floater = document.createElement('div');
+      floater.className = 'points-float';
+      floater.textContent = '+' + pts;
+      floater.style.left = rect.left + 'px';
+      floater.style.top = (rect.top - 10) + 'px';
+      document.body.appendChild(floater);
+      setTimeout(function() {
+        if (floater.parentNode) floater.parentNode.removeChild(floater);
+      }, 1100);
+    }
+
+    function srAnnounce(msg) {
+      var el = document.getElementById('srAnnounce');
+      if (el) el.textContent = msg;
+    }
+
+    function saveState() {
+      var state = {
+        sco: 'sco_07',
+        slide: currentSlide,
+        totalPoints: totalPoints,
+        a1: activity1Points,
+        a2: activity2Points,
+        completed: activitiesCompleted,
+        placed: placedScenarios
+      };
+      try {
+        scorm.setValue('cmi.suspend_data', JSON.stringify(state));
+        scorm.commit();
+      } catch(e) { /* ignore */ }
+    }
+
+    // Save on leave
+    window.addEventListener('beforeunload', function() {
+      saveState();
+    });
+
+    // ==========================================================================
+    // INITIALIZE
+    // ==========================================================================
+
+    initDragDrop();
+    showSlide(currentSlide);
+
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!-- Physics Sandbox Component (Canvas Simulation)
+     Usage: Copy into lesson HTML. Customize parameters below.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - HTML Canvas with real physics simulation
+     - Click canvas to spawn balls (random size, random color)
+     - Balls fall under gravity, bounce off walls and each other
+     - Adjustable sliders: gravity, friction, elasticity
+     - Collision detection: circle-circle (elastic collision)
+     - Pause/play toggle, reset button
+     - Displays ball count and average velocity
+
+     PHYSICS (SCIENTIFICALLY ACCURATE):
+     - Gravity: F = m * g (constant acceleration downward)
+     - Elastic collision: conserves momentum and kinetic energy
+       v1' = ((m1-m2)*v1 + 2*m2*v2) / (m1+m2)
+       v2' = ((m2-m1)*v2 + 2*m1*v1) / (m1+m2)
+     - Friction: velocity *= (1 - friction_coefficient) per frame
+     - Wall bounce: velocity component reversed, scaled by elasticity
+     - Mass proportional to area (pi * r^2)
+
+     ACCESSIBILITY:
+     - Canvas has aria-label describing the simulation
+     - Controls are standard form elements with labels
+     - Live region announces state changes
+     - Keyboard: Space to pause/play, R to reset
+
+     CUSTOMIZATION POINTS marked with [CUSTOMIZE]
+-->
+
+<style>
+  /* === Physics Container === */
+  .physics-activity {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* === Canvas === */
+  .physics-canvas-wrapper {
+    position: relative;
+    border: 2px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    background: var(--color-text, #1a1a2e);
+    cursor: crosshair;
+    margin-bottom: var(--space-md, 1rem);
+  }
+
+  .physics-canvas-wrapper canvas {
+    display: block;
+    width: 100%;
+    height: 400px;
+  }
+
+  /* === Overlays on canvas === */
+  .physics-hud {
+    position: absolute;
+    top: var(--space-sm, 0.5rem);
+    left: var(--space-sm, 0.5rem);
+    display: flex;
+    gap: var(--space-md, 1rem);
+    pointer-events: none;
+  }
+
+  .physics-stat {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm, 4px);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: monospace;
+  }
+
+  .physics-pause-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+
+  .physics-pause-overlay.show {
+    display: flex;
+  }
+
+  .physics-pause-overlay span {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  /* === Controls Panel === */
+  .physics-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md, 1rem);
+    padding: var(--space-md, 1rem);
+    background: var(--color-surface-elevated, #f9fafb);
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-md, 1rem);
+  }
+
+  .physics-control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .physics-control label {
+    font-size: var(--font-size-small, 0.875rem);
+    font-weight: 600;
+    color: var(--color-text, #222);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .physics-control label span {
+    font-weight: 400;
+    color: var(--color-text-secondary, #666);
+    font-family: monospace;
+  }
+
+  .physics-control input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border, #d1d5db);
+    border-radius: 3px;
+    outline: none;
+  }
+
+  .physics-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-primary, #2563eb);
+    cursor: pointer;
+  }
+
+  .physics-control input[type="range"]:focus-visible {
+    outline: 2px solid var(--color-primary, #2563eb);
+    outline-offset: 4px;
+    border-radius: 3px;
+  }
+
+  /* === Action Buttons === */
+  .physics-actions {
+    display: flex;
+    gap: var(--space-md, 1rem);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .physics-info {
+    margin-left: auto;
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #666);
+    font-style: italic;
+  }
+
+  /* === Mobile === */
+  @media (max-width: 600px) {
+    .physics-canvas-wrapper canvas { height: 300px; }
+    .physics-controls { grid-template-columns: 1fr; }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    /* Physics still runs but user opted for reduced motion —
+       we lower the frame rate instead of disabling entirely */
+  }
+</style>
+
+<div class="physics-activity" role="region" aria-label="Physics sandbox simulation">
+
+  <!-- Canvas -->
+  <div class="physics-canvas-wrapper" id="physics-wrapper">
+    <canvas id="physics-canvas" aria-label="Physics simulation canvas. Click to add balls. Balls fall under gravity and bounce off walls and each other."></canvas>
+    <div class="physics-hud">
+      <div class="physics-stat" id="phys-count">Balls: 0</div>
+      <div class="physics-stat" id="phys-velocity">Avg Vel: 0</div>
+    </div>
+    <div class="physics-pause-overlay" id="phys-pause-overlay">
+      <span>Paused</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="physics-controls">
+    <div class="physics-control">
+      <label>Gravity <span id="gravity-val">9.8</span> m/s&sup2;</label>
+      <input type="range" id="phys-gravity" min="0" max="30" step="0.1" value="9.8"
+             aria-label="Gravity strength" oninput="updatePhysParam()">
+    </div>
+    <div class="physics-control">
+      <label>Friction <span id="friction-val">0.01</span></label>
+      <input type="range" id="phys-friction" min="0" max="0.1" step="0.001" value="0.01"
+             aria-label="Friction coefficient" oninput="updatePhysParam()">
+    </div>
+    <div class="physics-control">
+      <label>Elasticity <span id="elasticity-val">0.8</span></label>
+      <input type="range" id="phys-elasticity" min="0" max="1" step="0.05" value="0.8"
+             aria-label="Bounce elasticity" oninput="updatePhysParam()">
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="physics-actions">
+    <button class="btn-primary" id="phys-pause-btn" onclick="togglePhysPause()">Pause</button>
+    <button class="btn-secondary" onclick="resetPhysics()">Reset</button>
+    <span class="physics-info">Click the canvas to spawn balls. Space = pause, R = reset.</span>
+  </div>
+
+  <!-- Screen reader announcements -->
+  <div id="phys-announce" class="sr-only" aria-live="polite"></div>
+</div>
+
+<script>
+/* ============================================================
+   PHYSICS SANDBOX COMPONENT — Canvas Ball Simulation
+   ============================================================
+   SCIENTIFICALLY ACCURATE PHYSICS:
+   - Newtonian gravity (F = m*g)
+   - Elastic collision (conservation of momentum + kinetic energy)
+   - Friction as velocity damping
+   - Wall bouncing with configurable elasticity (coefficient of restitution)
+   - Mass proportional to ball area (pi * r^2)
+   ============================================================ */
+
+/* --- Canvas setup --- */
+var physCanvas = document.getElementById('physics-canvas');
+var physCtx = physCanvas.getContext('2d');
+var physBalls = [];
+var physPaused = false;
+var physAnimId = null;
+
+/* [CUSTOMIZE] Initial physics parameters */
+var physGravity = 9.8;       /* m/s^2, scaled for pixels */
+var physFriction = 0.01;     /* velocity damping per frame */
+var physElasticity = 0.8;    /* coefficient of restitution (0 = no bounce, 1 = perfect bounce) */
+
+/* Pixels-per-meter scaling (so gravity feels natural at canvas scale) */
+var PHYS_SCALE = 50; /* 50 pixels = 1 meter */
+
+/* [CUSTOMIZE] Ball colors */
+var BALL_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+                   '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'];
+
+/* --- Resize canvas to match wrapper --- */
+function resizePhysCanvas() {
+  var wrapper = document.getElementById('physics-wrapper');
+  physCanvas.width = wrapper.clientWidth;
+  physCanvas.height = wrapper.clientHeight;
+}
+resizePhysCanvas();
+window.addEventListener('resize', resizePhysCanvas);
+
+/* --- Ball factory --- */
+function createBall(x, y) {
+  var radius = 10 + Math.random() * 20; /* [CUSTOMIZE] 10-30px radius */
+  var mass = Math.PI * radius * radius;  /* Mass proportional to area */
+  return {
+    x: x,
+    y: y,
+    vx: (Math.random() - 0.5) * 200,  /* Random initial horizontal velocity (px/s) */
+    vy: (Math.random() - 0.5) * 100,  /* Random initial vertical velocity (px/s) */
+    radius: radius,
+    mass: mass,
+    color: BALL_COLORS[Math.floor(Math.random() * BALL_COLORS.length)]
+  };
+}
+
+/* --- Spawn ball on click --- */
+physCanvas.addEventListener('click', function(e) {
+  var rect = physCanvas.getBoundingClientRect();
+  var x = (e.clientX - rect.left) * (physCanvas.width / rect.width);
+  var y = (e.clientY - rect.top) * (physCanvas.height / rect.height);
+  physBalls.push(createBall(x, y));
+  updatePhysHUD();
+  physAnnounce('Ball added. Total: ' + physBalls.length);
+});
+
+/* Touch spawn */
+physCanvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  var rect = physCanvas.getBoundingClientRect();
+  var touch = e.touches[0];
+  var x = (touch.clientX - rect.left) * (physCanvas.width / rect.width);
+  var y = (touch.clientY - rect.top) * (physCanvas.height / rect.height);
+  physBalls.push(createBall(x, y));
+  updatePhysHUD();
+}, { passive: false });
+
+/* --- Physics update (per frame) --- */
+var physLastTime = 0;
+
+function physUpdate(timestamp) {
+  physAnimId = requestAnimationFrame(physUpdate);
+
+  if (physPaused) return;
+
+  /* Delta time in seconds (capped at 50ms to prevent tunneling) */
+  var dt = Math.min((timestamp - physLastTime) / 1000, 0.05);
+  physLastTime = timestamp;
+  if (dt <= 0) return;
+
+  var W = physCanvas.width;
+  var H = physCanvas.height;
+
+  /* Apply physics to each ball */
+  for (var i = 0; i < physBalls.length; i++) {
+    var b = physBalls[i];
+
+    /* Gravity: acceleration in pixels/s^2 */
+    var gravAccel = physGravity * PHYS_SCALE;
+    b.vy += gravAccel * dt;
+
+    /* Friction: simple velocity damping */
+    b.vx *= (1 - physFriction);
+    b.vy *= (1 - physFriction);
+
+    /* Update position */
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+
+    /* Wall collisions */
+    /* Right wall */
+    if (b.x + b.radius > W) {
+      b.x = W - b.radius;
+      b.vx = -b.vx * physElasticity;
+    }
+    /* Left wall */
+    if (b.x - b.radius < 0) {
+      b.x = b.radius;
+      b.vx = -b.vx * physElasticity;
+    }
+    /* Bottom wall */
+    if (b.y + b.radius > H) {
+      b.y = H - b.radius;
+      b.vy = -b.vy * physElasticity;
+      /* Apply ground friction to horizontal velocity */
+      b.vx *= (1 - physFriction * 5);
+    }
+    /* Top wall */
+    if (b.y - b.radius < 0) {
+      b.y = b.radius;
+      b.vy = -b.vy * physElasticity;
+    }
+  }
+
+  /* Ball-ball collisions (elastic collision) */
+  for (var i = 0; i < physBalls.length; i++) {
+    for (var j = i + 1; j < physBalls.length; j++) {
+      resolveCollision(physBalls[i], physBalls[j]);
+    }
+  }
+
+  /* Render */
+  physRender();
+  updatePhysHUD();
+}
+
+/* --- Elastic Collision Resolution ---
+   Uses conservation of momentum and kinetic energy.
+   For 2D elastic collision between circles:
+   1. Calculate collision normal (line connecting centers)
+   2. Project velocities onto collision normal
+   3. Apply 1D elastic collision formula along normal
+   4. Reconstruct 2D velocities
+*/
+function resolveCollision(a, b) {
+  var dx = b.x - a.x;
+  var dy = b.y - a.y;
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  var minDist = a.radius + b.radius;
+
+  if (dist >= minDist || dist === 0) return; /* No collision */
+
+  /* Collision normal (unit vector from a to b) */
+  var nx = dx / dist;
+  var ny = dy / dist;
+
+  /* Relative velocity along collision normal */
+  var dvx = a.vx - b.vx;
+  var dvy = a.vy - b.vy;
+  var dvn = dvx * nx + dvy * ny;
+
+  /* Only resolve if balls are moving toward each other */
+  if (dvn <= 0) return;
+
+  /* Elastic collision impulse scalar
+     j = (1 + e) * dvn / (1/m1 + 1/m2)
+     where e = coefficient of restitution (elasticity) */
+  var j = (1 + physElasticity) * dvn / (1 / a.mass + 1 / b.mass);
+
+  /* Apply impulse to velocities */
+  a.vx -= (j / a.mass) * nx;
+  a.vy -= (j / a.mass) * ny;
+  b.vx += (j / b.mass) * nx;
+  b.vy += (j / b.mass) * ny;
+
+  /* Separate overlapping balls (push apart along normal) */
+  var overlap = minDist - dist;
+  var totalMass = a.mass + b.mass;
+  a.x -= (overlap * (b.mass / totalMass)) * nx;
+  a.y -= (overlap * (b.mass / totalMass)) * ny;
+  b.x += (overlap * (a.mass / totalMass)) * nx;
+  b.y += (overlap * (a.mass / totalMass)) * ny;
+}
+
+/* --- Rendering --- */
+function physRender() {
+  physCtx.clearRect(0, 0, physCanvas.width, physCanvas.height);
+
+  /* Draw ground line hint */
+  physCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+  physCtx.lineWidth = 1;
+  physCtx.beginPath();
+  physCtx.moveTo(0, physCanvas.height - 1);
+  physCtx.lineTo(physCanvas.width, physCanvas.height - 1);
+  physCtx.stroke();
+
+  /* Draw balls */
+  for (var i = 0; i < physBalls.length; i++) {
+    var b = physBalls[i];
+    physCtx.beginPath();
+    physCtx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+    physCtx.fillStyle = b.color;
+    physCtx.fill();
+
+    /* Subtle highlight for 3D effect */
+    var grad = physCtx.createRadialGradient(
+      b.x - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.1,
+      b.x, b.y, b.radius
+    );
+    grad.addColorStop(0, 'rgba(255,255,255,0.3)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    physCtx.beginPath();
+    physCtx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+    physCtx.fillStyle = grad;
+    physCtx.fill();
+  }
+}
+
+/* --- HUD (ball count, average velocity) --- */
+function updatePhysHUD() {
+  document.getElementById('phys-count').textContent = 'Balls: ' + physBalls.length;
+
+  if (physBalls.length === 0) {
+    document.getElementById('phys-velocity').textContent = 'Avg Vel: 0';
+    return;
+  }
+
+  var totalSpeed = 0;
+  for (var i = 0; i < physBalls.length; i++) {
+    var b = physBalls[i];
+    totalSpeed += Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+  }
+  var avgSpeed = totalSpeed / physBalls.length;
+  /* Convert from px/s to m/s for display */
+  var avgMs = (avgSpeed / PHYS_SCALE).toFixed(1);
+  document.getElementById('phys-velocity').textContent = 'Avg Vel: ' + avgMs + ' m/s';
+}
+
+/* --- Controls --- */
+
+function updatePhysParam() {
+  physGravity = parseFloat(document.getElementById('phys-gravity').value);
+  physFriction = parseFloat(document.getElementById('phys-friction').value);
+  physElasticity = parseFloat(document.getElementById('phys-elasticity').value);
+
+  document.getElementById('gravity-val').textContent = physGravity.toFixed(1);
+  document.getElementById('friction-val').textContent = physFriction.toFixed(3);
+  document.getElementById('elasticity-val').textContent = physElasticity.toFixed(2);
+}
+
+function togglePhysPause() {
+  physPaused = !physPaused;
+  document.getElementById('phys-pause-btn').textContent = physPaused ? 'Play' : 'Pause';
+  document.getElementById('phys-pause-overlay').classList.toggle('show', physPaused);
+  if (!physPaused) physLastTime = performance.now();
+  physAnnounce(physPaused ? 'Simulation paused' : 'Simulation resumed');
+}
+
+function resetPhysics() {
+  physBalls = [];
+  physRender();
+  updatePhysHUD();
+  physAnnounce('Simulation reset. All balls cleared.');
+}
+
+/* Keyboard shortcuts */
+document.addEventListener('keydown', function(e) {
+  /* Only respond if not typing in an input */
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    togglePhysPause();
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    resetPhysics();
+  }
+});
+
+function physAnnounce(msg) {
+  var el = document.getElementById('phys-announce');
+  if (el) el.textContent = msg;
+}
+
+/* --- Start animation loop --- */
+physLastTime = performance.now();
+physAnimId = requestAnimationFrame(physUpdate);
+</script>

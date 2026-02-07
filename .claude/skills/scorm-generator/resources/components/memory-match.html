@@ -1,0 +1,404 @@
+<!-- Memory Match Component
+     Usage: Copy into lesson HTML. Card matching game for term/definition pairs.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Grid of face-down cards (auto-sizes for 4, 6, 8, or 12 pairs)
+     - Click to flip a card; match two cards with the same pair ID
+     - Matched pairs stay face-up with success highlight
+     - Attempts counter tracks how many guesses the learner made
+     - Shuffled on initialization
+     - Celebration on completion
+
+     CUSTOMIZATION:
+     - Edit PAIRS array to set your term/definition content
+     - Pairs can be text-to-text, image-to-text, or emoji-to-text
+     - Adjust FLIP_DELAY (ms) for match check timing
+     - Set SHOW_TIMER = true to enable a timer
+
+     ACCESSIBILITY:
+     - Cards are <button> elements with aria-labels
+     - Keyboard: Tab + Enter/Space to flip
+     - Screen reader: live region announces matches/misses
+     - prefers-reduced-motion reduces flip animation
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+-->
+
+<style>
+  /* === Memory Match Grid === */
+  .memory-match {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .mm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md, 16px);
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+  }
+
+  .mm-stat {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #888);
+    background: var(--color-surface-elevated, #f5f5f5);
+    padding: 6px 14px;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .mm-stat strong {
+    color: var(--color-text-primary, #333);
+  }
+
+  .mm-grid {
+    display: grid;
+    gap: var(--space-sm, 8px);
+    /* Grid columns set dynamically by JS based on pair count */
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Card container */
+  .mm-card {
+    aspect-ratio: 3 / 4;
+    perspective: 600px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .mm-card:focus-visible {
+    outline: 3px solid var(--color-primary, #6c5ce7);
+    outline-offset: 2px;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .mm-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .mm-card.flipped .mm-card-inner,
+  .mm-card.matched .mm-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .mm-card-front,
+  .mm-card-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius-md, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm, 8px);
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow: hidden;
+  }
+
+  /* Front face (face-down) */
+  .mm-card-front {
+    background: linear-gradient(135deg, var(--color-primary, #6c5ce7), var(--color-secondary, #a29bfe));
+    color: #fff;
+    font-size: 2rem;
+  }
+
+  /* Back face (content side) */
+  .mm-card-back {
+    background: var(--color-surface-elevated, #fff);
+    color: var(--color-text-primary, #333);
+    border: 2px solid var(--color-border, #e0e0e0);
+    transform: rotateY(180deg);
+  }
+
+  /* Matched state */
+  .mm-card.matched .mm-card-back {
+    border-color: var(--color-success, #10b981);
+    background: var(--color-success-bg, #ecfdf5);
+  }
+
+  .mm-card.matched {
+    pointer-events: none;
+  }
+
+  /* Mismatch shake */
+  .mm-card.mismatch .mm-card-inner {
+    animation: mmShake 0.4s ease;
+  }
+
+  @keyframes mmShake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    25% { transform: rotateY(180deg) translateX(-5px); }
+    75% { transform: rotateY(180deg) translateX(5px); }
+  }
+
+  /* Completion overlay */
+  .mm-complete {
+    text-align: center;
+    padding: var(--space-lg, 24px);
+    margin-top: var(--space-md, 16px);
+    background: var(--color-success-bg, #ecfdf5);
+    border: 2px solid var(--color-success, #10b981);
+    border-radius: var(--radius-lg, 12px);
+    display: none;
+  }
+
+  .mm-complete.show {
+    display: block;
+    animation: mmFadeIn 0.5s ease;
+  }
+
+  .mm-complete h3 {
+    margin: 0 0 8px;
+    color: var(--color-success, #10b981);
+  }
+
+  @keyframes mmFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Restart button */
+  .mm-restart {
+    margin-top: var(--space-md, 16px);
+    padding: 10px 24px;
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+    transition: background 0.2s;
+  }
+
+  .mm-restart:hover {
+    opacity: 0.9;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .mm-card-inner { transition-duration: 0.01s; }
+    .mm-card.mismatch .mm-card-inner { animation: none; }
+    .mm-complete.show { animation: none; }
+  }
+</style>
+
+<div class="memory-match" role="application" aria-label="Memory match card game">
+  <!-- Stats header -->
+  <div class="mm-header">
+    <span class="mm-stat">Matches: <strong id="mm-matches">0</strong> / <span id="mm-total">0</span></span>
+    <span class="mm-stat">Attempts: <strong id="mm-attempts">0</strong></span>
+  </div>
+
+  <!-- Card grid (populated by JS) -->
+  <div class="mm-grid" id="mm-grid" role="grid" aria-label="Card grid"></div>
+
+  <!-- Completion message -->
+  <div class="mm-complete" id="mm-complete" role="status">
+    <h3>Excellent! All pairs matched!</h3>
+    <p>You completed the game in <strong id="mm-final-attempts">0</strong> attempts.</p>
+    <button class="mm-restart" id="mm-restart">Play Again</button>
+  </div>
+</div>
+
+<div id="mm-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   MEMORY MATCH COMPONENT
+   ============================================================
+   Data-driven card matching game. Edit PAIRS array below.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Your matching pairs === */
+  /* Each pair creates TWO cards: one with .front text, one with .back text */
+  var PAIRS = [
+    { id: 'p1', front: 'HTML',       back: 'HyperText Markup Language' },
+    { id: 'p2', front: 'CSS',        back: 'Cascading Style Sheets' },
+    { id: 'p3', front: 'JS',         back: 'JavaScript' },
+    { id: 'p4', front: 'API',        back: 'Application Programming Interface' },
+    { id: 'p5', front: 'DOM',        back: 'Document Object Model' },
+    { id: 'p6', front: 'URL',        back: 'Uniform Resource Locator' }
+  ];
+
+  var FLIP_DELAY = 800; /* ms before unmatched cards flip back */
+
+  /* === State === */
+  var cards = [];
+  var firstCard = null;
+  var secondCard = null;
+  var lockBoard = false;
+  var matchedCount = 0;
+  var attempts = 0;
+  var totalPairs = PAIRS.length;
+
+  var gridEl = document.getElementById('mm-grid');
+  var matchesEl = document.getElementById('mm-matches');
+  var totalEl = document.getElementById('mm-total');
+  var attemptsEl = document.getElementById('mm-attempts');
+  var completeEl = document.getElementById('mm-complete');
+  var finalAttemptsEl = document.getElementById('mm-final-attempts');
+  var restartBtn = document.getElementById('mm-restart');
+
+  /* === Set grid columns based on pair count === */
+  function setGridCols() {
+    var count = PAIRS.length;
+    var totalCards = count * 2;
+    var cols = 4;
+    if (totalCards <= 8)  cols = 4;
+    else if (totalCards <= 12) cols = 4;
+    else if (totalCards <= 16) cols = 4;
+    else cols = 6;
+    gridEl.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+  }
+
+  /* === Shuffle (Fisher-Yates) === */
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  /* === Build cards === */
+  function init() {
+    matchedCount = 0;
+    attempts = 0;
+    firstCard = null;
+    secondCard = null;
+    lockBoard = false;
+    matchesEl.textContent = '0';
+    attemptsEl.textContent = '0';
+    totalEl.textContent = totalPairs;
+    completeEl.classList.remove('show');
+    gridEl.innerHTML = '';
+
+    /* Create two cards per pair */
+    cards = [];
+    PAIRS.forEach(function(pair) {
+      cards.push({ pairId: pair.id, text: pair.front, type: 'front' });
+      cards.push({ pairId: pair.id, text: pair.back,  type: 'back'  });
+    });
+
+    shuffle(cards);
+    setGridCols();
+
+    cards.forEach(function(card, index) {
+      var btn = document.createElement('button');
+      btn.className = 'mm-card';
+      btn.dataset.pairId = card.pairId;
+      btn.dataset.index = index;
+      btn.setAttribute('aria-label', 'Card ' + (index + 1) + ' (face down)');
+      btn.innerHTML =
+        '<div class="mm-card-inner">' +
+          '<div class="mm-card-front" aria-hidden="true">?</div>' +
+          '<div class="mm-card-back">' + card.text + '</div>' +
+        '</div>';
+
+      btn.addEventListener('click', function() { flipCard(btn); });
+      gridEl.appendChild(btn);
+    });
+  }
+
+  /* === Flip logic === */
+  function flipCard(cardEl) {
+    if (lockBoard) return;
+    if (cardEl === firstCard) return;
+    if (cardEl.classList.contains('matched')) return;
+    if (cardEl.classList.contains('flipped')) return;
+
+    cardEl.classList.add('flipped');
+    cardEl.setAttribute('aria-label', 'Card: ' + cardEl.querySelector('.mm-card-back').textContent);
+
+    if (!firstCard) {
+      firstCard = cardEl;
+      return;
+    }
+
+    secondCard = cardEl;
+    lockBoard = true;
+    attempts++;
+    attemptsEl.textContent = attempts;
+
+    /* Check match */
+    var isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+
+    if (isMatch) {
+      disableCards();
+    } else {
+      unflipCards();
+    }
+  }
+
+  function disableCards() {
+    firstCard.classList.add('matched');
+    secondCard.classList.add('matched');
+    matchedCount++;
+    matchesEl.textContent = matchedCount;
+
+    announce('Match found! ' + matchedCount + ' of ' + totalPairs + ' pairs matched.');
+
+    resetBoard();
+
+    if (matchedCount >= totalPairs) {
+      onComplete();
+    }
+  }
+
+  function unflipCards() {
+    firstCard.classList.add('mismatch');
+    secondCard.classList.add('mismatch');
+    announce('Not a match. Try again.');
+
+    setTimeout(function() {
+      firstCard.classList.remove('flipped', 'mismatch');
+      secondCard.classList.remove('flipped', 'mismatch');
+      firstCard.setAttribute('aria-label', 'Card (face down)');
+      secondCard.setAttribute('aria-label', 'Card (face down)');
+      resetBoard();
+    }, FLIP_DELAY);
+  }
+
+  function resetBoard() {
+    firstCard = null;
+    secondCard = null;
+    lockBoard = false;
+  }
+
+  function onComplete() {
+    finalAttemptsEl.textContent = attempts;
+    completeEl.classList.add('show');
+    announce('Congratulations! All pairs matched in ' + attempts + ' attempts!');
+  }
+
+  /* === Restart === */
+  restartBtn.addEventListener('click', function() {
+    init();
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('mm-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Start === */
+  init();
+})();
+</script>

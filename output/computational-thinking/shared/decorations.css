@@ -1,0 +1,338 @@
+/* ==========================================================================
+   Computational Thinking — Decorations CSS
+   ==========================================================================
+   Atmospheric effects that create the "inside a code editor" feel.
+   This file is OPTIONAL — the course works without it, but looks
+   significantly more polished with it.
+
+   Includes:
+   - Dot grid background (digital graph paper)
+   - Terminal scanlines (micro-texture)
+   - Film grain overlay
+   - Circuit board trace patterns
+   - Code rain (very subtle, celebration/intro only)
+   - Glow utility classes
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. DOT GRID BACKGROUND
+   ==========================================================================
+   Subtle repeating dots that make the background feel like digital graph
+   paper or a PCB design grid. Applied to page-level containers.
+   ========================================================================== */
+
+.dot-grid,
+.sco-container {
+  position: relative;
+}
+
+.dot-grid::before,
+.sco-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    rgba(148, 163, 184, 0.07) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content sits above the dot grid */
+.dot-grid > *,
+.sco-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ==========================================================================
+   2. TERMINAL SCANLINES (Micro-Texture)
+   ==========================================================================
+   Nearly invisible horizontal lines that add CRT monitor texture.
+   Only visible on large surfaces. Extremely subtle (2% opacity).
+   ========================================================================== */
+
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(148, 163, 184, 0.015) 2px,
+    rgba(148, 163, 184, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+/* ==========================================================================
+   3. FILM GRAIN OVERLAY
+   ==========================================================================
+   SVG-based noise texture for cinematic warmth. Applied sparingly --
+   hero sections and completion screens.
+   ========================================================================== */
+
+.has-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 2;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+
+/* ==========================================================================
+   4. CIRCUIT BOARD TRACES
+   ==========================================================================
+   Decorative lines + junction dots for hero sections and module intros.
+   Pure CSS — no images needed. Two variants:
+   - .circuit-corners: traces in top-left and bottom-right corners
+   - .circuit-full: full-width horizontal traces
+   ========================================================================== */
+
+.circuit-corners {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top-left corner traces */
+.circuit-corners::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 120px;
+  height: 80px;
+  border-left: 1px solid rgba(34, 211, 238, 0.15);
+  border-top: 1px solid rgba(34, 211, 238, 0.15);
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Top-left corner junction dot */
+.circuit-corners::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 5px;
+  height: 5px;
+  background: rgba(34, 211, 238, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* RTL: flip circuit corners */
+[dir="rtl"] .circuit-corners::before {
+  left: auto;
+  right: 20px;
+  border-left: none;
+  border-right: 1px solid rgba(34, 211, 238, 0.15);
+}
+
+[dir="rtl"] .circuit-corners::after {
+  left: auto;
+  right: 18px;
+}
+
+
+/* ==========================================================================
+   5. GLOW UTILITY CLASSES
+   ==========================================================================
+   Apply colored glow effects to any element. Used on active states,
+   achievements, and key interactive moments.
+   ========================================================================== */
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15),
+              0 0 4px rgba(34, 211, 238, 0.3);
+}
+
+.glow-secondary {
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.15),
+              0 0 4px rgba(167, 139, 250, 0.3);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.15),
+              0 0 4px rgba(52, 211, 153, 0.3);
+}
+
+.glow-warning {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15),
+              0 0 4px rgba(251, 191, 36, 0.3);
+}
+
+.glow-error {
+  box-shadow: 0 0 20px rgba(251, 113, 133, 0.15),
+              0 0 4px rgba(251, 113, 133, 0.3);
+}
+
+/* Animated glow pulse for achievements */
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.15),
+                0 0 4px rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(34, 211, 238, 0.25),
+                0 0 10px rgba(34, 211, 238, 0.5);
+  }
+}
+
+
+/* ==========================================================================
+   6. CODE RAIN (celebration / intro screens ONLY)
+   ==========================================================================
+   Very subtle falling characters in the background. Do NOT use on
+   content slides — it is reserved for:
+   - Course intro screen
+   - Module completion celebration
+   - Final score screen
+   ========================================================================== */
+
+.code-rain {
+  position: relative;
+  overflow: hidden;
+}
+
+.code-rain::before {
+  content: '01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  line-height: 2;
+  letter-spacing: 4px;
+  color: rgba(34, 211, 238, 0.04);
+  white-space: pre-wrap;
+  word-break: break-all;
+  pointer-events: none;
+  z-index: 0;
+  animation: rain-fall 20s linear infinite;
+}
+
+@keyframes rain-fall {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(50%); }
+}
+
+
+/* ==========================================================================
+   7. TYPING REVEAL EFFECT
+   ==========================================================================
+   Terminal-style text that appears character by character.
+   Apply to elements with known character count and set --chars variable.
+   ========================================================================== */
+
+.typing-reveal {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--color-primary, #22D3EE);
+  width: 0;
+  animation:
+    typing-expand 1.5s steps(var(--chars, 30)) forwards,
+    cursor-blink 0.75s step-end infinite;
+}
+
+@keyframes typing-expand {
+  to { width: 100%; }
+}
+
+/* After typing completes, remove cursor */
+.typing-reveal.done {
+  border-right-color: transparent;
+  width: 100%;
+}
+
+
+/* ==========================================================================
+   8. ALGORITHM NODE STYLES (for flowchart diagrams)
+   ==========================================================================
+   CSS classes for algorithm visualization nodes, used in SVG or HTML
+   diagram components throughout the interactive lectures.
+   ========================================================================== */
+
+.algo-node {
+  fill: var(--color-surface, #141B2D);
+  stroke: var(--color-border-highlight, #334155);
+  stroke-width: 2;
+  transition: stroke 0.2s ease, filter 0.2s ease;
+}
+
+.algo-node--active {
+  stroke: var(--color-primary, #22D3EE);
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.4));
+}
+
+.algo-node--decision {
+  stroke: var(--color-secondary, #A78BFA);
+}
+
+.algo-node--decision.algo-node--active {
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.4));
+}
+
+.algo-node--success {
+  stroke: var(--color-success, #34D399);
+  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.4));
+}
+
+.algo-connector {
+  stroke: var(--color-text-muted, #64748B);
+  stroke-width: 1.5;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+.algo-connector--active {
+  stroke: var(--color-primary, #22D3EE);
+  stroke-width: 2;
+}
+
+.algo-label {
+  fill: var(--color-text, #E2E8F0);
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+}
+
+
+/* ==========================================================================
+   9. REDUCED MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .code-rain::before,
+  .typing-reveal,
+  .glow-pulse {
+    animation: none;
+  }
+
+  .typing-reveal {
+    width: 100%;
+    border-right-color: transparent;
+  }
+
+  .code-rain::before {
+    display: none;
+  }
+}

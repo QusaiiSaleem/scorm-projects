@@ -1,0 +1,480 @@
+<!-- Dial Control Component (Rotary Knob)
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A circular SVG dial with a draggable handle
+     - Rotating the handle changes a mapped value (e.g., 0-100, 0-360)
+     - Current value is displayed in the center of the dial
+     - Optional snap-to-tick positions (like a stove knob)
+     - Touch-friendly: rotation gesture works on mobile
+
+     CUSTOMIZATION:
+     - data-min, data-max: value range (default 0-100)
+     - data-step: snap increment (0 = smooth, 10 = snap every 10)
+     - data-unit: suffix for display (e.g., "%", "rpm")
+     - Size via CSS: set width on .dial-control
+     - Colors follow CSS custom properties
+
+     ACCESSIBILITY:
+     - role="slider" with aria-valuenow, aria-valuemin, aria-valuemax
+     - Arrow keys: Left/Down = decrease, Right/Up = increase
+     - Home/End = jump to min/max
+     - Screen reader announces value changes
+-->
+
+<style>
+  /* === Dial Container === */
+  .dial-control {
+    max-width: 250px;
+    margin: 0 auto;
+    position: relative;
+    user-select: none;
+  }
+
+  /* The SVG dial */
+  .dial-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+  }
+
+  /* Outer ring */
+  .dial-ring-bg {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 10;
+  }
+
+  /* Active arc (filled portion) */
+  .dial-ring-fill {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s ease;
+  }
+
+  /* Center circle (background for value text) */
+  .dial-center-bg {
+    fill: var(--color-surface-elevated);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+  }
+
+  /* Value text in center */
+  .dial-value-text {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 700;
+    fill: var(--color-text);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  .dial-unit-text {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--color-text-secondary);
+    text-anchor: middle;
+  }
+
+  /* Handle (draggable thumb) */
+  .dial-handle {
+    fill: white;
+    stroke: var(--color-primary);
+    stroke-width: 3;
+    cursor: grab;
+    transition: filter var(--transition-fast);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  }
+
+  .dial-handle:hover {
+    filter: drop-shadow(0 3px 10px rgba(108, 92, 231, 0.3));
+  }
+
+  .dial-handle.active {
+    cursor: grabbing;
+    fill: var(--color-primary);
+    stroke: white;
+  }
+
+  /* Tick marks around the dial */
+  .dial-tick {
+    stroke: var(--color-border);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .dial-tick.major {
+    stroke: var(--color-text-secondary);
+    stroke-width: 2.5;
+  }
+
+  /* Tick labels */
+  .dial-tick-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    fill: var(--color-text-secondary);
+    text-anchor: middle;
+    dominant-baseline: central;
+    font-weight: 600;
+  }
+
+  /* === Label below dial === */
+  .dial-label {
+    text-align: center;
+    margin-top: var(--space-md);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  /* === Focus ring for keyboard === */
+  .dial-svg:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .dial-control {
+      max-width: 200px;
+    }
+    .dial-value-text {
+      font-size: 22px;
+    }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="dial-control" role="region" aria-label="Dial control">
+  <!-- The SVG dial.
+       data-min/data-max: value range
+       data-step: snap increment (0 = continuous)
+       data-value: initial value
+       data-unit: display suffix
+       data-angle-start/data-angle-end: arc sweep in degrees (default 225 to 315 = 270 degrees) -->
+  <svg class="dial-svg" id="dial-main" viewBox="0 0 200 200"
+       data-min="0" data-max="100" data-step="10" data-value="30" data-unit="%"
+       data-angle-start="225" data-angle-end="315"
+       role="slider"
+       aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"
+       aria-label="Adjust value"
+       tabindex="0"
+       onkeydown="handleDialKey(event, this)">
+
+    <!-- Background ring (full arc) -->
+    <circle class="dial-ring-bg" cx="100" cy="100" r="80" />
+
+    <!-- Active arc (progress) — stroke-dasharray/offset set by JS -->
+    <circle class="dial-ring-fill" id="dial-fill" cx="100" cy="100" r="80"
+            stroke="url(#dialGradient)"
+            transform="rotate(-90 100 100)" />
+
+    <!-- Gradient for the active arc -->
+    <defs>
+      <linearGradient id="dialGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color: var(--color-primary)" />
+        <stop offset="100%" style="stop-color: var(--color-secondary)" />
+      </linearGradient>
+    </defs>
+
+    <!-- Tick marks (generated by JS) -->
+    <g id="dial-ticks"></g>
+
+    <!-- Center circle background -->
+    <circle class="dial-center-bg" cx="100" cy="100" r="55" />
+
+    <!-- Value display in center -->
+    <text class="dial-value-text" id="dial-value-display" x="100" y="95">30</text>
+    <text class="dial-unit-text" id="dial-unit-display" x="100" y="116">%</text>
+
+    <!-- Draggable handle (positioned by JS) -->
+    <circle class="dial-handle" id="dial-handle" r="14" cx="100" cy="20" />
+  </svg>
+
+  <div class="dial-label">Adjust the value</div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="dial-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   DIAL CONTROL COMPONENT — Rotary knob interaction
+   ============================================================
+   Geometry:
+   - Dial arc goes from angleStart (225 deg) to angleEnd (315 deg),
+     sweeping 270 degrees total (like a typical volume knob).
+   - 0 degrees = 3 o'clock position (standard SVG/math convention).
+   - The "dead zone" is at the bottom of the dial.
+   ============================================================ */
+
+(function() {
+  var svg = document.getElementById('dial-main');
+  if (!svg) return;
+
+  var handle = document.getElementById('dial-handle');
+  var fill = document.getElementById('dial-fill');
+  var valueDisplay = document.getElementById('dial-value-display');
+  var unitDisplay = document.getElementById('dial-unit-display');
+  var ticksGroup = document.getElementById('dial-ticks');
+
+  /* Read configuration from data attributes */
+  var minVal = parseFloat(svg.getAttribute('data-min')) || 0;
+  var maxVal = parseFloat(svg.getAttribute('data-max')) || 100;
+  var step = parseFloat(svg.getAttribute('data-step')) || 0;
+  var currentVal = parseFloat(svg.getAttribute('data-value')) || minVal;
+  var unit = svg.getAttribute('data-unit') || '';
+
+  /* Arc angles in degrees.
+     Default: start at 135 (lower-left), end at 405 (lower-right) = 270 degree sweep.
+     Using start=135, sweep=270 for a standard 3/4 circle dial. */
+  var angleStart = 135;       /* degrees, 0=right, going clockwise */
+  var angleSweep = 270;       /* total degrees of the arc */
+  var angleEnd = angleStart + angleSweep;
+
+  var cx = 100, cy = 100, r = 80;
+  var handleR = 14;
+
+  /* Calculate circumference and arc for the progress ring */
+  var circumference = 2 * Math.PI * r;
+  var arcLength = (angleSweep / 360) * circumference;
+
+  /* Set the ring background to only show the arc portion */
+  fill.style.strokeDasharray = arcLength + ' ' + circumference;
+
+  /* Generate tick marks */
+  generateTicks();
+
+  /* Set initial value */
+  setValue(currentVal);
+
+  /* === Mouse/Touch Interaction === */
+  var isDragging = false;
+
+  handle.addEventListener('mousedown', startDrag);
+  svg.addEventListener('mousedown', function(e) {
+    /* Clicking anywhere on the dial (not just handle) moves the value */
+    if (e.target === handle) return;
+    isDragging = true;
+    handle.classList.add('active');
+    updateFromPointer(e);
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (isDragging) updateFromPointer(e);
+  });
+  document.addEventListener('mouseup', stopDrag);
+
+  /* Touch events */
+  handle.addEventListener('touchstart', startDrag, { passive: false });
+  svg.addEventListener('touchstart', function(e) {
+    if (e.target === handle) return;
+    isDragging = true;
+    handle.classList.add('active');
+    updateFromTouch(e);
+  }, { passive: false });
+  document.addEventListener('touchmove', function(e) {
+    if (isDragging) {
+      e.preventDefault();
+      updateFromTouch(e);
+    }
+  }, { passive: false });
+  document.addEventListener('touchend', stopDrag);
+
+  function startDrag(e) {
+    e.preventDefault();
+    isDragging = true;
+    handle.classList.add('active');
+  }
+
+  function stopDrag() {
+    if (isDragging) {
+      isDragging = false;
+      handle.classList.remove('active');
+    }
+  }
+
+  function updateFromPointer(e) {
+    var rect = svg.getBoundingClientRect();
+    var x = e.clientX - rect.left - (rect.width / 2);
+    var y = e.clientY - rect.top - (rect.height / 2);
+    updateFromXY(x, y);
+  }
+
+  function updateFromTouch(e) {
+    var touch = e.touches[0];
+    var rect = svg.getBoundingClientRect();
+    var x = touch.clientX - rect.left - (rect.width / 2);
+    var y = touch.clientY - rect.top - (rect.height / 2);
+    updateFromXY(x, y);
+  }
+
+  /**
+   * Convert pointer x,y to an angle, then to a value.
+   */
+  function updateFromXY(x, y) {
+    /* Calculate angle from center (0 = right, clockwise positive) */
+    var angle = Math.atan2(y, x) * (180 / Math.PI);
+    if (angle < 0) angle += 360;
+
+    /* Map angle to value.
+       Our arc goes from 135 to 405 degrees (wrapping around). */
+    var normalizedAngle = angle;
+    if (normalizedAngle < angleStart && normalizedAngle < 90) {
+      normalizedAngle += 360;
+    }
+
+    /* Check if angle is within the arc */
+    if (normalizedAngle < angleStart || normalizedAngle > angleEnd) {
+      /* In the dead zone — snap to nearest end */
+      var distToStart = Math.abs(normalizedAngle - angleStart);
+      var distToEnd = Math.abs(normalizedAngle - angleEnd);
+      if (distToStart > 360) distToStart = Math.abs(distToStart - 360);
+      if (distToEnd > 360) distToEnd = Math.abs(distToEnd - 360);
+      normalizedAngle = distToStart < distToEnd ? angleStart : angleEnd;
+    }
+
+    /* Convert angle to value */
+    var fraction = (normalizedAngle - angleStart) / angleSweep;
+    fraction = Math.max(0, Math.min(1, fraction));
+    var newVal = minVal + fraction * (maxVal - minVal);
+
+    /* Snap to step */
+    if (step > 0) {
+      newVal = Math.round(newVal / step) * step;
+    }
+
+    newVal = Math.max(minVal, Math.min(maxVal, newVal));
+    setValue(newVal);
+  }
+
+  /**
+   * Set the dial to a specific value and update all visuals.
+   */
+  function setValue(val) {
+    currentVal = val;
+    var fraction = (val - minVal) / (maxVal - minVal);
+
+    /* Update handle position */
+    var handleAngle = angleStart + fraction * angleSweep;
+    var rad = handleAngle * (Math.PI / 180);
+    var hx = cx + r * Math.cos(rad);
+    var hy = cy + r * Math.sin(rad);
+    handle.setAttribute('cx', hx);
+    handle.setAttribute('cy', hy);
+
+    /* Update fill arc.
+       strokeDashoffset = arcLength * (1 - fraction) to fill from start. */
+    var dashOffset = arcLength * (1 - fraction);
+    /* Rotate the fill circle so it starts at angleStart */
+    fill.style.strokeDashoffset = dashOffset;
+    fill.setAttribute('transform', 'rotate(' + (angleStart - 90) + ' ' + cx + ' ' + cy + ')');
+
+    /* Update text display */
+    var displayVal = step >= 1 ? Math.round(val) : val.toFixed(1);
+    valueDisplay.textContent = displayVal;
+    unitDisplay.textContent = unit;
+
+    /* Update ARIA */
+    svg.setAttribute('aria-valuenow', displayVal);
+    svg.setAttribute('data-value', val);
+
+    /* Fire custom event */
+    svg.dispatchEvent(new CustomEvent('dial-change', { detail: { value: val } }));
+  }
+
+  /**
+   * Generate tick marks around the dial arc.
+   */
+  function generateTicks() {
+    if (!ticksGroup) return;
+    ticksGroup.innerHTML = '';
+
+    var tickStep = step > 0 ? step : (maxVal - minVal) / 10;
+    var tickCount = Math.round((maxVal - minVal) / tickStep);
+
+    for (var i = 0; i <= tickCount; i++) {
+      var fraction = i / tickCount;
+      var angle = angleStart + fraction * angleSweep;
+      var rad = angle * (Math.PI / 180);
+
+      /* Tick line (from r-8 to r-2 for minor, r-12 to r-2 for major) */
+      var isMajor = (i % 2 === 0) || tickCount <= 10;
+      var innerR = isMajor ? r + 8 : r + 5;
+      var outerR = r + 15;
+
+      var x1 = cx + innerR * Math.cos(rad);
+      var y1 = cy + innerR * Math.sin(rad);
+      var x2 = cx + outerR * Math.cos(rad);
+      var y2 = cy + outerR * Math.sin(rad);
+
+      var tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      tick.setAttribute('class', 'dial-tick' + (isMajor ? ' major' : ''));
+      tick.setAttribute('x1', x1);
+      tick.setAttribute('y1', y1);
+      tick.setAttribute('x2', x2);
+      tick.setAttribute('y2', y2);
+      ticksGroup.appendChild(tick);
+
+      /* Label for major ticks */
+      if (isMajor && tickCount <= 20) {
+        var labelR = r + 28;
+        var lx = cx + labelR * Math.cos(rad);
+        var ly = cy + labelR * Math.sin(rad);
+        var val = minVal + fraction * (maxVal - minVal);
+        var labelText = step >= 1 ? Math.round(val) : val.toFixed(1);
+
+        var label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('class', 'dial-tick-label');
+        label.setAttribute('x', lx);
+        label.setAttribute('y', ly);
+        label.textContent = labelText;
+        ticksGroup.appendChild(label);
+      }
+    }
+  }
+
+  /**
+   * Keyboard handling: arrow keys to adjust value.
+   */
+  window.handleDialKey = function(e, element) {
+    var increment = step > 0 ? step : (maxVal - minVal) / 20;
+    var newVal = currentVal;
+
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'ArrowUp':
+        newVal = Math.min(maxVal, currentVal + increment);
+        e.preventDefault();
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        newVal = Math.max(minVal, currentVal - increment);
+        e.preventDefault();
+        break;
+      case 'Home':
+        newVal = minVal;
+        e.preventDefault();
+        break;
+      case 'End':
+        newVal = maxVal;
+        e.preventDefault();
+        break;
+      default:
+        return;
+    }
+
+    setValue(newVal);
+    announceDial('Value: ' + (step >= 1 ? Math.round(newVal) : newVal.toFixed(1)) + ' ' + unit);
+  };
+})();
+
+function announceDial(msg) {
+  var el = document.getElementById('dial-announce');
+  if (el) el.textContent = msg;
+}
+</script>

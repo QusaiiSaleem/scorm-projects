@@ -1,0 +1,511 @@
+<!-- Branching Scenario Component
+     Usage: Copy into lesson HTML. Choose-your-own-adventure decision tree.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - JSON scene graph defines narrative text, choices, and consequences
+     - Each scene shows text + choice buttons
+     - Choices lead to different scenes with cumulative scoring
+     - Path history tracked as breadcrumb
+     - End scenes show summary of all choices + total score
+
+     CUSTOMIZATION:
+     - Edit SCENARIO object to define your scenes and choices
+     - Set startScene to the first scene ID
+     - Each choice has: label, nextScene, consequence text, and points
+     - Add optional character portrait (image URL or emoji)
+     - Adjust transition style (fade, slide)
+
+     ACCESSIBILITY:
+     - Choice buttons are proper <button> elements
+     - Keyboard: Tab between choices, Enter to select
+     - Screen reader: live region announces scene changes
+     - Focus moves to narrative text on scene change
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "other"
+     - learner_response = chosen path IDs
+-->
+
+<style>
+  /* === Branching Scenario Container === */
+  .branching-scenario {
+    max-width: 720px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Scene card */
+  .bs-scene {
+    background: var(--color-surface-elevated, #fff);
+    border-radius: var(--radius-lg, 12px);
+    border: 2px solid var(--color-border, #e0e0e0);
+    padding: var(--space-lg, 24px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .bs-scene.entering {
+    animation: bsFadeIn 0.4s ease forwards;
+  }
+
+  @keyframes bsFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Character row */
+  .bs-character-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md, 16px);
+    margin-bottom: var(--space-md, 16px);
+  }
+
+  .bs-portrait {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-primary, #6c5ce7);
+    flex-shrink: 0;
+    background: var(--color-surface, #f5f5f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+
+  .bs-character-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary, #6c5ce7);
+    margin-bottom: 4px;
+  }
+
+  /* Narrative text */
+  .bs-narrative {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--color-text-primary, #333);
+    margin-bottom: var(--space-lg, 24px);
+  }
+
+  /* Typewriter effect placeholder — text fades in word by word */
+  .bs-narrative .bs-word {
+    opacity: 0;
+    display: inline;
+    animation: bsWordFade 0.3s ease forwards;
+  }
+
+  @keyframes bsWordFade {
+    to { opacity: 1; }
+  }
+
+  /* Choices */
+  .bs-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 8px);
+  }
+
+  .bs-choice-btn {
+    display: block;
+    width: 100%;
+    text-align: start;
+    padding: var(--space-md, 16px);
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface, #fafafa);
+    color: var(--color-text-primary, #333);
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    min-height: 44px;
+  }
+
+  .bs-choice-btn:hover {
+    border-color: var(--color-primary, #6c5ce7);
+    background: var(--color-growth-bg, #f0f0ff);
+    transform: translateX(4px);
+  }
+
+  [dir="rtl"] .bs-choice-btn:hover {
+    transform: translateX(-4px);
+  }
+
+  .bs-choice-btn:focus-visible {
+    outline: 3px solid var(--color-primary, #6c5ce7);
+    outline-offset: 2px;
+  }
+
+  /* Score badge */
+  .bs-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-surface-elevated, #f5f5f5);
+    padding: 6px 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #666);
+    margin-bottom: var(--space-md, 16px);
+  }
+
+  .bs-score strong {
+    color: var(--color-primary, #6c5ce7);
+  }
+
+  /* Breadcrumb path history */
+  .bs-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: var(--space-md, 16px);
+    font-size: 0.75rem;
+    color: var(--color-text-secondary, #888);
+  }
+
+  .bs-breadcrumb span {
+    background: var(--color-surface, #f0f0f0);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .bs-breadcrumb span::after {
+    content: ' \2192';
+    opacity: 0.5;
+  }
+
+  [dir="rtl"] .bs-breadcrumb span::after {
+    content: ' \2190';
+  }
+
+  .bs-breadcrumb span:last-child::after {
+    content: '';
+  }
+
+  /* End scene summary */
+  .bs-summary {
+    margin-top: var(--space-lg, 24px);
+    padding: var(--space-lg, 24px);
+    border-radius: var(--radius-md, 8px);
+    border: 2px solid var(--color-border, #e0e0e0);
+    background: var(--color-surface, #fafafa);
+  }
+
+  .bs-summary h4 {
+    margin: 0 0 var(--space-md, 16px);
+    font-size: 1rem;
+  }
+
+  .bs-summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-subtle, #eee);
+    font-size: 0.875rem;
+  }
+
+  .bs-summary-item:last-child {
+    border-bottom: none;
+  }
+
+  .bs-summary-points {
+    font-weight: 600;
+    color: var(--color-primary, #6c5ce7);
+  }
+
+  .bs-summary-points.positive { color: var(--color-success, #10b981); }
+  .bs-summary-points.negative { color: var(--color-error, #ef4444); }
+
+  .bs-total-score {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    margin-top: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  /* Restart button */
+  .bs-restart {
+    display: block;
+    margin: var(--space-md, 16px) auto 0;
+    padding: 10px 24px;
+    background: var(--color-surface-elevated, #f5f5f5);
+    color: var(--color-text-primary, #333);
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+    transition: background 0.2s;
+  }
+
+  .bs-restart:hover {
+    background: var(--color-growth-bg, #f0f0ff);
+    border-color: var(--color-primary, #6c5ce7);
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .bs-scene.entering { animation: none; opacity: 1; }
+    .bs-narrative .bs-word { animation: none; opacity: 1; }
+    .bs-choice-btn:hover { transform: none; }
+  }
+</style>
+
+<div class="branching-scenario" role="application" aria-label="Branching scenario: make choices to navigate the story">
+
+  <!-- Score display -->
+  <div class="bs-score" aria-live="polite">
+    Score: <strong id="bs-score-val">0</strong> points
+  </div>
+
+  <!-- Path breadcrumb -->
+  <div class="bs-breadcrumb" id="bs-breadcrumb" aria-label="Decision path"></div>
+
+  <!-- Scene container -->
+  <div class="bs-scene" id="bs-scene">
+    <!-- Character row (optional, shown when scene has a character) -->
+    <div class="bs-character-row" id="bs-char-row" style="display:none;">
+      <div class="bs-portrait" id="bs-portrait" aria-hidden="true"></div>
+      <div>
+        <div class="bs-character-name" id="bs-char-name"></div>
+      </div>
+    </div>
+
+    <!-- Narrative text -->
+    <div class="bs-narrative" id="bs-narrative" tabindex="-1" role="status"></div>
+
+    <!-- Choice buttons -->
+    <div class="bs-choices" id="bs-choices" role="group" aria-label="Available choices"></div>
+  </div>
+
+  <!-- End-scene summary (hidden until end) -->
+  <div class="bs-summary" id="bs-summary" style="display:none;">
+    <h4>Your Journey Summary</h4>
+    <div id="bs-summary-list"></div>
+    <div class="bs-total-score" id="bs-total-score"></div>
+    <button class="bs-restart" id="bs-restart">Try Again</button>
+  </div>
+</div>
+
+<div id="bs-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   BRANCHING SCENARIO COMPONENT
+   ============================================================
+   Edit the SCENARIO object to define your own story.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Your scenario data === */
+  var SCENARIO = {
+    startScene: 'start',
+    scenes: {
+      start: {
+        text: 'A customer approaches looking frustrated. They are holding a product box and seem impatient. What do you do?',
+        character: { name: 'Narrator', portrait: '&#128100;' },
+        choices: [
+          { label: 'Greet them warmly and ask how you can help', nextScene: 'empathy', consequence: 'You showed empathy', points: 3 },
+          { label: 'Wait for them to speak first', nextScene: 'passive', consequence: 'You waited passively', points: 0 },
+          { label: 'Immediately offer a discount', nextScene: 'discount', consequence: 'You jumped to discounts', points: -1 }
+        ]
+      },
+      empathy: {
+        text: 'The customer visibly relaxes. "Thank you for asking. I bought this product last week and it stopped working." They explain the issue in detail because they feel heard.',
+        character: { name: 'Customer', portrait: '&#128578;' },
+        choices: [
+          { label: 'Listen fully, then offer troubleshooting steps', nextScene: 'solve', consequence: 'You listened and solved', points: 3 },
+          { label: 'Interrupt to explain the return policy', nextScene: 'policy', consequence: 'You interrupted with policy', points: 0 }
+        ]
+      },
+      passive: {
+        text: 'The customer waits awkwardly for a moment, then says sharply: "Is anyone going to help me?" Their frustration has increased.',
+        character: { name: 'Customer', portrait: '&#128544;' },
+        choices: [
+          { label: 'Apologize and ask how you can help now', nextScene: 'recover', consequence: 'You recovered with an apology', points: 1 },
+          { label: 'Tell them to take a number', nextScene: 'bad_end', consequence: 'You were dismissive', points: -3 }
+        ]
+      },
+      discount: {
+        text: '"I do not want a discount, I want this fixed!" The customer feels you are not listening to their actual problem.',
+        character: { name: 'Customer', portrait: '&#128545;' },
+        choices: [
+          { label: 'Apologize and ask them to explain the issue', nextScene: 'recover', consequence: 'You corrected course', points: 1 },
+          { label: 'Insist the discount is the best you can do', nextScene: 'bad_end', consequence: 'You insisted on discount', points: -2 }
+        ]
+      },
+      recover: {
+        text: 'The customer calms down slightly. "Look, the screen just goes black after 10 minutes. I need it for work." There is still tension, but they are willing to work with you.',
+        character: { name: 'Customer', portrait: '&#128528;' },
+        choices: [
+          { label: 'Walk through diagnostic steps with them', nextScene: 'solve', consequence: 'You helped troubleshoot', points: 2 },
+          { label: 'Suggest they contact the manufacturer instead', nextScene: 'deflect_end', consequence: 'You deflected responsibility', points: -2 }
+        ]
+      },
+      policy: {
+        text: 'The customer frowns. "I did not ask about returns. Can you actually help me fix it?" They feel unheard.',
+        character: { name: 'Customer', portrait: '&#128530;' },
+        choices: [
+          { label: 'Apologize and focus on solving the issue', nextScene: 'solve', consequence: 'You refocused on the problem', points: 1 },
+          { label: 'Repeat the return policy more firmly', nextScene: 'bad_end', consequence: 'You doubled down on policy', points: -2 }
+        ]
+      },
+      solve: {
+        text: 'You walk through the steps together. Turns out it was a simple firmware update! The customer is delighted. "Thank you so much for actually helping me. I will definitely come back." They leave a 5-star review.',
+        character: { name: 'Customer', portrait: '&#128522;' },
+        isEnd: true,
+        endTitle: 'Great Outcome!'
+      },
+      bad_end: {
+        text: 'The customer shakes their head and leaves. Later, you see a 1-star review online: "Staff was unhelpful and dismissive." Your manager asks to speak with you.',
+        character: { name: 'Manager', portrait: '&#128533;' },
+        isEnd: true,
+        endTitle: 'Poor Outcome'
+      },
+      deflect_end: {
+        text: 'The customer takes their product and leaves. They never come back. The issue was fixable in-store, but they lost trust in your team.',
+        character: { name: 'Narrator', portrait: '&#128100;' },
+        isEnd: true,
+        endTitle: 'Missed Opportunity'
+      }
+    }
+  };
+
+  /* === State === */
+  var score = 0;
+  var history = []; /* Array of { sceneId, choiceLabel, consequence, points } */
+
+  var sceneEl = document.getElementById('bs-scene');
+  var narrativeEl = document.getElementById('bs-narrative');
+  var choicesEl = document.getElementById('bs-choices');
+  var scoreEl = document.getElementById('bs-score-val');
+  var breadcrumbEl = document.getElementById('bs-breadcrumb');
+  var charRow = document.getElementById('bs-char-row');
+  var portraitEl = document.getElementById('bs-portrait');
+  var charNameEl = document.getElementById('bs-char-name');
+  var summaryEl = document.getElementById('bs-summary');
+  var summaryListEl = document.getElementById('bs-summary-list');
+  var totalScoreEl = document.getElementById('bs-total-score');
+  var restartBtn = document.getElementById('bs-restart');
+
+  /* === Render a scene === */
+  function renderScene(sceneId) {
+    var scene = SCENARIO.scenes[sceneId];
+    if (!scene) return;
+
+    /* Animate entrance */
+    sceneEl.classList.remove('entering');
+    void sceneEl.offsetWidth; /* force reflow */
+    sceneEl.classList.add('entering');
+
+    /* Character */
+    if (scene.character) {
+      charRow.style.display = 'flex';
+      portraitEl.innerHTML = scene.character.portrait || '';
+      charNameEl.textContent = scene.character.name || '';
+    } else {
+      charRow.style.display = 'none';
+    }
+
+    /* Narrative text with word-by-word fade */
+    var words = scene.text.split(' ');
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      narrativeEl.textContent = scene.text;
+    } else {
+      narrativeEl.innerHTML = words.map(function(word, i) {
+        return '<span class="bs-word" style="animation-delay:' + (i * 0.03) + 's">' + word + ' </span>';
+      }).join('');
+    }
+    narrativeEl.focus();
+
+    /* Choices or end scene */
+    choicesEl.innerHTML = '';
+    if (scene.isEnd) {
+      showEndScene(scene);
+      return;
+    }
+
+    scene.choices.forEach(function(choice) {
+      var btn = document.createElement('button');
+      btn.className = 'bs-choice-btn';
+      btn.textContent = choice.label;
+      btn.addEventListener('click', function() {
+        score += (choice.points || 0);
+        scoreEl.textContent = score;
+        history.push({
+          sceneId: sceneId,
+          choiceLabel: choice.label,
+          consequence: choice.consequence || '',
+          points: choice.points || 0
+        });
+        updateBreadcrumb();
+        renderScene(choice.nextScene);
+      });
+      choicesEl.appendChild(btn);
+    });
+
+    announce('New scene. ' + scene.text.substring(0, 80) + '...');
+  }
+
+  /* === Breadcrumb === */
+  function updateBreadcrumb() {
+    breadcrumbEl.innerHTML = '';
+    history.forEach(function(h) {
+      var span = document.createElement('span');
+      span.textContent = h.choiceLabel.substring(0, 30) + (h.choiceLabel.length > 30 ? '...' : '');
+      breadcrumbEl.appendChild(span);
+    });
+  }
+
+  /* === End scene === */
+  function showEndScene(scene) {
+    sceneEl.style.display = 'none';
+    summaryEl.style.display = 'block';
+
+    summaryListEl.innerHTML = '';
+    history.forEach(function(h) {
+      var div = document.createElement('div');
+      div.className = 'bs-summary-item';
+      var pointsClass = h.points > 0 ? 'positive' : (h.points < 0 ? 'negative' : '');
+      var sign = h.points > 0 ? '+' : '';
+      div.innerHTML =
+        '<span>' + h.consequence + '</span>' +
+        '<span class="bs-summary-points ' + pointsClass + '">' + sign + h.points + ' pts</span>';
+      summaryListEl.appendChild(div);
+    });
+
+    totalScoreEl.textContent = (scene.endTitle || 'End') + ' — Total Score: ' + score + ' points';
+    announce('Scenario complete. ' + (scene.endTitle || '') + '. Total score: ' + score + ' points.');
+  }
+
+  /* === Restart === */
+  restartBtn.addEventListener('click', function() {
+    score = 0;
+    history = [];
+    scoreEl.textContent = '0';
+    breadcrumbEl.innerHTML = '';
+    summaryEl.style.display = 'none';
+    sceneEl.style.display = 'block';
+    renderScene(SCENARIO.startScene);
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('bs-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Start === */
+  renderScene(SCENARIO.startScene);
+})();
+</script>

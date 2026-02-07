@@ -1,0 +1,407 @@
+<!-- Content Carousel Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A horizontal card slider using CSS scroll-snap for smooth swiping
+     - Left/right arrow buttons navigate between cards
+     - Dot indicators show current position and allow direct navigation
+     - Supports touch swipe on mobile devices
+     - Optional auto-play with pause on hover/focus
+     - Cards can contain: image, title, description
+
+     CUSTOMIZATION:
+     - Add/remove .carousel-card elements for more/fewer slides
+     - Set data-autoplay="true" on .carousel for auto-advance (5s default)
+     - Set data-autoplay-interval="3000" for custom interval in ms
+     - Adjust --carousel-card-gap, --carousel-card-min for sizing
+     - Card content is fully customizable HTML
+
+     ACCESSIBILITY:
+     - Uses role="region" with aria-label on the carousel
+     - Arrow buttons have aria-label descriptions
+     - Dots use role="tablist" with role="tab" on each dot
+     - aria-live="polite" announces slide changes to screen readers
+     - Keyboard: arrow keys navigate between dots, Enter activates
+     - prefers-reduced-motion disables transitions and auto-play
+-->
+
+<style>
+  /* === Carousel Container === */
+  .carousel {
+    --carousel-card-gap: 16px;
+    --carousel-card-min: 280px;
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* === Track (scrollable row of cards) === */
+  .carousel-track {
+    display: flex;
+    gap: var(--carousel-card-gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding-block: var(--space-sm, 8px);
+    padding-inline: var(--space-xs, 4px);
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  /* === Individual Card === */
+  .carousel-card {
+    flex: 0 0 calc(100% - var(--carousel-card-gap));
+    min-width: var(--carousel-card-min);
+    scroll-snap-align: start;
+    background: var(--color-surface-elevated, #fff);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+    border: 1px solid var(--color-border, #e5e7eb);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .carousel-card:hover {
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.12));
+    transform: translateY(-2px);
+  }
+
+  /* Card image */
+  .carousel-card-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    background: var(--color-surface, #f3f4f6);
+  }
+
+  /* Card body */
+  .carousel-card-body {
+    padding: var(--space-md, 16px);
+  }
+
+  .carousel-card-title {
+    margin: 0 0 var(--space-xs, 4px);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text, #1f2937);
+    line-height: 1.3;
+  }
+
+  .carousel-card-desc {
+    margin: 0;
+    font-size: var(--font-size-small, 0.9rem);
+    color: var(--color-text-secondary, #6b7280);
+    line-height: 1.6;
+  }
+
+  /* === Arrow Buttons === */
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border, #e5e7eb);
+    background: var(--color-surface-elevated, #fff);
+    color: var(--color-text, #1f2937);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
+    transition: background 0.2s ease, opacity 0.2s ease;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .carousel-arrow:hover {
+    background: var(--color-primary, #6366f1);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .carousel-arrow:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  .carousel-arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .carousel-arrow--prev { inset-inline-start: -22px; }
+  .carousel-arrow--next { inset-inline-end: -22px; }
+
+  /* Arrow SVG icons */
+  .carousel-arrow svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* === Dot Indicators === */
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-block-start: var(--space-md, 16px);
+    padding: 0;
+    list-style: none;
+  }
+
+  .carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary, #6366f1);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .carousel-dot:hover {
+    transform: scale(1.3);
+  }
+
+  .carousel-dot:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  .carousel-dot.active {
+    background: var(--color-primary, #6366f1);
+    transform: scale(1.2);
+  }
+
+  /* === Responsive: show multiple cards on wider screens === */
+  @media (min-width: 640px) {
+    .carousel-card {
+      flex: 0 0 calc(50% - var(--carousel-card-gap));
+    }
+    .carousel-arrow--prev { inset-inline-start: -18px; }
+    .carousel-arrow--next { inset-inline-end: -18px; }
+  }
+
+  @media (min-width: 960px) {
+    .carousel-card {
+      flex: 0 0 calc(33.333% - var(--carousel-card-gap));
+    }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-track { scroll-behavior: auto; }
+    .carousel-card { transition: none; }
+    .carousel-dot { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="carousel" role="region" aria-label="Content carousel" aria-roledescription="carousel">
+  <!-- Previous arrow -->
+  <button class="carousel-arrow carousel-arrow--prev" aria-label="Previous slide" data-dir="prev">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+
+  <!-- Scrollable track -->
+  <div class="carousel-track" role="list">
+    <!-- Card 1 -->
+    <div class="carousel-card" role="listitem">
+      <img class="carousel-card-image" src="shared/assets/images/card-1.jpg" alt="Card 1 illustration">
+      <div class="carousel-card-body">
+        <h4 class="carousel-card-title">Card Title 1</h4>
+        <p class="carousel-card-desc">Brief description for this card. Replace with your content.</p>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="carousel-card" role="listitem">
+      <img class="carousel-card-image" src="shared/assets/images/card-2.jpg" alt="Card 2 illustration">
+      <div class="carousel-card-body">
+        <h4 class="carousel-card-title">Card Title 2</h4>
+        <p class="carousel-card-desc">Brief description for this card. Replace with your content.</p>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="carousel-card" role="listitem">
+      <img class="carousel-card-image" src="shared/assets/images/card-3.jpg" alt="Card 3 illustration">
+      <div class="carousel-card-body">
+        <h4 class="carousel-card-title">Card Title 3</h4>
+        <p class="carousel-card-desc">Brief description for this card. Replace with your content.</p>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="carousel-card" role="listitem">
+      <img class="carousel-card-image" src="shared/assets/images/card-4.jpg" alt="Card 4 illustration">
+      <div class="carousel-card-body">
+        <h4 class="carousel-card-title">Card Title 4</h4>
+        <p class="carousel-card-desc">Brief description for this card. Replace with your content.</p>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="carousel-card" role="listitem">
+      <img class="carousel-card-image" src="shared/assets/images/card-5.jpg" alt="Card 5 illustration">
+      <div class="carousel-card-body">
+        <h4 class="carousel-card-title">Card Title 5</h4>
+        <p class="carousel-card-desc">Brief description for this card. Replace with your content.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next arrow -->
+  <button class="carousel-arrow carousel-arrow--next" aria-label="Next slide" data-dir="next">
+    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <!-- Dot indicators -->
+  <div class="carousel-dots" role="tablist" aria-label="Slide navigation"></div>
+
+  <!-- Screen reader announcements -->
+  <div class="sr-only" aria-live="polite" id="carousel-announce"></div>
+</div>
+
+<script>
+/* ============================================================
+   CONTENT CAROUSEL — Horizontal card slider with scroll-snap
+   ============================================================
+   - CSS scroll-snap handles smooth scrolling and alignment
+   - Arrow buttons scroll by one card width
+   - Dot indicators generated from card count
+   - IntersectionObserver tracks which card is visible
+   - Touch swipe works natively via overflow-x scroll
+   - Optional auto-play: add data-autoplay="true" to .carousel
+   ============================================================ */
+
+(function() {
+  var carousel = document.querySelector('.carousel');
+  if (!carousel) return;
+
+  var track = carousel.querySelector('.carousel-track');
+  var cards = track.querySelectorAll('.carousel-card');
+  var dotsContainer = carousel.querySelector('.carousel-dots');
+  var prevBtn = carousel.querySelector('[data-dir="prev"]');
+  var nextBtn = carousel.querySelector('[data-dir="next"]');
+  var announceEl = carousel.querySelector('#carousel-announce');
+  var currentIndex = 0;
+  var autoplayTimer = null;
+
+  /* --- Build dot indicators from card count --- */
+  cards.forEach(function(_, i) {
+    var dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('role', 'tab');
+    dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    dot.addEventListener('click', function() { scrollToCard(i); });
+    dotsContainer.appendChild(dot);
+  });
+
+  var dots = dotsContainer.querySelectorAll('.carousel-dot');
+
+  /* --- Scroll to a specific card index --- */
+  function scrollToCard(index) {
+    if (index < 0 || index >= cards.length) return;
+    cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    setActive(index);
+  }
+
+  /* --- Update active dot and announce --- */
+  function setActive(index) {
+    currentIndex = index;
+    dots.forEach(function(d, i) {
+      d.classList.toggle('active', i === index);
+      d.setAttribute('aria-selected', i === index ? 'true' : 'false');
+    });
+    if (announceEl) {
+      announceEl.textContent = 'Showing slide ' + (index + 1) + ' of ' + cards.length;
+    }
+  }
+
+  /* --- Arrow click handlers --- */
+  prevBtn.addEventListener('click', function() {
+    scrollToCard(Math.max(0, currentIndex - 1));
+    resetAutoplay();
+  });
+
+  nextBtn.addEventListener('click', function() {
+    scrollToCard(Math.min(cards.length - 1, currentIndex + 1));
+    resetAutoplay();
+  });
+
+  /* --- IntersectionObserver to track visible card --- */
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+        var idx = Array.prototype.indexOf.call(cards, entry.target);
+        if (idx !== -1) setActive(idx);
+      }
+    });
+  }, { root: track, threshold: 0.5 });
+
+  cards.forEach(function(card) { observer.observe(card); });
+
+  /* --- Keyboard navigation on dots --- */
+  dotsContainer.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      var next = Math.min(dots.length - 1, currentIndex + 1);
+      dots[next].focus();
+      scrollToCard(next);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      var prev = Math.max(0, currentIndex - 1);
+      dots[prev].focus();
+      scrollToCard(prev);
+    }
+  });
+
+  /* --- Auto-play (optional) --- */
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var autoplay = carousel.getAttribute('data-autoplay') === 'true' && !prefersReduced;
+  var interval = parseInt(carousel.getAttribute('data-autoplay-interval'), 10) || 5000;
+
+  function startAutoplay() {
+    if (!autoplay) return;
+    autoplayTimer = setInterval(function() {
+      var next = (currentIndex + 1) % cards.length;
+      scrollToCard(next);
+    }, interval);
+  }
+
+  function resetAutoplay() {
+    if (autoplayTimer) clearInterval(autoplayTimer);
+    startAutoplay();
+  }
+
+  /* Pause auto-play on hover or focus */
+  carousel.addEventListener('mouseenter', function() {
+    if (autoplayTimer) clearInterval(autoplayTimer);
+  });
+  carousel.addEventListener('mouseleave', function() { startAutoplay(); });
+  carousel.addEventListener('focusin', function() {
+    if (autoplayTimer) clearInterval(autoplayTimer);
+  });
+  carousel.addEventListener('focusout', function() { startAutoplay(); });
+
+  startAutoplay();
+})();
+</script>

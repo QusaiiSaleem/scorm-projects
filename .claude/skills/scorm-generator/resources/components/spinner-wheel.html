@@ -1,0 +1,314 @@
+<!-- Spinner Wheel Component
+     Usage: Copy into lesson HTML. Random selection wheel for categories/questions.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - CSS conic-gradient circle divided into colored segments
+     - Spin animation with cubic-bezier deceleration
+     - Pointer arrow at top indicates the winning segment
+     - Random landing position with smooth spin
+     - Result callback fires when wheel stops
+
+     CUSTOMIZATION:
+     - Edit SEGMENTS array: { label, color } per segment
+     - Adjust SPIN_DURATION and MIN_ROTATIONS
+     - Set onResult callback for integration with other components
+     - Wheel auto-sizes to container
+
+     ACCESSIBILITY:
+     - Spin button is a <button> element
+     - Screen reader: announces result when wheel stops
+     - Keyboard: Enter/Space to spin
+     - prefers-reduced-motion: instant result, no spin animation
+
+     SCORM REPORTING:
+     - Can be used as random question selector
+     - Result stored for interaction tracking
+-->
+
+<style>
+  /* === Spinner Wheel Container === */
+  .spinner-wheel {
+    max-width: 420px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .sw-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: var(--space-md, 16px);
+  }
+
+  /* The wheel itself */
+  .sw-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    /* conic-gradient set dynamically by JS */
+    border: 4px solid var(--color-border, #e0e0e0);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 0 0 4px rgba(255, 255, 255, 0.1);
+    transition: transform 0s;
+  }
+
+  .sw-wheel.spinning {
+    transition: transform var(--sw-duration, 4s) cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+
+  /* Segment labels (positioned radially) */
+  .sw-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    pointer-events: none;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Center hub */
+  .sw-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-surface-elevated, #fff);
+    border: 3px solid var(--color-border, #e0e0e0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  /* Pointer arrow at top */
+  .sw-pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 24px solid var(--color-primary, #6c5ce7);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+
+  /* Spin button */
+  .sw-spin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 48px;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .sw-spin-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.03);
+  }
+
+  .sw-spin-btn:focus-visible {
+    outline: 3px solid var(--color-primary, #6c5ce7);
+    outline-offset: 3px;
+  }
+
+  .sw-spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Result display */
+  .sw-result {
+    margin-top: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    border: 2px solid var(--color-primary, #6c5ce7);
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: none;
+    animation: swResultIn 0.4s ease;
+  }
+
+  .sw-result.show {
+    display: block;
+  }
+
+  @keyframes swResultIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .sw-wheel.spinning { transition-duration: 0.01s !important; }
+    .sw-result.show { animation: none; }
+    .sw-spin-btn:hover { transform: none; }
+  }
+</style>
+
+<div class="spinner-wheel" role="application" aria-label="Spinner wheel: press spin to select a random category">
+
+  <div class="sw-stage">
+    <!-- Pointer -->
+    <div class="sw-pointer" aria-hidden="true"></div>
+
+    <!-- Wheel -->
+    <div class="sw-wheel" id="sw-wheel" aria-hidden="true"></div>
+
+    <!-- Center hub -->
+    <div class="sw-hub" aria-hidden="true">&#127922;</div>
+  </div>
+
+  <!-- Spin button -->
+  <button class="sw-spin-btn" id="sw-spin" aria-label="Spin the wheel">
+    &#9654; Spin!
+  </button>
+
+  <!-- Result display -->
+  <div class="sw-result" id="sw-result" role="status" aria-live="polite"></div>
+</div>
+
+<div id="sw-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   SPINNER WHEEL COMPONENT
+   ============================================================
+   Edit SEGMENTS array to define wheel sections.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Wheel segments === */
+  var SEGMENTS = [
+    { label: 'Science',    color: '#6c5ce7' },
+    { label: 'History',    color: '#e17055' },
+    { label: 'Math',       color: '#00b894' },
+    { label: 'Language',   color: '#fdcb6e' },
+    { label: 'Geography',  color: '#0984e3' },
+    { label: 'Art',        color: '#e84393' },
+    { label: 'Music',      color: '#00cec9' },
+    { label: 'Bonus!',     color: '#d63031' }
+  ];
+
+  var SPIN_DURATION = 4; /* seconds */
+  var MIN_ROTATIONS = 5; /* minimum full spins before landing */
+
+  /* === State === */
+  var isSpinning = false;
+  var currentRotation = 0;
+
+  var wheelEl = document.getElementById('sw-wheel');
+  var spinBtn = document.getElementById('sw-spin');
+  var resultEl = document.getElementById('sw-result');
+
+  /* === Build wheel === */
+  function buildWheel() {
+    var segAngle = 360 / SEGMENTS.length;
+    var gradientStops = [];
+    var startAngle = 0;
+
+    SEGMENTS.forEach(function(seg, i) {
+      var endAngle = startAngle + segAngle;
+      gradientStops.push(seg.color + ' ' + startAngle + 'deg ' + endAngle + 'deg');
+      startAngle = endAngle;
+    });
+
+    wheelEl.style.background = 'conic-gradient(' + gradientStops.join(', ') + ')';
+
+    /* Add labels */
+    wheelEl.innerHTML = '';
+    SEGMENTS.forEach(function(seg, i) {
+      var midAngle = (i * segAngle) + (segAngle / 2);
+      var label = document.createElement('div');
+      label.className = 'sw-label';
+      label.textContent = seg.label;
+      /* Position label at midpoint of segment, offset from center */
+      var radians = (midAngle - 90) * (Math.PI / 180);
+      var radius = 38; /* % from center */
+      var x = Math.cos(radians) * radius;
+      var y = Math.sin(radians) * radius;
+      label.style.transform = 'translate(-50%, -50%) translate(' + x + '%, ' + y + '%) rotate(' + midAngle + 'deg)';
+      label.style.top = '50%';
+      label.style.left = '50%';
+      wheelEl.appendChild(label);
+    });
+  }
+
+  /* === Spin logic === */
+  spinBtn.addEventListener('click', function() {
+    if (isSpinning) return;
+    isSpinning = true;
+    spinBtn.disabled = true;
+    resultEl.classList.remove('show');
+
+    /* Random target segment */
+    var segAngle = 360 / SEGMENTS.length;
+    var targetIndex = Math.floor(Math.random() * SEGMENTS.length);
+
+    /* Calculate rotation to land on target segment
+       The pointer is at top (0 degrees). The wheel rotates clockwise.
+       To land on segment i, we need the middle of that segment at the top. */
+    var targetAngle = 360 - (targetIndex * segAngle + segAngle / 2);
+    var totalRotation = currentRotation + (MIN_ROTATIONS * 360) + targetAngle;
+
+    /* Ensure we always go forward */
+    if (totalRotation <= currentRotation) totalRotation += 360;
+
+    wheelEl.style.setProperty('--sw-duration', SPIN_DURATION + 's');
+    wheelEl.classList.add('spinning');
+    wheelEl.style.transform = 'rotate(' + totalRotation + 'deg)';
+
+    currentRotation = totalRotation % 360;
+
+    /* Wait for animation to finish */
+    setTimeout(function() {
+      wheelEl.classList.remove('spinning');
+      isSpinning = false;
+      spinBtn.disabled = false;
+
+      /* Show result */
+      var winner = SEGMENTS[targetIndex];
+      resultEl.textContent = 'Result: ' + winner.label;
+      resultEl.classList.add('show');
+      announce('The wheel landed on: ' + winner.label);
+
+      /* CUSTOMIZE: Add your onResult callback here */
+      /* onResult(winner.label, targetIndex); */
+    }, SPIN_DURATION * 1000 + 100);
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('sw-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Init === */
+  buildWheel();
+})();
+</script>

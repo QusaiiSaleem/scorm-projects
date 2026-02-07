@@ -1,0 +1,56 @@
+/* Saudi Foundation Day — Course-Specific Styles
+   Theme: playful-bright | Audience: 4th grade children | Language: Arabic RTL */
+
+/* Arabic font import (testing only — bundle for production) */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
+:root {
+  --font-heading: 'Tajawal', sans-serif;
+  --font-body: 'Tajawal', sans-serif;
+}
+
+/* Fun Saudi green/white hero for Foundation Day */
+.hero-section.saudi-hero {
+  background: linear-gradient(135deg, #006C35 0%, #3B82F6 50%, #F59E0B 100%);
+}
+
+/* Large emoji icons for kid-friendly content */
+.emoji-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+/* Fun card grid for 4th graders */
+.fun-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-lg) 0;
+}
+
+/* Colorful date badge for timeline */
+.date-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #006C35, #10B981);
+  color: white;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+/* Saudi green accent for national identity */
+.saudi-green { color: #006C35; }
+.saudi-green-bg { background: #006C35; }
+
+/* Celebration banner */
+.celebration-banner {
+  background: linear-gradient(135deg, #F59E0B, #EC4899, #3B82F6);
+  color: white;
+  text-align: center;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  animation: fadeUp 0.5s ease-out;
+}

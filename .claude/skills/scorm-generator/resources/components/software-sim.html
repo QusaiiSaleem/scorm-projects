@@ -1,0 +1,538 @@
+<!-- Software Simulation Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Displays a screenshot/mockup image as background for each step
+     - A positioned hotspot highlight (pulsing circle) shows where to click
+     - Step indicator shows "Step X of Y" with an instruction prompt
+     - Click correct hotspot → advance to next step (new screenshot)
+     - Click wrong area → error feedback with hint message
+     - Optional: highlights the correct area after a wrong click
+     - Final step shows a completion message
+
+     CUSTOMIZATION:
+     - Define steps in the data-steps attribute (JSON array) or inline
+     - Each step: { image, instruction, hotspot: { x, y, w, h }, errorMsg }
+     - Hotspot positions are percentages (responsive to image size)
+     - Set data-show-hint="true" to highlight correct area on wrong click
+     - Adjust --sim-max-width for container sizing
+
+     ACCESSIBILITY:
+     - Container uses role="application" for direct keyboard interaction
+     - Step instructions announced via aria-live
+     - Hotspot is an invisible button with descriptive aria-label
+     - Escape key resets current step feedback
+     - Screen reader announces step progress and errors
+-->
+
+<style>
+  /* === Simulation Container === */
+  .software-sim {
+    --sim-max-width: 800px;
+    position: relative;
+    max-width: var(--sim-max-width);
+    margin: 0 auto;
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    background: var(--color-surface, #f3f4f6);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
+    border: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  /* === Step Header === */
+  .sim-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    background: linear-gradient(135deg, var(--color-primary, #6366f1), var(--color-primary-dark, #4f46e5));
+    color: #fff;
+    font-size: var(--font-size-small, 0.85rem);
+    font-weight: 600;
+  }
+
+  .sim-step-label {
+    opacity: 0.85;
+  }
+
+  /* Step progress bar */
+  .sim-progress {
+    flex: 1;
+    max-width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    margin-inline-start: var(--space-md, 16px);
+    overflow: hidden;
+  }
+
+  .sim-progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* === Screenshot Area === */
+  .sim-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  .sim-screenshot {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Placeholder when no image */
+  .sim-screenshot-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0e7ff, #f3f4f6);
+    color: var(--color-text-secondary, #6b7280);
+    font-size: var(--font-size-small, 0.9rem);
+  }
+
+  /* === Hotspot (click target) === */
+  .sim-hotspot {
+    position: absolute;
+    border: 3px solid var(--color-primary, #6366f1);
+    border-radius: var(--radius-md, 8px);
+    background: rgba(99, 102, 241, 0.1);
+    cursor: pointer;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+    /* Pulsing animation */
+    animation: simHotspotPulse 2s ease-in-out infinite;
+  }
+
+  .sim-hotspot:hover {
+    background: rgba(99, 102, 241, 0.2);
+  }
+
+  .sim-hotspot:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  @keyframes simHotspotPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  }
+
+  /* Hint state: highlight hotspot after wrong click */
+  .sim-hotspot.hint {
+    border-color: var(--color-accent, #f59e0b);
+    background: rgba(245, 158, 11, 0.2);
+    animation: simHintFlash 0.6s ease-in-out 3;
+  }
+
+  @keyframes simHintFlash {
+    0%, 100% { background: rgba(245, 158, 11, 0.2); }
+    50% { background: rgba(245, 158, 11, 0.4); }
+  }
+
+  /* Wrong click indicator */
+  .sim-wrong-click {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.6);
+    border: 2px solid #ef4444;
+    pointer-events: none;
+    z-index: 20;
+    transform: translate(-50%, -50%) scale(0);
+    animation: simWrongPop 0.5s ease forwards;
+  }
+
+  @keyframes simWrongPop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    60% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+
+  /* === Instruction Bar === */
+  .sim-instruction {
+    padding: var(--space-md, 16px);
+    background: var(--color-surface-elevated, #fff);
+    border-block-start: 1px solid var(--color-border, #e5e7eb);
+    font-size: 0.95rem;
+    color: var(--color-text, #1f2937);
+    line-height: 1.5;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 8px);
+  }
+
+  .sim-instruction-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: var(--color-primary, #6366f1);
+    stroke-width: 2;
+  }
+
+  /* === Error Feedback === */
+  .sim-error {
+    display: none;
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    background: #fef2f2;
+    border-block-start: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: var(--font-size-small, 0.85rem);
+    line-height: 1.5;
+    align-items: center;
+    gap: var(--space-sm, 8px);
+  }
+
+  .sim-error.visible { display: flex; }
+
+  .sim-error-icon {
+    flex-shrink: 0;
+    font-size: 1.1rem;
+  }
+
+  /* === Completion State === */
+  .sim-complete {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl, 48px) var(--space-lg, 24px);
+    text-align: center;
+    background: var(--color-surface-elevated, #fff);
+  }
+
+  .sim-complete.visible { display: flex; }
+
+  .sim-complete-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-success, #22c55e);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-block-end: var(--space-md, 16px);
+  }
+
+  .sim-complete-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-text, #1f2937);
+    margin: 0 0 var(--space-xs, 4px);
+  }
+
+  .sim-complete-text {
+    font-size: var(--font-size-small, 0.9rem);
+    color: var(--color-text-secondary, #6b7280);
+    margin: 0 0 var(--space-md, 16px);
+  }
+
+  .sim-restart-btn {
+    padding: var(--space-sm, 8px) var(--space-lg, 24px);
+    background: var(--color-primary, #6366f1);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .sim-restart-btn:hover { background: var(--color-primary-dark, #4f46e5); }
+
+  .sim-restart-btn:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  /* === Responsive === */
+  @media (max-width: 600px) {
+    .sim-instruction { font-size: 0.85rem; padding: var(--space-sm, 8px); }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .sim-hotspot { animation: none; }
+    .sim-hotspot.hint { animation: none; }
+    .sim-wrong-click { animation: none; }
+    .sim-screenshot { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="software-sim" role="application" aria-label="Software simulation"
+     data-show-hint="true"
+     id="sim-container">
+
+  <!-- Step header -->
+  <div class="sim-header">
+    <span class="sim-step-label" id="sim-step-label">Step 1 of 4</span>
+    <div class="sim-progress">
+      <div class="sim-progress-fill" id="sim-progress-fill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Screenshot viewport -->
+  <div class="sim-viewport" id="sim-viewport" onclick="handleSimClick(event)">
+    <div class="sim-screenshot-placeholder" id="sim-screenshot">
+      Replace with screenshot image
+    </div>
+    <!-- Hotspot button (positioned dynamically) -->
+    <button class="sim-hotspot" id="sim-hotspot"
+            aria-label="Click here to proceed"
+            onclick="event.stopPropagation(); advanceSimStep()"
+            style="display: none;"></button>
+  </div>
+
+  <!-- Instruction bar -->
+  <div class="sim-instruction" id="sim-instruction" aria-live="polite">
+    <svg class="sim-instruction-icon" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M8 12l3 3 5-5"/>
+    </svg>
+    <span id="sim-instruction-text">Click the File menu to begin.</span>
+  </div>
+
+  <!-- Error feedback (hidden by default) -->
+  <div class="sim-error" id="sim-error" role="alert">
+    <span class="sim-error-icon" aria-hidden="true">&#x26A0;</span>
+    <span id="sim-error-text">That's not quite right. Try clicking on the File menu.</span>
+  </div>
+
+  <!-- Completion state (hidden by default) -->
+  <div class="sim-complete" id="sim-complete">
+    <div class="sim-complete-icon" aria-hidden="true">&#x2713;</div>
+    <h4 class="sim-complete-title">Simulation Complete!</h4>
+    <p class="sim-complete-text">You've successfully completed all steps.</p>
+    <button class="sim-restart-btn" onclick="restartSim()">Try Again</button>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div class="sr-only" aria-live="assertive" id="sim-announce"></div>
+
+<script>
+/* ============================================================
+   SOFTWARE SIMULATION — Click-through guided practice
+   ============================================================
+   - Steps defined in simSteps array below
+   - Each step has: image, instruction, hotspot (x,y,w,h %), errorMsg
+   - Correct click advances; wrong click shows error + optional hint
+   - Completion screen on final step
+   ============================================================ */
+
+/* --- CUSTOMIZATION: Define your simulation steps here --- */
+var simSteps = [
+  {
+    image: 'shared/assets/images/sim-step-1.png',
+    instruction: 'Click the File menu to begin.',
+    hotspot: { x: 2, y: 2, w: 10, h: 5 }, /* percentages */
+    errorMsg: 'Try clicking on the File menu in the top-left corner.'
+  },
+  {
+    image: 'shared/assets/images/sim-step-2.png',
+    instruction: 'Now click "New Document" from the dropdown.',
+    hotspot: { x: 2, y: 8, w: 18, h: 5 },
+    errorMsg: 'Look for "New Document" in the dropdown menu.'
+  },
+  {
+    image: 'shared/assets/images/sim-step-3.png',
+    instruction: 'Type a document name, then click the Save button.',
+    hotspot: { x: 60, y: 85, w: 15, h: 6 },
+    errorMsg: 'The Save button is in the lower-right area of the dialog.'
+  },
+  {
+    image: 'shared/assets/images/sim-step-4.png',
+    instruction: 'Click OK to confirm.',
+    hotspot: { x: 42, y: 55, w: 16, h: 7 },
+    errorMsg: 'Click the OK button in the center of the confirmation dialog.'
+  }
+];
+
+var simCurrentStep = 0;
+var simShowHint = false;
+var simWrongClicks = 0;
+
+(function initSim() {
+  var container = document.getElementById('sim-container');
+  if (container) {
+    simShowHint = container.getAttribute('data-show-hint') === 'true';
+  }
+  loadSimStep(0);
+})();
+
+/**
+ * Load a step into the simulation viewport.
+ */
+function loadSimStep(index) {
+  if (index >= simSteps.length) {
+    showSimComplete();
+    return;
+  }
+
+  var step = simSteps[index];
+  simCurrentStep = index;
+  simWrongClicks = 0;
+
+  /* Update header */
+  var label = document.getElementById('sim-step-label');
+  if (label) label.textContent = 'Step ' + (index + 1) + ' of ' + simSteps.length;
+
+  var fill = document.getElementById('sim-progress-fill');
+  if (fill) fill.style.width = ((index / simSteps.length) * 100) + '%';
+
+  /* Update screenshot */
+  var screenshotArea = document.getElementById('sim-screenshot');
+  if (step.image) {
+    var img = document.createElement('img');
+    img.className = 'sim-screenshot';
+    img.src = step.image;
+    img.alt = 'Step ' + (index + 1) + ' screenshot';
+    screenshotArea.parentNode.replaceChild(img, screenshotArea);
+    /* Keep ID reference for next steps */
+    img.id = 'sim-screenshot';
+  }
+
+  /* Position hotspot */
+  var hotspot = document.getElementById('sim-hotspot');
+  hotspot.style.display = 'block';
+  hotspot.style.left = step.hotspot.x + '%';
+  hotspot.style.top = step.hotspot.y + '%';
+  hotspot.style.width = step.hotspot.w + '%';
+  hotspot.style.height = step.hotspot.h + '%';
+  hotspot.classList.remove('hint');
+  hotspot.setAttribute('aria-label', step.instruction);
+
+  /* Update instruction */
+  var instrText = document.getElementById('sim-instruction-text');
+  if (instrText) instrText.textContent = step.instruction;
+
+  /* Hide error */
+  var error = document.getElementById('sim-error');
+  if (error) error.classList.remove('visible');
+
+  /* Hide completion */
+  var complete = document.getElementById('sim-complete');
+  if (complete) complete.classList.remove('visible');
+
+  /* Show viewport */
+  var viewport = document.getElementById('sim-viewport');
+  if (viewport) viewport.style.display = 'block';
+
+  var instr = document.getElementById('sim-instruction');
+  if (instr) instr.style.display = 'flex';
+
+  /* Announce */
+  announce('Step ' + (index + 1) + ': ' + step.instruction);
+}
+
+/**
+ * Handle click on the viewport (wrong area).
+ */
+function handleSimClick(e) {
+  /* If they clicked the hotspot button, don't process as wrong click */
+  if (e.target.id === 'sim-hotspot' || e.target.closest('.sim-hotspot')) return;
+
+  var step = simSteps[simCurrentStep];
+  if (!step) return;
+
+  simWrongClicks++;
+
+  /* Show wrong-click indicator */
+  var viewport = document.getElementById('sim-viewport');
+  var rect = viewport.getBoundingClientRect();
+  var marker = document.createElement('div');
+  marker.className = 'sim-wrong-click';
+  marker.style.left = (e.clientX - rect.left) + 'px';
+  marker.style.top = (e.clientY - rect.top) + 'px';
+  viewport.appendChild(marker);
+  setTimeout(function() { marker.remove(); }, 600);
+
+  /* Show error message */
+  var error = document.getElementById('sim-error');
+  var errorText = document.getElementById('sim-error-text');
+  if (error && errorText) {
+    errorText.textContent = step.errorMsg;
+    error.classList.add('visible');
+  }
+
+  /* After 2 wrong clicks, show hint highlight */
+  if (simShowHint && simWrongClicks >= 2) {
+    var hotspot = document.getElementById('sim-hotspot');
+    hotspot.classList.add('hint');
+  }
+
+  announce(step.errorMsg);
+}
+
+/**
+ * Advance to the next simulation step (correct click).
+ */
+function advanceSimStep() {
+  simCurrentStep++;
+  loadSimStep(simCurrentStep);
+}
+
+/**
+ * Show the completion screen.
+ */
+function showSimComplete() {
+  var viewport = document.getElementById('sim-viewport');
+  var instr = document.getElementById('sim-instruction');
+  var error = document.getElementById('sim-error');
+  var complete = document.getElementById('sim-complete');
+
+  if (viewport) viewport.style.display = 'none';
+  if (instr) instr.style.display = 'none';
+  if (error) error.classList.remove('visible');
+  if (complete) complete.classList.add('visible');
+
+  var fill = document.getElementById('sim-progress-fill');
+  if (fill) fill.style.width = '100%';
+
+  announce('Simulation complete! You finished all steps.');
+}
+
+/**
+ * Restart the simulation from step 1.
+ */
+function restartSim() {
+  loadSimStep(0);
+}
+
+/**
+ * Announce a message to screen readers.
+ */
+function announce(msg) {
+  var el = document.getElementById('sim-announce');
+  if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+}
+
+/* Escape key clears error feedback */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var error = document.getElementById('sim-error');
+    if (error) error.classList.remove('visible');
+    var hotspot = document.getElementById('sim-hotspot');
+    if (hotspot) hotspot.classList.remove('hint');
+  }
+});
+</script>

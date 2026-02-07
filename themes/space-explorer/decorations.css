@@ -1,0 +1,76 @@
+/* Space Explorer Decorations — Starfield, glow, nebula effects */
+
+/* Animated starfield background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.9), transparent),
+    radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 350px 50px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 420px 180px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 500px 100px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 580px 220px, rgba(255,255,255,0.5), transparent);
+  background-repeat: repeat;
+  background-size: 600px 300px;
+  z-index: -1;
+  pointer-events: none;
+  animation: twinkle 6s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Nebula glow orbs */
+body::after {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(108, 92, 231, 0.15), transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Glow effect on cards */
+.card:hover {
+  box-shadow: 0 10px 40px rgba(108, 92, 231, 0.2), 0 0 60px rgba(108, 92, 231, 0.05);
+}
+
+/* Glowing progress bar */
+.progress-fill {
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.4);
+}
+
+/* Glowing buttons */
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.5), 0 0 40px rgba(108, 92, 231, 0.1);
+}
+
+/* Accent glow on hero */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(108, 92, 231, 0.3), transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; opacity: 0.7; }
+}

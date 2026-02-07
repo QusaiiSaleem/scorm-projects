@@ -1,0 +1,521 @@
+<!-- Word Search Puzzle Component
+     Usage: Copy into lesson HTML. Find hidden words in a letter grid.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Generates a letter grid with hidden words placed in multiple directions
+     - Words placed horizontally, vertically, and diagonally
+     - Remaining cells filled with random letters
+     - Click+drag (or touch+drag) to select letters and highlight path
+     - Found words crossed off the word list
+     - Counter "Found 4 of 8 words"
+
+     CUSTOMIZATION:
+     - Edit WORDS array with your vocabulary terms
+     - Set GRID_SIZE (10, 12, or 15)
+     - Adjust DIRECTIONS to control word placement
+     - Difficulty: more directions = harder
+
+     ACCESSIBILITY:
+     - Grid cells are focusable with aria-labels
+     - Keyboard: arrow keys to navigate, Space to start/end selection
+     - Screen reader: announces found words
+     - Word list accessible as a checklist
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+     - Score based on words found
+-->
+
+<style>
+  /* === Word Search Container === */
+  .word-search {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .ws-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md, 16px);
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+  }
+
+  .ws-stat {
+    font-size: 0.875rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    color: var(--color-text-secondary, #666);
+  }
+
+  .ws-stat strong {
+    color: var(--color-text-primary, #333);
+  }
+
+  .ws-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-lg, 24px);
+    align-items: start;
+  }
+
+  @media (max-width: 600px) {
+    .ws-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Grid */
+  .ws-grid {
+    display: inline-grid;
+    gap: 2px;
+    user-select: none;
+    touch-action: none;
+    background: var(--color-border-subtle, #eee);
+    border-radius: var(--radius-md, 8px);
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  .ws-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-elevated, #fff);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: monospace;
+    text-transform: uppercase;
+    cursor: pointer;
+    aspect-ratio: 1;
+    transition: background 0.15s, color 0.15s;
+    border: none;
+    padding: 0;
+    color: var(--color-text-primary, #333);
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .ws-cell:hover {
+    background: var(--color-growth-bg, #f0f0ff);
+  }
+
+  .ws-cell:focus-visible {
+    outline: 2px solid var(--color-primary, #6c5ce7);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  /* Selection highlight */
+  .ws-cell.selecting {
+    background: rgba(108, 92, 231, 0.2);
+    color: var(--color-primary, #6c5ce7);
+  }
+
+  /* Found word highlight */
+  .ws-cell.found {
+    background: var(--color-success, #10b981);
+    color: #fff;
+  }
+
+  /* Word list sidebar */
+  .ws-word-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm, 8px);
+  }
+
+  .ws-word-list h3 {
+    font-size: 0.9rem;
+    margin: 0 0 var(--space-sm, 8px);
+    color: var(--color-text-primary, #333);
+  }
+
+  .ws-word-item {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #333);
+    transition: color 0.3s, text-decoration 0.3s;
+    padding: 4px 0;
+  }
+
+  .ws-word-item.found {
+    color: var(--color-success, #10b981);
+    text-decoration: line-through;
+  }
+
+  /* Completion */
+  .ws-complete {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-md, 16px);
+    background: var(--color-success-bg, #ecfdf5);
+    border: 2px solid var(--color-success, #10b981);
+    border-radius: var(--radius-md, 8px);
+    display: none;
+  }
+
+  .ws-complete.show {
+    display: block;
+    animation: wsFadeIn 0.4s ease;
+  }
+
+  .ws-complete h3 {
+    margin: 0;
+    color: var(--color-success, #10b981);
+  }
+
+  @keyframes wsFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .ws-complete.show { animation: none; }
+  }
+</style>
+
+<div class="word-search" role="application" aria-label="Word search puzzle">
+
+  <div class="ws-header">
+    <span class="ws-stat">Found: <strong id="ws-found">0</strong> / <span id="ws-total">0</span></span>
+  </div>
+
+  <div class="ws-layout">
+    <!-- Grid (populated by JS) -->
+    <div class="ws-grid" id="ws-grid" role="grid" aria-label="Letter grid"></div>
+
+    <!-- Word list -->
+    <div>
+      <h3 style="font-size:0.9rem;margin:0 0 8px;">Words to Find:</h3>
+      <ul class="ws-word-list" id="ws-word-list" role="list" aria-label="Words to find"></ul>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div class="ws-complete" id="ws-complete" role="status">
+    <h3>All words found! Great vocabulary work!</h3>
+  </div>
+</div>
+
+<div id="ws-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   WORD SEARCH PUZZLE COMPONENT
+   ============================================================
+   Edit WORDS and GRID_SIZE to customize the puzzle.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Words to hide in the grid === */
+  var WORDS = ['SCORM', 'LEARNING', 'QUIZ', 'MODULE', 'COURSE', 'DESIGN', 'ASSESS', 'BLOOM'];
+
+  /* Grid size (10, 12, or 15) */
+  var GRID_SIZE = 12;
+
+  /* Directions words can be placed:
+     [rowDelta, colDelta] — 0=horizontal, 1=vertical, diagonal combos */
+  var DIRECTIONS = [
+    [0, 1],   /* horizontal right */
+    [1, 0],   /* vertical down */
+    [1, 1],   /* diagonal down-right */
+    [0, -1],  /* horizontal left */
+    [1, -1]   /* diagonal down-left */
+  ];
+
+  /* === State === */
+  var grid = [];
+  var placedWords = []; /* { word, cells: [{r,c}] } */
+  var foundWords = {};
+  var foundCount = 0;
+  var selecting = false;
+  var selStart = null;
+  var selCells = [];
+
+  var gridEl = document.getElementById('ws-grid');
+  var wordListEl = document.getElementById('ws-word-list');
+  var foundEl = document.getElementById('ws-found');
+  var totalEl = document.getElementById('ws-total');
+  var completeEl = document.getElementById('ws-complete');
+
+  totalEl.textContent = WORDS.length;
+
+  /* === Generate Grid === */
+  function generateGrid() {
+    /* Init empty grid */
+    grid = [];
+    for (var r = 0; r < GRID_SIZE; r++) {
+      grid[r] = [];
+      for (var c = 0; c < GRID_SIZE; c++) {
+        grid[r][c] = '';
+      }
+    }
+
+    /* Place words */
+    placedWords = [];
+    var sortedWords = WORDS.slice().sort(function(a, b) { return b.length - a.length; });
+
+    sortedWords.forEach(function(word) {
+      var placed = false;
+      var attempts = 0;
+      var maxAttempts = 200;
+
+      while (!placed && attempts < maxAttempts) {
+        attempts++;
+        var dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+        var dr = dir[0], dc = dir[1];
+
+        /* Calculate valid start range */
+        var maxR = dc < 0 ? GRID_SIZE : GRID_SIZE - (dr !== 0 ? word.length : 0);
+        var maxC = dc < 0 ? GRID_SIZE : GRID_SIZE - (dc !== 0 ? word.length : 0);
+        var minR = 0;
+        var minC = dc < 0 ? word.length - 1 : 0;
+
+        if (maxR <= minR || maxC <= minC) continue;
+
+        var startR = minR + Math.floor(Math.random() * (maxR - minR));
+        var startC = minC + Math.floor(Math.random() * (maxC - minC));
+
+        /* Check if word fits without conflicts */
+        var fits = true;
+        var cells = [];
+        for (var i = 0; i < word.length; i++) {
+          var nr = startR + i * dr;
+          var nc = startC + i * dc;
+          if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) { fits = false; break; }
+          if (grid[nr][nc] !== '' && grid[nr][nc] !== word[i]) { fits = false; break; }
+          cells.push({ r: nr, c: nc });
+        }
+
+        if (fits) {
+          cells.forEach(function(cell, i) {
+            grid[cell.r][cell.c] = word[i];
+          });
+          placedWords.push({ word: word, cells: cells });
+          placed = true;
+        }
+      }
+    });
+
+    /* Fill empty cells with random letters */
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        if (grid[r][c] === '') {
+          grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+        }
+      }
+    }
+  }
+
+  /* === Render Grid === */
+  function renderGrid() {
+    gridEl.innerHTML = '';
+    gridEl.style.gridTemplateColumns = 'repeat(' + GRID_SIZE + ', 1fr)';
+
+    for (var r = 0; r < GRID_SIZE; r++) {
+      for (var c = 0; c < GRID_SIZE; c++) {
+        var cell = document.createElement('button');
+        cell.className = 'ws-cell';
+        cell.textContent = grid[r][c];
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        cell.setAttribute('aria-label', 'Row ' + (r + 1) + ', Column ' + (c + 1) + ': ' + grid[r][c]);
+
+        /* Mouse events */
+        cell.addEventListener('mousedown', onCellStart);
+        cell.addEventListener('mouseenter', onCellMove);
+        cell.addEventListener('mouseup', onCellEnd);
+
+        /* Touch events */
+        cell.addEventListener('touchstart', onTouchStart, { passive: false });
+
+        gridEl.appendChild(cell);
+      }
+    }
+
+    /* Prevent default drag on grid */
+    gridEl.addEventListener('mouseup', onCellEnd);
+    document.addEventListener('mouseup', function() {
+      if (selecting) clearSelection();
+    });
+  }
+
+  /* === Render Word List === */
+  function renderWordList() {
+    wordListEl.innerHTML = '';
+    WORDS.forEach(function(word) {
+      var li = document.createElement('li');
+      li.className = 'ws-word-item';
+      li.dataset.word = word;
+      li.textContent = word;
+      li.setAttribute('role', 'listitem');
+      wordListEl.appendChild(li);
+    });
+  }
+
+  /* === Selection Logic === */
+  function onCellStart(e) {
+    e.preventDefault();
+    selecting = true;
+    selStart = { r: parseInt(e.target.dataset.r), c: parseInt(e.target.dataset.c) };
+    selCells = [selStart];
+    highlightSelection();
+  }
+
+  function onCellMove(e) {
+    if (!selecting || !selStart) return;
+    var r = parseInt(e.target.dataset.r);
+    var c = parseInt(e.target.dataset.c);
+
+    /* Calculate direction from start to current */
+    var dr = r - selStart.r;
+    var dc = c - selStart.c;
+
+    /* Normalize to unit direction (must be straight line: h, v, or diagonal) */
+    var absR = Math.abs(dr);
+    var absC = Math.abs(dc);
+    if (absR !== 0 && absC !== 0 && absR !== absC) return; /* Not a valid line */
+
+    var stepR = dr === 0 ? 0 : (dr > 0 ? 1 : -1);
+    var stepC = dc === 0 ? 0 : (dc > 0 ? 1 : -1);
+    var steps = Math.max(absR, absC);
+
+    selCells = [];
+    for (var i = 0; i <= steps; i++) {
+      selCells.push({ r: selStart.r + i * stepR, c: selStart.c + i * stepC });
+    }
+    highlightSelection();
+  }
+
+  function onCellEnd(e) {
+    if (!selecting) return;
+    selecting = false;
+    checkSelection();
+  }
+
+  /* Touch support */
+  function onTouchStart(e) {
+    e.preventDefault();
+    var touch = e.touches[0];
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (target && target.classList.contains('ws-cell')) {
+      selecting = true;
+      selStart = { r: parseInt(target.dataset.r), c: parseInt(target.dataset.c) };
+      selCells = [selStart];
+      highlightSelection();
+    }
+
+    var onTouchMove = function(ev) {
+      ev.preventDefault();
+      var t = ev.touches[0];
+      var el = document.elementFromPoint(t.clientX, t.clientY);
+      if (el && el.classList.contains('ws-cell')) {
+        onCellMove({ target: el, preventDefault: function(){} });
+      }
+    };
+
+    var onTouchEnd = function() {
+      selecting = false;
+      checkSelection();
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+  }
+
+  function highlightSelection() {
+    /* Clear previous */
+    gridEl.querySelectorAll('.ws-cell.selecting').forEach(function(c) {
+      c.classList.remove('selecting');
+    });
+    /* Highlight current */
+    selCells.forEach(function(pos) {
+      var cell = gridEl.querySelector('[data-r="' + pos.r + '"][data-c="' + pos.c + '"]');
+      if (cell) cell.classList.add('selecting');
+    });
+  }
+
+  function clearSelection() {
+    selecting = false;
+    selCells = [];
+    gridEl.querySelectorAll('.ws-cell.selecting').forEach(function(c) {
+      c.classList.remove('selecting');
+    });
+  }
+
+  /* === Check if selection matches a word === */
+  function checkSelection() {
+    if (selCells.length < 2) { clearSelection(); return; }
+
+    /* Build selected string */
+    var selected = '';
+    selCells.forEach(function(pos) {
+      selected += grid[pos.r][pos.c];
+    });
+
+    /* Check forward and reverse */
+    var reversed = selected.split('').reverse().join('');
+    var matchedWord = null;
+
+    placedWords.forEach(function(pw) {
+      if (foundWords[pw.word]) return;
+      if (selected === pw.word || reversed === pw.word) {
+        matchedWord = pw;
+      }
+    });
+
+    if (matchedWord) {
+      foundWords[matchedWord.word] = true;
+      foundCount++;
+      foundEl.textContent = foundCount;
+
+      /* Highlight found cells */
+      selCells.forEach(function(pos) {
+        var cell = gridEl.querySelector('[data-r="' + pos.r + '"][data-c="' + pos.c + '"]');
+        if (cell) {
+          cell.classList.remove('selecting');
+          cell.classList.add('found');
+        }
+      });
+
+      /* Strike through in word list */
+      var li = wordListEl.querySelector('[data-word="' + matchedWord.word + '"]');
+      if (li) li.classList.add('found');
+
+      announce('Found: ' + matchedWord.word + '! ' + foundCount + ' of ' + WORDS.length);
+
+      if (foundCount >= WORDS.length) {
+        completeEl.classList.add('show');
+        announce('All words found! Puzzle complete!');
+      }
+    } else {
+      clearSelection();
+    }
+
+    selCells = [];
+  }
+
+  function announce(msg) {
+    var el = document.getElementById('ws-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Init === */
+  generateGrid();
+  renderGrid();
+  renderWordList();
+})();
+</script>

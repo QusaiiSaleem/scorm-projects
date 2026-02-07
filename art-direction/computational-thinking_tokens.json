@@ -1,0 +1,205 @@
+{
+  "name": "Computational Thinking — IDE Dark",
+  "description": "Code editor inspired dark theme with syntax-highlighting accents, dot grid backgrounds, and terminal-style animations. Built for a bilingual Arabic/English CS course.",
+  "meta": {
+    "course": "computational-thinking",
+    "baseTheme": "technical-dark",
+    "audience": "University CS undergraduates",
+    "language": "ar/en bilingual",
+    "direction": "rtl-primary"
+  },
+
+  "colors": {
+    "background": {
+      "primary": "#0B1120",
+      "secondary": "#141B2D",
+      "tertiary": "#1E293B"
+    },
+    "surface": {
+      "default": "#141B2D",
+      "elevated": "#1E293B",
+      "highlight": "#2A3650",
+      "overlay": "rgba(11, 17, 32, 0.85)"
+    },
+    "text": {
+      "primary": "#E2E8F0",
+      "secondary": "#94A3B8",
+      "muted": "#64748B",
+      "onDark": "#F8FAFC",
+      "onBright": "#0B1120"
+    },
+    "accent": {
+      "primary": "#22D3EE",
+      "primaryDark": "#06B6D4",
+      "primaryLight": "#67E8F9",
+      "secondary": "#A78BFA",
+      "tertiary": "#34D399"
+    },
+    "semantic": {
+      "success": "#34D399",
+      "successBg": "rgba(52, 211, 153, 0.12)",
+      "error": "#FB7185",
+      "errorBg": "rgba(251, 113, 133, 0.12)",
+      "warning": "#FBBF24",
+      "warningBg": "rgba(251, 191, 36, 0.12)",
+      "info": "#60A5FA",
+      "infoBg": "rgba(96, 165, 250, 0.12)",
+      "growth": "#A78BFA",
+      "growthBg": "rgba(167, 139, 250, 0.12)"
+    },
+    "syntax": {
+      "keyword": "#22D3EE",
+      "string": "#34D399",
+      "function": "#F59E0B",
+      "type": "#A78BFA",
+      "comment": "#6B7280",
+      "number": "#60A5FA",
+      "operator": "#F8FAFC",
+      "variable": "#E2E8F0"
+    },
+    "border": {
+      "default": "#1E293B",
+      "highlight": "#334155",
+      "active": "#22D3EE",
+      "subtle": "rgba(255, 255, 255, 0.06)"
+    },
+    "gradient": {
+      "primary": "linear-gradient(135deg, #22D3EE, #06B6D4)",
+      "progress": "linear-gradient(90deg, #22D3EE, #34D399)",
+      "hero": "linear-gradient(135deg, #1E293B 0%, #0B1120 100%)",
+      "points": "linear-gradient(135deg, #34D399, #22D3EE)",
+      "flipCard": "linear-gradient(135deg, #22D3EE, #A78BFA)"
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "heading": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+      "body": "'IBM Plex Sans', 'DM Sans', system-ui, sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+      "headingArabic": "'Noto Kufi Arabic', 'Cairo', sans-serif",
+      "bodyArabic": "'Cairo', 'Noto Sans Arabic', sans-serif"
+    },
+    "fontFiles": [
+      "jetbrains-mono-regular.woff2",
+      "jetbrains-mono-bold.woff2",
+      "ibm-plex-sans-regular.woff2",
+      "ibm-plex-sans-medium.woff2",
+      "ibm-plex-sans-semibold.woff2",
+      "noto-kufi-arabic-bold.woff2",
+      "cairo-regular.woff2",
+      "cairo-semibold.woff2"
+    ],
+    "scale": {
+      "display": { "size": "2.25rem", "weight": 700, "lineHeight": 1.15, "letterSpacing": "-0.03em" },
+      "h1":      { "size": "1.875rem", "weight": 700, "lineHeight": 1.2, "letterSpacing": "-0.02em" },
+      "h2":      { "size": "1.5rem", "weight": 600, "lineHeight": 1.3, "letterSpacing": "-0.02em" },
+      "h3":      { "size": "1.25rem", "weight": 600, "lineHeight": 1.35, "letterSpacing": "-0.01em" },
+      "h4":      { "size": "1rem", "weight": 600, "lineHeight": 1.4, "letterSpacing": "0" },
+      "body":    { "size": "1rem", "weight": 400, "lineHeight": 1.6, "letterSpacing": "0" },
+      "bodyAr":  { "size": "1.125rem", "weight": 400, "lineHeight": 1.8, "letterSpacing": "0" },
+      "caption": { "size": "0.875rem", "weight": 400, "lineHeight": 1.5, "letterSpacing": "0.01em" },
+      "small":   { "size": "0.875rem", "weight": 400, "lineHeight": 1.6, "letterSpacing": "0" },
+      "overline": { "size": "0.688rem", "weight": 700, "lineHeight": 1.2, "letterSpacing": "0.1em" }
+    }
+  },
+
+  "spacing": {
+    "2xs": "2px",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "48px",
+    "3xl": "64px"
+  },
+
+  "borders": {
+    "radius": {
+      "sm": "4px",
+      "md": "6px",
+      "lg": "8px",
+      "xl": "12px",
+      "pill": "9999px",
+      "circle": "50%"
+    },
+    "width": {
+      "default": "1px",
+      "thick": "2px",
+      "accent": "3px"
+    }
+  },
+
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 3px rgba(0, 0, 0, 0.4)",
+    "md": "0 4px 12px rgba(0, 0, 0, 0.5)",
+    "lg": "0 10px 25px rgba(0, 0, 0, 0.6)",
+    "glow": {
+      "primary": "0 0 20px rgba(34, 211, 238, 0.15), 0 0 4px rgba(34, 211, 238, 0.3)",
+      "secondary": "0 0 20px rgba(167, 139, 250, 0.15), 0 0 4px rgba(167, 139, 250, 0.3)",
+      "accent": "0 0 20px rgba(52, 211, 153, 0.15), 0 0 4px rgba(52, 211, 153, 0.3)",
+      "error": "0 0 20px rgba(251, 113, 133, 0.15), 0 0 4px rgba(251, 113, 133, 0.3)"
+    },
+    "buttonHover": "0 6px 20px rgba(34, 211, 238, 0.4)",
+    "buttonPress": "0 2px 8px rgba(34, 211, 238, 0.2)"
+  },
+
+  "motion": {
+    "duration": {
+      "instant": "0ms",
+      "fast": "100ms",
+      "normal": "200ms",
+      "slow": "350ms",
+      "entrance": "300ms",
+      "celebration": "500ms"
+    },
+    "easing": {
+      "default": "ease",
+      "snappy": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "entrance": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "exit": "cubic-bezier(0.7, 0, 0.84, 0)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "linear": "linear"
+    },
+    "stagger": {
+      "delay": "60ms",
+      "maxItems": 8
+    },
+    "translateY": {
+      "entrance": "12px",
+      "hover": "-2px"
+    }
+  },
+
+  "backgrounds": {
+    "dotGrid": {
+      "image": "radial-gradient(circle, rgba(148, 163, 184, 0.08) 1px, transparent 1px)",
+      "size": "24px 24px"
+    },
+    "scanline": {
+      "image": "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(148, 163, 184, 0.02) 2px, rgba(148, 163, 184, 0.02) 4px)",
+      "size": "100% 4px"
+    },
+    "grain": {
+      "opacity": 0.05,
+      "blendMode": "overlay"
+    }
+  },
+
+  "breakpoints": {
+    "mobile": "480px",
+    "tablet": "768px",
+    "desktop": "1024px",
+    "wide": "1280px"
+  },
+
+  "layout": {
+    "maxContentWidth": "900px",
+    "slideWidth": "1280px",
+    "slideHeight": "720px",
+    "sidebarWidth": "280px",
+    "navHeight": "56px"
+  }
+}

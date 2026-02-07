@@ -1,0 +1,29 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Personal/local settings (included for reference)
+
+# Private training materials
+EduArabia-AI-ClaudeCode-Training.docx
+
+# Empty directories
+eduarabia-video/
+
+# Generated SCORM packages (keep HTML, ignore ZIPs)
+*.zip
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code auto-memory (personal per-user)
+.claude/projects/

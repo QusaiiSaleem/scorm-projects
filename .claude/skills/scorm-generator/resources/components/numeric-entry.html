@@ -1,0 +1,210 @@
+<!-- Numeric Entry Component
+     Usage: Copy into lesson HTML for number-answer questions.
+     Requires: base.css (quiz + .quiz-numeric-input styles)
+
+     The learner enters a number. The engine checks against:
+     - Exact value (with optional +/- tolerance)
+     - Range (min to max)
+
+     Customization via data attributes:
+     - data-exact-value="42"       — Accept this exact value
+     - data-tolerance="0.5"        — +/- tolerance around exact value
+     - data-range-min="3.1"        — Accept values >= this
+     - data-range-max="3.2"        — Accept values <= this
+     - data-max-attempts="2"       — Allow retries (default: 1)
+     - data-unit="kg"              — Display unit label beside input
+
+     SCORM type: "numeric"
+-->
+
+<fieldset class="quiz-container numeric-entry-container"
+         role="group"
+         aria-labelledby="numeric-q-stem"
+         data-question-id="numeric-q1"
+         data-exact-value="9.8"
+         data-tolerance="0.1"
+         data-max-attempts="1"
+         data-unit="m/s\u00B2">
+
+  <!-- Question stem -->
+  <legend class="question-stem" id="numeric-q-stem">
+    What is the approximate acceleration due to gravity on Earth (in m/s&sup2;)?
+  </legend>
+
+  <!-- Input area -->
+  <div class="numeric-input-area">
+    <label for="numeric-input" class="sr-only">Enter a number</label>
+    <div class="numeric-input-wrapper">
+      <input type="number"
+             id="numeric-input"
+             class="quiz-numeric-input"
+             placeholder="Enter a number..."
+             step="any"
+             autocomplete="off"
+             aria-describedby="numeric-hint">
+      <span class="numeric-unit" aria-hidden="true">m/s&sup2;</span>
+    </div>
+    <p id="numeric-hint" class="text-small text-secondary" style="margin-top: var(--space-xs);">
+      Enter a numeric value, then press Submit.
+    </p>
+  </div>
+
+  <!-- Submit button -->
+  <div class="quiz-nav">
+    <button type="button" class="btn-primary quiz-submit" id="numericSubmitBtn" disabled>
+      Submit Answer
+    </button>
+  </div>
+
+  <!-- Feedback area -->
+  <div class="quiz-feedback" id="numericFeedback" role="alert" aria-live="polite" hidden></div>
+</fieldset>
+
+<script>
+(function() {
+  'use strict';
+
+  // ---- Configuration ----
+  var container = document.querySelector('[data-question-id="numeric-q1"]');
+  if (!container) return;
+
+  var exactValue = container.dataset.exactValue != null
+    ? parseFloat(container.dataset.exactValue) : null;
+  var tolerance = parseFloat(container.dataset.tolerance) || 0;
+  var rangeMin = container.dataset.rangeMin != null
+    ? parseFloat(container.dataset.rangeMin) : null;
+  var rangeMax = container.dataset.rangeMax != null
+    ? parseFloat(container.dataset.rangeMax) : null;
+  var maxAttempts = parseInt(container.dataset.maxAttempts, 10) || 1;
+  var attemptsRemaining = maxAttempts;
+
+  var input = container.querySelector('.quiz-numeric-input');
+  var submitBtn = container.querySelector('.quiz-submit');
+  var feedbackEl = container.querySelector('.quiz-feedback');
+
+  // ---- Enable submit when input has a valid number ----
+
+  input.addEventListener('input', function() {
+    var val = input.value.trim();
+    submitBtn.disabled = val.length === 0 || isNaN(parseFloat(val));
+  });
+
+  // Allow Enter key to submit
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !submitBtn.disabled) {
+      e.preventDefault();
+      submitBtn.click();
+    }
+  });
+
+  // ---- Submit Handling ----
+
+  submitBtn.addEventListener('click', function() {
+    if (container.classList.contains('quiz-locked')) return;
+
+    var learnerValue = parseFloat(input.value.trim());
+    if (isNaN(learnerValue)) return;
+
+    // Evaluate
+    var isCorrect = evaluateAnswer(learnerValue);
+    attemptsRemaining--;
+
+    // Determine feedback type
+    var feedbackType;
+    if (isCorrect) {
+      feedbackType = 'correct';
+    } else if (attemptsRemaining > 0) {
+      feedbackType = 'tryAgain';
+    } else {
+      feedbackType = 'incorrect';
+    }
+
+    // Show feedback
+    showFeedback(feedbackType, learnerValue);
+
+    // Lock question if done
+    if (feedbackType !== 'tryAgain') {
+      lockQuestion(isCorrect);
+    } else {
+      // Clear for another attempt
+      input.value = '';
+      input.focus();
+      submitBtn.disabled = true;
+    }
+  });
+
+  // ---- Evaluation ----
+
+  function evaluateAnswer(num) {
+    // Range check first
+    if (rangeMin !== null && rangeMax !== null) {
+      return num >= rangeMin && num <= rangeMax;
+    }
+
+    // Exact value with tolerance
+    if (exactValue !== null) {
+      return Math.abs(num - exactValue) <= tolerance;
+    }
+
+    return false;
+  }
+
+  // ---- Feedback Display ----
+
+  function showFeedback(type, learnerValue) {
+    feedbackEl.hidden = false;
+    feedbackEl.className = 'quiz-feedback';
+
+    if (type === 'correct') {
+      feedbackEl.classList.add('feedback-correct');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#10003;</span> ' +
+        '<span>That\'s right! <strong>' + learnerValue +
+        '</strong> is correct.</span>';
+    } else if (type === 'tryAgain') {
+      feedbackEl.classList.add('feedback-tryagain');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#8635;</span> ' +
+        '<span>Not yet \u2014 check your calculation and try again! ' +
+        '(' + attemptsRemaining + ' attempt' + (attemptsRemaining > 1 ? 's' : '') +
+        ' remaining)</span>';
+    } else {
+      var correctDisplay = getCorrectDisplay();
+      feedbackEl.classList.add('feedback-incorrect');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#10140;</span> ' +
+        '<span>Not quite this time. The correct answer is: ' +
+        '<strong>' + correctDisplay + '</strong></span>';
+    }
+  }
+
+  function getCorrectDisplay() {
+    if (rangeMin !== null && rangeMax !== null) {
+      return 'between ' + rangeMin + ' and ' + rangeMax;
+    }
+    if (exactValue !== null) {
+      if (tolerance > 0) {
+        return exactValue + ' (\u00B1' + tolerance + ')';
+      }
+      return String(exactValue);
+    }
+    return '';
+  }
+
+  // ---- Lock Question ----
+
+  function lockQuestion(isCorrect) {
+    container.classList.add('quiz-locked');
+    input.disabled = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitted';
+
+    if (isCorrect) {
+      input.classList.add('input-correct');
+    } else {
+      input.classList.add('input-incorrect');
+    }
+  }
+
+})();
+</script>

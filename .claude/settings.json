@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "AskUserQuestion",
+      "Task",
+      "Skill",
+      "Bash(python3 .claude/skills/nano-banana-pro/scripts/*)",
+      "Bash(npx remotion *)",
+      "Bash(zip -r *)",
+      "Bash(mkdir -p *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(open *)"
+    ]
+  }
+}

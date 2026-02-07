@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SCORM 1.2 Manifest Template
+  Replace {{PLACEHOLDERS}} with actual values
+-->
+<manifest identifier="{{COURSE_ID}}"
+          version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <!-- Metadata -->
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <!-- Organizations -->
+  <organizations default="{{ORG_ID}}">
+    <organization identifier="{{ORG_ID}}">
+      <title>{{COURSE_TITLE}}</title>
+
+      <!-- {{ORGANIZATION_ITEMS}} -->
+      <!--
+        Example item structure:
+        <item identifier="module_1" isvisible="true">
+          <title>Module 1: Introduction</title>
+          <item identifier="item_sco_01" identifierref="sco_01">
+            <title>Welcome</title>
+          </item>
+        </item>
+      -->
+
+    </organization>
+  </organizations>
+
+  <!-- Resources -->
+  <resources>
+
+    <!-- {{SCO_RESOURCES}} -->
+    <!--
+      Example SCO resource:
+      <resource identifier="sco_01"
+                type="webcontent"
+                adlcp:scormtype="sco"
+                href="sco_01_introduction/index.html">
+        <file href="sco_01_introduction/index.html"/>
+        <file href="sco_01_introduction/content.js"/>
+        <file href="sco_01_introduction/data.json"/>
+        <dependency identifierref="shared_resources"/>
+      </resource>
+    -->
+
+    <!-- Shared Resources -->
+    <resource identifier="shared_resources"
+              type="webcontent"
+              adlcp:scormtype="asset">
+      <file href="shared/scorm-api.js"/>
+      <file href="shared/styles.css"/>
+      <!-- {{SHARED_FILES}} -->
+    </resource>
+
+  </resources>
+
+</manifest>

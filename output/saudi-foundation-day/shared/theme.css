@@ -1,0 +1,93 @@
+/* Playful Bright Theme — Colorful, rounded, gamified */
+:root {
+  --color-primary: #3B82F6;
+  --color-primary-dark: #2563EB;
+  --color-primary-light: #60A5FA;
+  --color-secondary: #10B981;
+  --color-accent: #F59E0B;
+  --color-background: #FFF8F0;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-text: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-on-dark: #FFFFFF;
+  --color-border: #FED7AA;
+  --color-border-subtle: #FFF3E0;
+  --color-success: #10B981;
+  --color-success-bg: #ECFDF5;
+  --color-error: #F43F5E;
+  --color-error-bg: #FFF1F2;
+  --color-warning: #F59E0B;
+  --color-warning-bg: #FFFBEB;
+  --color-info: #3B82F6;
+  --color-info-bg: #EFF6FF;
+  --color-growth: #8B5CF6;
+  --color-growth-bg: #F5F3FF;
+  --font-heading: 'Cairo', sans-serif;
+  --font-body: 'Cairo', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 8px rgba(59, 130, 246, 0.06);
+  --shadow-md: 0 4px 16px rgba(59, 130, 246, 0.1);
+  --shadow-lg: 0 10px 30px rgba(59, 130, 246, 0.15);
+}
+
+/* Playful overrides */
+.hero-section {
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 50%, #F59E0B 100%);
+}
+
+.btn-next {
+  background: linear-gradient(135deg, #3B82F6, #10B981);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  border-radius: 24px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3B82F6, #10B981);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  border-radius: 24px;
+}
+
+.btn-prev {
+  border-radius: 24px;
+}
+
+.btn-secondary {
+  border-radius: 24px;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #3B82F6, #10B981, #F59E0B);
+}
+
+.progress-bar-fill {
+  background: linear-gradient(90deg, #3B82F6, #10B981, #F59E0B);
+}
+
+.points-badge {
+  background: linear-gradient(135deg, #F59E0B, #F43F5E);
+}
+
+.flip-card-front {
+  background: linear-gradient(135deg, #3B82F6, #10B981);
+}
+
+.card {
+  border-radius: 20px;
+}
+
+/* Bouncy hover effect */
+.card:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.btn-quiz-option {
+  border-radius: 16px;
+}
+
+.btn-quiz-option:hover {
+  transform: translateX(-6px);
+}

@@ -1,0 +1,58 @@
+<!-- Accordion Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css (accordion styles are included)
+
+     JS: Add the script block below your accordion HTML, or include in content.js
+-->
+
+<div class="accordion">
+  <div class="accordion-item">
+    <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+      <span>Section 1 Title</span>
+      <span class="chevron" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="accordion-body" role="region">
+      <p>Section 1 content goes here. Add any HTML content.</p>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+      <span>Section 2 Title</span>
+      <span class="chevron" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="accordion-body" role="region">
+      <p>Section 2 content goes here.</p>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+      <span>Section 3 Title</span>
+      <span class="chevron" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="accordion-body" role="region">
+      <p>Section 3 content goes here.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleAccordion(btn) {
+  var item = btn.parentElement;
+  var isOpen = item.classList.contains('open');
+
+  // Close all siblings (optional: remove this loop for multi-open)
+  var siblings = item.parentElement.querySelectorAll('.accordion-item');
+  siblings.forEach(function(s) {
+    s.classList.remove('open');
+    s.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+  });
+
+  // Toggle clicked item
+  if (!isOpen) {
+    item.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+}
+</script>

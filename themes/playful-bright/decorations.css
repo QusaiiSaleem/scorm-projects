@@ -1,0 +1,46 @@
+/* Playful Bright Decorations — Dots, shapes, warm atmosphere */
+
+/* Warm dot pattern background */
+body {
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.03) 0%, transparent 40%);
+  background-color: var(--color-background);
+}
+
+/* Decorative floating circles */
+body::before {
+  content: '';
+  position: fixed;
+  top: 10%;
+  left: -5%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.08));
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 15%;
+  right: -5%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(244, 63, 94, 0.06));
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Fun shadow on cards */
+.card {
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.card:hover {
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15), 0 2px 8px rgba(0,0,0,0.06);
+}

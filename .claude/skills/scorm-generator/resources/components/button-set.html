@@ -1,0 +1,310 @@
+<!-- Button Set Component (Radio Group Behavior)
+     Usage: Copy into lesson HTML for single-select visual choices.
+     Requires: base.css (.button-set styles)
+
+     Any visual objects (cards, images, icons) act as radio buttons:
+     - Only ONE can be selected at a time
+     - Clicking one auto-deselects all siblings in the same set
+     - Works with text, images, cards, or any clickable element
+     - Foundation for "Pick One" freeform interactions
+
+     Customization:
+     - data-button-set="set-name"  — Group items into a named set
+     - data-value="item-id"        — The value for each item
+     - data-layout="grid"          — Layout mode: "grid" (2-col) or "list" (1-col)
+     - Multiple independent sets can coexist on one page
+
+     WCAG: role="radiogroup" on container, role="radio" on items
+     Keyboard: Arrow keys to move, Enter/Space to select
+-->
+
+<div class="button-set"
+     role="radiogroup"
+     aria-label="Choose one option"
+     data-button-set="example-set"
+     data-layout="grid">
+
+  <!-- Option items -->
+  <div class="button-set-item"
+       role="radio"
+       tabindex="0"
+       aria-checked="false"
+       data-value="option-a">
+    <div class="button-set-item-content">
+      <div class="button-set-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2"/>
+          <text x="20" y="25" text-anchor="middle" fill="currentColor" font-size="16" font-weight="600">A</text>
+        </svg>
+      </div>
+      <span class="button-set-label">Option A</span>
+      <span class="button-set-description text-small text-secondary">Description for first option</span>
+    </div>
+    <span class="button-set-radio-indicator" aria-hidden="true"></span>
+  </div>
+
+  <div class="button-set-item"
+       role="radio"
+       tabindex="-1"
+       aria-checked="false"
+       data-value="option-b">
+    <div class="button-set-item-content">
+      <div class="button-set-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2"/>
+          <text x="20" y="25" text-anchor="middle" fill="currentColor" font-size="16" font-weight="600">B</text>
+        </svg>
+      </div>
+      <span class="button-set-label">Option B</span>
+      <span class="button-set-description text-small text-secondary">Description for second option</span>
+    </div>
+    <span class="button-set-radio-indicator" aria-hidden="true"></span>
+  </div>
+
+  <div class="button-set-item"
+       role="radio"
+       tabindex="-1"
+       aria-checked="false"
+       data-value="option-c">
+    <div class="button-set-item-content">
+      <div class="button-set-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2"/>
+          <text x="20" y="25" text-anchor="middle" fill="currentColor" font-size="16" font-weight="600">C</text>
+        </svg>
+      </div>
+      <span class="button-set-label">Option C</span>
+      <span class="button-set-description text-small text-secondary">Description for third option</span>
+    </div>
+    <span class="button-set-radio-indicator" aria-hidden="true"></span>
+  </div>
+
+  <div class="button-set-item"
+       role="radio"
+       tabindex="-1"
+       aria-checked="false"
+       data-value="option-d">
+    <div class="button-set-item-content">
+      <div class="button-set-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2"/>
+          <text x="20" y="25" text-anchor="middle" fill="currentColor" font-size="16" font-weight="600">D</text>
+        </svg>
+      </div>
+      <span class="button-set-label">Option D</span>
+      <span class="button-set-description text-small text-secondary">Description for fourth option</span>
+    </div>
+    <span class="button-set-radio-indicator" aria-hidden="true"></span>
+  </div>
+</div>
+
+<!-- Selection announcement for screen readers -->
+<div id="button-set-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  /**
+   * ButtonSetController — manages radio-group behavior for any set of elements.
+   * Initialize once; finds all [data-button-set] groups on the page.
+   */
+  function ButtonSetController() {
+    this.sets = {};
+    this._init();
+  }
+
+  ButtonSetController.prototype._init = function() {
+    var self = this;
+    var containers = document.querySelectorAll('[data-button-set]');
+
+    containers.forEach(function(container) {
+      var setName = container.dataset.buttonSet;
+      var items = container.querySelectorAll('.button-set-item');
+
+      self.sets[setName] = {
+        container: container,
+        items: items,
+        selectedValue: null,
+        onChange: null  // External callback
+      };
+
+      // Bind click events
+      items.forEach(function(item) {
+        item.addEventListener('click', function() {
+          if (container.classList.contains('button-set-locked')) return;
+          self._selectItem(setName, item);
+        });
+
+        // Keyboard navigation
+        item.addEventListener('keydown', function(e) {
+          self._handleKeydown(e, setName, item);
+        });
+      });
+    });
+  };
+
+  /**
+   * Select a single item within a set, deselecting all others.
+   */
+  ButtonSetController.prototype._selectItem = function(setName, item) {
+    var set = this.sets[setName];
+    if (!set) return;
+
+    // Deselect all items in this set
+    set.items.forEach(function(it) {
+      it.setAttribute('aria-checked', 'false');
+      it.classList.remove('selected');
+      it.setAttribute('tabindex', '-1');
+    });
+
+    // Select the clicked item
+    item.setAttribute('aria-checked', 'true');
+    item.classList.add('selected');
+    item.setAttribute('tabindex', '0');
+    item.focus();
+
+    set.selectedValue = item.dataset.value;
+
+    // Announce to screen readers
+    var announcer = document.getElementById('button-set-announce');
+    if (announcer) {
+      var label = item.querySelector('.button-set-label');
+      announcer.textContent = (label ? label.textContent : item.dataset.value) + ' selected';
+    }
+
+    // Fire callback
+    if (set.onChange) {
+      set.onChange(set.selectedValue, item);
+    }
+  };
+
+  /**
+   * Arrow key navigation within a radio group.
+   */
+  ButtonSetController.prototype._handleKeydown = function(e, setName, currentItem) {
+    var set = this.sets[setName];
+    if (!set) return;
+
+    var items = Array.from(set.items);
+    var currentIndex = items.indexOf(currentItem);
+    var newIndex = -1;
+
+    // Determine layout direction
+    var isRTL = document.documentElement.dir === 'rtl';
+
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowRight':
+        e.preventDefault();
+        // In RTL, ArrowRight goes backwards
+        if (e.key === 'ArrowRight' && isRTL) {
+          newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+        } else {
+          newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+        }
+        break;
+
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        e.preventDefault();
+        // In RTL, ArrowLeft goes forward
+        if (e.key === 'ArrowLeft' && isRTL) {
+          newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+        } else {
+          newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+        }
+        break;
+
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (set.container.classList.contains('button-set-locked')) return;
+        this._selectItem(setName, currentItem);
+        return;
+
+      case 'Home':
+        e.preventDefault();
+        newIndex = 0;
+        break;
+
+      case 'End':
+        e.preventDefault();
+        newIndex = items.length - 1;
+        break;
+
+      default:
+        return;
+    }
+
+    if (newIndex >= 0) {
+      if (set.container.classList.contains('button-set-locked')) {
+        // In locked mode, just move focus without selecting
+        items[newIndex].setAttribute('tabindex', '0');
+        items[newIndex].focus();
+        currentItem.setAttribute('tabindex', '-1');
+      } else {
+        this._selectItem(setName, items[newIndex]);
+      }
+    }
+  };
+
+  /**
+   * Public API: get the selected value for a named set.
+   */
+  ButtonSetController.prototype.getSelected = function(setName) {
+    var set = this.sets[setName];
+    return set ? set.selectedValue : null;
+  };
+
+  /**
+   * Public API: register a change callback for a named set.
+   */
+  ButtonSetController.prototype.onChange = function(setName, callback) {
+    var set = this.sets[setName];
+    if (set) {
+      set.onChange = callback;
+    }
+  };
+
+  /**
+   * Public API: lock a set (prevent further selection changes).
+   */
+  ButtonSetController.prototype.lock = function(setName) {
+    var set = this.sets[setName];
+    if (set) {
+      set.container.classList.add('button-set-locked');
+    }
+  };
+
+  /**
+   * Public API: unlock a set.
+   */
+  ButtonSetController.prototype.unlock = function(setName) {
+    var set = this.sets[setName];
+    if (set) {
+      set.container.classList.remove('button-set-locked');
+    }
+  };
+
+  /**
+   * Public API: programmatically select a value.
+   */
+  ButtonSetController.prototype.select = function(setName, value) {
+    var set = this.sets[setName];
+    if (!set) return;
+
+    set.items.forEach(function(item) {
+      if (item.dataset.value === value) {
+        this._selectItem(setName, item);
+      }
+    }.bind(this));
+  };
+
+  // ---- Initialize and expose globally ----
+  var controller = new ButtonSetController();
+  window.ButtonSetController = ButtonSetController;
+  window.buttonSets = controller;
+
+})();
+</script>

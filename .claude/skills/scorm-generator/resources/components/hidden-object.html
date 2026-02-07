@@ -1,0 +1,404 @@
+<!-- Hidden Object / Find the Difference Component
+     Usage: Copy into lesson HTML. Spot differences between two images.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Two images displayed side-by-side (or overlay toggle on mobile)
+     - Clickable areas where differences exist
+     - Circle marker appears on correct click
+     - Wrong click shows subtle shake feedback
+     - Counter "Found 3 of 5 differences"
+     - Touch support for mobile
+
+     CUSTOMIZATION:
+     - Set IMAGE_A and IMAGE_B URLs for your two images
+     - Edit DIFFERENCES array with { x, y, radius } in percentage coords
+     - Adjust HIT_RADIUS for click tolerance
+     - Add descriptions for each difference for accessibility
+
+     ACCESSIBILITY:
+     - Image areas use role="img" with descriptive alt
+     - Keyboard: Tab to difference list buttons below image
+     - Screen reader: live region announces found differences
+     - Hint button reveals difference locations
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "other"
+     - Found count as score
+-->
+
+<style>
+  /* === Hidden Object Container === */
+  .hidden-object {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .ho-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md, 16px);
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+  }
+
+  .ho-stat {
+    font-size: 0.875rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    color: var(--color-text-secondary, #666);
+  }
+
+  .ho-stat strong {
+    color: var(--color-text-primary, #333);
+  }
+
+  /* Image comparison area */
+  .ho-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm, 8px);
+  }
+
+  @media (max-width: 600px) {
+    .ho-compare {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ho-image-wrap {
+    position: relative;
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    border: 2px solid var(--color-border, #e0e0e0);
+    cursor: crosshair;
+    aspect-ratio: 16 / 9;
+    background: var(--color-surface, #f5f5f5);
+  }
+
+  .ho-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Placeholder when no image is set */
+  .ho-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #888);
+    background: linear-gradient(135deg, var(--color-surface, #f5f5f5), var(--color-border-subtle, #eee));
+    padding: var(--space-md, 16px);
+    text-align: center;
+  }
+
+  /* Found marker — circle that appears on correct find */
+  .ho-marker {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid var(--color-success, #10b981);
+    background: rgba(16, 185, 129, 0.15);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    animation: hoMarkerIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes hoMarkerIn {
+    to { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  /* Wrong click indicator */
+  .ho-wrong-click {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--color-error, #ef4444);
+    background: rgba(239, 68, 68, 0.15);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: hoWrongPulse 0.6s ease forwards;
+  }
+
+  @keyframes hoWrongPulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+  }
+
+  /* Image labels */
+  .ho-image-label {
+    position: absolute;
+    top: var(--space-sm, 8px);
+    left: var(--space-sm, 8px);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 2;
+  }
+
+  [dir="rtl"] .ho-image-label {
+    left: auto;
+    right: var(--space-sm, 8px);
+  }
+
+  /* Difference list (keyboard accessible) */
+  .ho-diff-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+    margin-top: var(--space-md, 16px);
+    list-style: none;
+    padding: 0;
+  }
+
+  .ho-diff-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    cursor: pointer;
+    font-size: 0.8rem;
+    min-height: 44px;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ho-diff-btn:hover {
+    border-color: var(--color-primary, #6c5ce7);
+  }
+
+  .ho-diff-btn.found {
+    border-color: var(--color-success, #10b981);
+    background: var(--color-success-bg, #ecfdf5);
+    text-decoration: line-through;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  /* Completion */
+  .ho-complete {
+    margin-top: var(--space-md, 16px);
+    padding: var(--space-md, 16px);
+    text-align: center;
+    background: var(--color-success-bg, #ecfdf5);
+    border: 2px solid var(--color-success, #10b981);
+    border-radius: var(--radius-md, 8px);
+    display: none;
+    animation: hoFadeIn 0.4s ease;
+  }
+
+  .ho-complete.show {
+    display: block;
+  }
+
+  .ho-complete h3 {
+    margin: 0;
+    color: var(--color-success, #10b981);
+  }
+
+  @keyframes hoFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .ho-marker { animation: none; transform: translate(-50%, -50%) scale(1); }
+    .ho-wrong-click { animation: none; opacity: 0.5; }
+    .ho-complete.show { animation: none; }
+  }
+</style>
+
+<div class="hidden-object" role="application"
+     aria-label="Find the differences: compare two images and spot the changes">
+
+  <div class="ho-header">
+    <span class="ho-stat">Found: <strong id="ho-found">0</strong> / <span id="ho-total">0</span></span>
+  </div>
+
+  <div class="ho-compare">
+    <!-- Image A -->
+    <div class="ho-image-wrap" id="ho-img-a" role="img" aria-label="Original image">
+      <span class="ho-image-label">Original</span>
+      <!-- CUSTOMIZE: Replace placeholder with your image -->
+      <div class="ho-placeholder">
+        Image A — Replace with &lt;img src="original.jpg" alt="Original scene"&gt;
+      </div>
+    </div>
+
+    <!-- Image B (the one with differences) -->
+    <div class="ho-image-wrap" id="ho-img-b" role="img" aria-label="Modified image - click to find differences">
+      <span class="ho-image-label">Modified</span>
+      <!-- CUSTOMIZE: Replace placeholder with your image -->
+      <div class="ho-placeholder">
+        Image B — Replace with &lt;img src="modified.jpg" alt="Modified scene"&gt;
+      </div>
+    </div>
+  </div>
+
+  <!-- Accessible difference buttons -->
+  <p style="font-size:0.8rem;color:var(--color-text-secondary,#888);margin-top:var(--space-sm,8px);font-style:italic;">
+    Click on the modified image to find differences, or use the buttons below:
+  </p>
+  <ul class="ho-diff-list" id="ho-diff-list" role="list" aria-label="Differences to find"></ul>
+
+  <!-- Completion -->
+  <div class="ho-complete" id="ho-complete" role="status">
+    <h3>All differences found!</h3>
+  </div>
+</div>
+
+<div id="ho-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   HIDDEN OBJECT / FIND THE DIFFERENCE COMPONENT
+   ============================================================
+   Edit DIFFERENCES array to define clickable regions.
+   Coordinates are percentages relative to the image.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Difference locations ===
+     x, y = center position as percentage (0-100)
+     radius = hit area radius as percentage
+     label = description for accessibility */
+  var DIFFERENCES = [
+    { id: 'd1', x: 25, y: 30, radius: 6, label: 'Missing flower in the garden' },
+    { id: 'd2', x: 55, y: 20, radius: 5, label: 'Cloud shape changed' },
+    { id: 'd3', x: 80, y: 60, radius: 7, label: 'Window color different' },
+    { id: 'd4', x: 40, y: 75, radius: 5, label: 'Extra stone on the path' },
+    { id: 'd5', x: 65, y: 45, radius: 6, label: 'Bird added to the tree' }
+  ];
+
+  /* How close (in %) a click must be to count as a hit */
+  var HIT_RADIUS = 8;
+
+  /* === State === */
+  var foundSet = {};
+  var foundCount = 0;
+  var totalCount = DIFFERENCES.length;
+
+  var imgB = document.getElementById('ho-img-b');
+  var imgA = document.getElementById('ho-img-a');
+  var foundEl = document.getElementById('ho-found');
+  var totalEl = document.getElementById('ho-total');
+  var diffListEl = document.getElementById('ho-diff-list');
+  var completeEl = document.getElementById('ho-complete');
+
+  totalEl.textContent = totalCount;
+
+  /* === Build accessible button list === */
+  DIFFERENCES.forEach(function(diff) {
+    var li = document.createElement('li');
+    var btn = document.createElement('button');
+    btn.className = 'ho-diff-btn';
+    btn.dataset.id = diff.id;
+    btn.textContent = diff.label;
+    btn.addEventListener('click', function() {
+      markFound(diff, btn);
+    });
+    li.appendChild(btn);
+    diffListEl.appendChild(li);
+  });
+
+  /* === Click on image B to find differences === */
+  function handleImageClick(e) {
+    var rect = imgB.getBoundingClientRect();
+    var clickX = ((e.clientX - rect.left) / rect.width) * 100;
+    var clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+    var hit = null;
+    DIFFERENCES.forEach(function(diff) {
+      if (foundSet[diff.id]) return;
+      var dist = Math.sqrt(Math.pow(clickX - diff.x, 2) + Math.pow(clickY - diff.y, 2));
+      if (dist <= HIT_RADIUS) {
+        hit = diff;
+      }
+    });
+
+    if (hit) {
+      var btn = diffListEl.querySelector('[data-id="' + hit.id + '"]');
+      markFound(hit, btn);
+      /* Show marker on both images */
+      addMarker(imgB, hit);
+      addMarker(imgA, hit);
+    } else {
+      /* Wrong click feedback */
+      showWrongClick(imgB, clickX, clickY);
+    }
+  }
+
+  imgB.addEventListener('click', handleImageClick);
+
+  /* Touch support */
+  imgB.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    var touch = e.changedTouches[0];
+    handleImageClick({ clientX: touch.clientX, clientY: touch.clientY });
+  });
+
+  /* === Mark a difference as found === */
+  function markFound(diff, btn) {
+    if (foundSet[diff.id]) return;
+    foundSet[diff.id] = true;
+    foundCount++;
+    foundEl.textContent = foundCount;
+
+    if (btn) btn.classList.add('found');
+    announce('Found: ' + diff.label + '. ' + foundCount + ' of ' + totalCount + '.');
+
+    /* Add markers if triggered by button */
+    if (!imgB.querySelector('[data-diff="' + diff.id + '"]')) {
+      addMarker(imgB, diff);
+      addMarker(imgA, diff);
+    }
+
+    if (foundCount >= totalCount) {
+      completeEl.classList.add('show');
+      announce('All differences found! Great observation skills.');
+    }
+  }
+
+  /* === Add circle marker === */
+  function addMarker(container, diff) {
+    var marker = document.createElement('div');
+    marker.className = 'ho-marker';
+    marker.dataset.diff = diff.id;
+    marker.style.left = diff.x + '%';
+    marker.style.top = diff.y + '%';
+    marker.style.width = (diff.radius * 2.5) + '%';
+    marker.style.height = (diff.radius * 2.5) + '%';
+    container.appendChild(marker);
+  }
+
+  /* === Wrong click feedback === */
+  function showWrongClick(container, x, y) {
+    var dot = document.createElement('div');
+    dot.className = 'ho-wrong-click';
+    dot.style.left = x + '%';
+    dot.style.top = y + '%';
+    container.appendChild(dot);
+    setTimeout(function() { dot.remove(); }, 700);
+    announce('No difference here. Keep looking!');
+  }
+
+  function announce(msg) {
+    var el = document.getElementById('ho-announce');
+    if (el) el.textContent = msg;
+  }
+})();
+</script>

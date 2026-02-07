@@ -1,0 +1,67 @@
+<!-- Multiple Choice Question Template -->
+<div class="question mc-question" data-question-id="{{QUESTION_ID}}" data-type="multiple-choice">
+  <p class="question-stem">{{QUESTION_STEM}}</p>
+
+  <div class="options" role="radiogroup" aria-label="Answer options">
+    {{#each OPTIONS}}
+    <label class="option" data-option-id="{{id}}">
+      <input type="radio"
+             name="q_{{../QUESTION_ID}}"
+             value="{{id}}"
+             aria-describedby="feedback_{{../QUESTION_ID}}">
+      <span class="option-marker">{{marker}}</span>
+      <span class="option-text">{{text}}</span>
+    </label>
+    {{/each}}
+  </div>
+
+  <div class="feedback" id="feedback_{{QUESTION_ID}}" style="display: none;" aria-live="polite">
+    <div class="feedback-correct" style="display: none;">
+      <strong>✓ Correct!</strong>
+      <p>{{FEEDBACK_CORRECT}}</p>
+    </div>
+    <div class="feedback-incorrect" style="display: none;">
+      <strong>✗ Not quite.</strong>
+      <p>{{FEEDBACK_INCORRECT}}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.option-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-full);
+  margin-right: var(--space-sm);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+}
+
+.option:hover .option-marker {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.option.selected .option-marker {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.option.correct .option-marker {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.option.incorrect .option-marker {
+  background: var(--error);
+  border-color: var(--error);
+  color: white;
+}
+</style>

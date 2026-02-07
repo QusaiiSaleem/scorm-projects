@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الهوية السعودية — الرموز والقيم</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/player-shell.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">تخطي إلى المحتوى</a>
+
+<div class="sco-container">
+
+  <!-- ===== TOP NAV BAR ===== -->
+  <header class="nav-bar" role="banner">
+    <span class="course-title">الهوية السعودية</span>
+    <div class="flex items-center gap-md">
+      <div class="progress-bar" style="width:120px;">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="points-badge" id="pointsBadge" aria-live="polite">
+        <span aria-hidden="true">&#11088;</span>
+        <span class="points-count" id="pointsCount">0</span>
+        <span>نقطة</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT AREA ===== -->
+  <main class="sco-content" id="main-content" role="main">
+
+    <!-- ===== SLIDE 1: Intro ===== -->
+    <div class="slide active" data-slide="0">
+      <div class="slide-inner">
+        <div class="hero-section saudi-hero text-center">
+          <p style="font-size:4rem;" aria-hidden="true">&#127474;&#127480;</p>
+          <h1 style="color:white; font-size:2.2rem;">الهوية السعودية</h1>
+          <p style="font-size:1.2rem; color:rgba(255,255,255,0.95); margin-top:var(--space-md);">
+            رموزنا وقيمنا التي نفخر بها
+          </p>
+        </div>
+        <div class="callout callout-info stagger-item" style="animation-delay:300ms; max-width:700px; margin:var(--space-lg) auto 0;">
+          <span class="callout-icon" aria-hidden="true">&#127919;</span>
+          <div>
+            <strong>في هذا الدرس</strong>
+            <p style="margin-top:4px;">ستتعرف على رموز المملكة العربية السعودية وقيمها الوطنية من خلال أنشطة تفاعلية ممتعة!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 2: Saudi Symbols (Accordion) ===== -->
+    <div class="slide" data-slide="1">
+      <div class="slide-inner align-top">
+        <h2 style="text-align:center;">&#127752; رموز المملكة</h2>
+        <p class="text-center text-secondary" style="margin-bottom:var(--space-lg);">اضغط على كل رمز لمعرفة المزيد عنه!</p>
+
+        <div class="accordion" style="max-width:700px; margin:0 auto;">
+          <!-- العلم -->
+          <div class="accordion-item stagger-item">
+            <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this); trackAccordion('a1');">
+              <span><span style="margin-left:8px;" aria-hidden="true">&#127988;</span> العلم السعودي</span>
+              <span class="chevron" aria-hidden="true">&#9660;</span>
+            </button>
+            <div class="accordion-body" role="region">
+              <p style="line-height:2; padding-top:var(--space-sm);">
+                العلم السعودي <strong>أخضر اللون</strong> ويحمل شهادة التوحيد
+                "لا إله إلا الله محمد رسول الله" وأسفلها سيف عربي.
+                العلم السعودي هو الوحيد في العالم الذي <strong>لا يُنكّس</strong>
+                احتراماً لما يحمله من كلمات مقدسة.
+              </p>
+            </div>
+          </div>
+
+          <!-- الشعار -->
+          <div class="accordion-item stagger-item">
+            <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this); trackAccordion('a2');">
+              <span><span style="margin-left:8px;" aria-hidden="true">&#9876;&#65039;</span> شعار المملكة (السيفان والنخلة)</span>
+              <span class="chevron" aria-hidden="true">&#9660;</span>
+            </button>
+            <div class="accordion-body" role="region">
+              <p style="line-height:2; padding-top:var(--space-sm);">
+                شعار المملكة يتكون من <strong>سيفين عربيين متقاطعين</strong>
+                يرمزان إلى القوة والمنعة، وفوقهما <strong>نخلة</strong>
+                ترمز إلى الحيوية والنماء والصبر. هذا الشعار يجمع بين
+                القوة والخير — تماماً مثل المملكة!
+              </p>
+            </div>
+          </div>
+
+          <!-- النشيد -->
+          <div class="accordion-item stagger-item">
+            <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this); trackAccordion('a3');">
+              <span><span style="margin-left:8px;" aria-hidden="true">&#127925;</span> النشيد الوطني</span>
+              <span class="chevron" aria-hidden="true">&#9660;</span>
+            </button>
+            <div class="accordion-body" role="region">
+              <p style="line-height:2; padding-top:var(--space-sm);">
+                النشيد الوطني السعودي يبدأ بـ <strong>"سارعي للمجد والعلياء"</strong>
+                وهو نشيد يعبر عن الفخر بالوطن والتطلع للمجد.
+                يُعزف في المناسبات الرسمية والرياضية ويردده كل سعودي بكل فخر!
+              </p>
+            </div>
+          </div>
+
+          <!-- اللباس -->
+          <div class="accordion-item stagger-item">
+            <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this); trackAccordion('a4');">
+              <span><span style="margin-left:8px;" aria-hidden="true">&#128085;</span> اللباس التقليدي</span>
+              <span class="chevron" aria-hidden="true">&#9660;</span>
+            </button>
+            <div class="accordion-body" role="region">
+              <p style="line-height:2; padding-top:var(--space-sm);">
+                اللباس التقليدي السعودي يشمل <strong>الثوب والغترة والعقال</strong>
+                للرجال، والملابس التقليدية المزينة للنساء التي تختلف من منطقة لأخرى.
+                في يوم التأسيس، يرتدي الناس الملابس التراثية احتفالاً بتاريخهم!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-secondary text-center text-small" id="accordionProgress" aria-live="polite" style="margin-top:var(--space-lg);">
+          اكتشفت 0 من 4 رموز
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 3: National Values Cards ===== -->
+    <div class="slide" data-slide="2">
+      <div class="slide-inner">
+        <h2 style="text-align:center;">&#128155; القيم الوطنية</h2>
+        <p class="text-center text-secondary" style="margin-bottom:var(--space-lg);">قيم مهمة تربينا عليها كسعوديين</p>
+
+        <div style="max-width:700px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md);">
+          <div class="card text-center stagger-item" style="border-right:4px solid #006C35;">
+            <p class="emoji-icon" aria-hidden="true">&#128149;</p>
+            <h3>حب الوطن</h3>
+            <p class="text-secondary text-small">الانتماء لوطننا والاعتزاز بتاريخه وحضارته.</p>
+          </div>
+          <div class="card text-center stagger-item" style="border-right:4px solid var(--color-primary);">
+            <p class="emoji-icon" aria-hidden="true">&#129309;</p>
+            <h3>التسامح</h3>
+            <p class="text-secondary text-small">احترام الآخرين والتعايش بمحبة وسلام.</p>
+          </div>
+          <div class="card text-center stagger-item" style="border-right:4px solid var(--color-accent);">
+            <p class="emoji-icon" aria-hidden="true">&#128640;</p>
+            <h3>الطموح</h3>
+            <p class="text-secondary text-small">السعي نحو مستقبل أفضل وتحقيق رؤية 2030.</p>
+          </div>
+          <div class="card text-center stagger-item" style="border-right:4px solid var(--color-secondary);">
+            <p class="emoji-icon" aria-hidden="true">&#129730;</p>
+            <h3>الكرم</h3>
+            <p class="text-secondary text-small">كرم الضيافة والعطاء من أجمل صفات شعبنا.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 4: Drag & Drop Activity ===== -->
+    <div class="slide" data-slide="3">
+      <div class="slide-inner align-top">
+        <h2 style="text-align:center;">&#127918; نشاط: صِل الرمز بمعناه!</h2>
+        <p class="text-center text-secondary" style="margin-bottom:var(--space-lg);">اسحب كل رمز إلى المعنى الصحيح</p>
+
+        <div class="drag-drop-activity" role="application" aria-label="نشاط السحب والإفلات" style="max-width:700px; margin:0 auto;">
+
+          <p class="drag-kb-instructions" id="drag-kb-hint" aria-live="polite">
+            تم اختيار العنصر. انتقل بالـ Tab إلى المكان الصحيح واضغط Enter. اضغط Escape للإلغاء.
+          </p>
+
+          <div class="drag-drop-area" id="source-area" role="listbox" aria-label="الرموز المتاحة">
+            <div class="drag-item" draggable="true" data-id="symbol-flag"
+                 role="option" tabindex="0" aria-grabbed="false"
+                 ondragstart="handleDragStart(event)"
+                 ontouchstart="handleTouchStart(event)"
+                 ontouchmove="handleTouchMove(event)"
+                 ontouchend="handleTouchEnd(event)"
+                 onkeydown="handleDragItemKey(event, this)">
+              &#127988; العلم الأخضر
+            </div>
+            <div class="drag-item" draggable="true" data-id="symbol-swords"
+                 role="option" tabindex="0" aria-grabbed="false"
+                 ondragstart="handleDragStart(event)"
+                 ontouchstart="handleTouchStart(event)"
+                 ontouchmove="handleTouchMove(event)"
+                 ontouchend="handleTouchEnd(event)"
+                 onkeydown="handleDragItemKey(event, this)">
+              &#9876;&#65039; السيفان
+            </div>
+            <div class="drag-item" draggable="true" data-id="symbol-palm"
+                 role="option" tabindex="0" aria-grabbed="false"
+                 ondragstart="handleDragStart(event)"
+                 ontouchstart="handleTouchStart(event)"
+                 ontouchmove="handleTouchMove(event)"
+                 ontouchend="handleTouchEnd(event)"
+                 onkeydown="handleDragItemKey(event, this)">
+              &#127796; النخلة
+            </div>
+          </div>
+
+          <div class="drop-zone" role="list" aria-label="أماكن الإفلات">
+            <div class="drop-slot" data-accept="symbol-flag" role="listitem"
+                 aria-dropeffect="move" aria-label="رمز الدولة والسيادة"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)"
+                 onkeydown="handleSlotKey(event, this)">
+              رمز الدولة والسيادة
+            </div>
+            <div class="drop-slot" data-accept="symbol-swords" role="listitem"
+                 aria-dropeffect="move" aria-label="القوة والمنعة"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)"
+                 onkeydown="handleSlotKey(event, this)">
+              القوة والمنعة
+            </div>
+            <div class="drop-slot" data-accept="symbol-palm" role="listitem"
+                 aria-dropeffect="move" aria-label="النماء والخير"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)"
+                 onkeydown="handleSlotKey(event, this)">
+              النماء والخير
+            </div>
+          </div>
+
+          <div id="drag-feedback" class="sr-only" aria-live="polite"></div>
+          <div id="drag-result" style="text-align:center; margin-top:var(--space-lg); display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 5: Celebration / Lesson Complete ===== -->
+    <div class="slide" data-slide="4">
+      <div class="slide-inner">
+        <div class="completion-message">
+          <p style="font-size:4rem;" aria-hidden="true">&#127775;</p>
+          <h2>ممتاز! أكملت درس الهوية السعودية</h2>
+          <p style="font-size:1.1rem; color:var(--color-text-secondary); margin:var(--space-md) 0 var(--space-lg);">
+            تعرفت على رموز المملكة وقيمها الوطنية ونجحت في نشاط التوصيل!
+          </p>
+          <div class="badge-earned">
+            <span aria-hidden="true">&#127474;&#127480;</span>
+            <span>حصلت على وسام: فخر الهوية</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="sco-nav" role="navigation" aria-label="تنقل الدرس">
+    <button class="btn-prev" id="prevBtn" disabled data-next-text="السابق">السابق</button>
+    <span class="page-indicator" id="pageIndicator" aria-live="polite">1 / 5</span>
+    <button class="btn-next" id="nextBtn" data-next-text="التالي" data-complete-text="إنهاء الدرس">التالي</button>
+  </nav>
+
+</div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="../shared/scorm-api.js"></script>
+<script src="../shared/engine/slide-controller.js"></script>
+
+<script>
+/* ============================================================
+   SCO 03: Identity — الهوية السعودية
+   ============================================================ */
+
+/* --- SCORM --- */
+var scorm = new SCORMWrapper();
+scorm.initialize();
+
+/* --- Points --- */
+var totalPoints = 0;
+function addPoints(amount) {
+  totalPoints += amount;
+  var el = document.getElementById('pointsCount');
+  if (el) {
+    el.textContent = totalPoints;
+    var badge = document.getElementById('pointsBadge');
+    if (badge) { badge.classList.add('glow'); setTimeout(function(){ badge.classList.remove('glow'); }, 600); }
+  }
+}
+
+/* --- Accordion --- */
+function toggleAccordion(btn) {
+  var item = btn.parentElement;
+  var isOpen = item.classList.contains('open');
+  var siblings = item.parentElement.querySelectorAll('.accordion-item');
+  siblings.forEach(function(s) {
+    s.classList.remove('open');
+    s.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+}
+
+var accordionViewed = {};
+function trackAccordion(id) {
+  if (!accordionViewed[id]) {
+    accordionViewed[id] = true;
+    addPoints(5);
+    var count = Object.keys(accordionViewed).length;
+    var el = document.getElementById('accordionProgress');
+    if (el) el.textContent = 'اكتشفت ' + count + ' من 4 رموز';
+    if (count === 4) {
+      addPoints(10);
+      if (el) el.innerHTML = '&#127881; اكتشفت جميع الرموز! +10 نقاط إضافية';
+    }
+  }
+}
+
+/* ============================================================
+   Drag & Drop — Three Modes (Mouse, Touch, Keyboard)
+   ============================================================ */
+
+var draggedItem = null;
+var kbGrabbedItem = null;
+var correctDrops = 0;
+
+/* HTML5 Drag */
+function handleDragStart(e) {
+  draggedItem = e.target;
+  e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  e.target.style.opacity = '0.5';
+}
+function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('highlight'); }
+function handleDragLeave(e) { e.currentTarget.classList.remove('highlight'); }
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('highlight');
+  if (!draggedItem) return;
+  executeDrop(draggedItem, e.currentTarget);
+  draggedItem.style.opacity = '1';
+  draggedItem = null;
+}
+
+/* Touch */
+var touchItem = null, touchClone = null;
+function handleTouchStart(e) {
+  touchItem = e.target;
+  var rect = touchItem.getBoundingClientRect();
+  touchClone = touchItem.cloneNode(true);
+  touchClone.style.position = 'fixed';
+  touchClone.style.width = rect.width + 'px';
+  touchClone.style.zIndex = '9999';
+  touchClone.style.pointerEvents = 'none';
+  touchClone.style.opacity = '0.8';
+  document.body.appendChild(touchClone);
+  touchItem.style.opacity = '0.3';
+}
+function handleTouchMove(e) {
+  e.preventDefault();
+  if (!touchClone) return;
+  var t = e.touches[0];
+  touchClone.style.left = (t.clientX - 40) + 'px';
+  touchClone.style.top = (t.clientY - 20) + 'px';
+  document.querySelectorAll('.drop-slot').forEach(function(s) {
+    var r = s.getBoundingClientRect();
+    if (t.clientX >= r.left && t.clientX <= r.right && t.clientY >= r.top && t.clientY <= r.bottom) {
+      s.classList.add('highlight');
+    } else { s.classList.remove('highlight'); }
+  });
+}
+function handleTouchEnd(e) {
+  if (!touchItem || !touchClone) return;
+  var t = e.changedTouches[0];
+  document.body.removeChild(touchClone);
+  touchClone = null;
+  document.querySelectorAll('.drop-slot').forEach(function(slot) {
+    slot.classList.remove('highlight');
+    var r = slot.getBoundingClientRect();
+    if (t.clientX >= r.left && t.clientX <= r.right && t.clientY >= r.top && t.clientY <= r.bottom) {
+      executeDrop(touchItem, slot);
+    }
+  });
+  touchItem.style.opacity = '1';
+  touchItem = null;
+}
+
+/* Keyboard */
+function handleDragItemKey(e, item) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (kbGrabbedItem === item) { cancelKbGrab(); return; }
+    if (kbGrabbedItem) cancelKbGrab();
+    kbGrabbedItem = item;
+    item.classList.add('kb-grabbed');
+    item.setAttribute('aria-grabbed', 'true');
+    var slots = document.querySelectorAll('.drop-slot:not(.filled)');
+    slots.forEach(function(s) { s.tabIndex = 0; s.classList.add('kb-target'); });
+    var hint = document.getElementById('drag-kb-hint');
+    if (hint) hint.classList.add('show');
+    announce('تم اختيار ' + item.textContent.trim());
+    if (slots.length > 0) slots[0].focus();
+  }
+  if (e.key === 'Escape' && kbGrabbedItem) { e.preventDefault(); cancelKbGrab(); }
+}
+
+function handleSlotKey(e, slot) {
+  if ((e.key === 'Enter' || e.key === ' ') && kbGrabbedItem) {
+    e.preventDefault();
+    executeDrop(kbGrabbedItem, slot);
+    kbGrabbedItem = null;
+    cleanupKbMode();
+  }
+  if (e.key === 'Escape' && kbGrabbedItem) { e.preventDefault(); cancelKbGrab(); }
+}
+
+function cancelKbGrab() {
+  if (kbGrabbedItem) {
+    kbGrabbedItem.classList.remove('kb-grabbed');
+    kbGrabbedItem.setAttribute('aria-grabbed', 'false');
+    announce('تم الإلغاء');
+    kbGrabbedItem.focus();
+    kbGrabbedItem = null;
+  }
+  cleanupKbMode();
+}
+
+function cleanupKbMode() {
+  document.querySelectorAll('.drop-slot').forEach(function(s) {
+    if (!s.classList.contains('filled')) s.tabIndex = -1;
+    s.classList.remove('kb-target');
+  });
+  var hint = document.getElementById('drag-kb-hint');
+  if (hint) hint.classList.remove('show');
+}
+
+/* Shared Drop Logic */
+function executeDrop(item, slot) {
+  var itemId = item.dataset.id;
+  var isCorrect = slot.dataset.accept === itemId;
+  item.classList.remove('kb-grabbed');
+  item.setAttribute('aria-grabbed', 'false');
+  if (isCorrect) {
+    slot.classList.add('filled');
+    slot.textContent = item.textContent;
+    item.style.display = 'none';
+    addPoints(10);
+    correctDrops++;
+    announce('صحيح! ' + item.textContent.trim());
+    if (correctDrops === 3) {
+      addPoints(15);
+      var result = document.getElementById('drag-result');
+      if (result) {
+        result.style.display = 'block';
+        result.innerHTML = '<div class="celebration-banner"><p style="font-size:2rem;">&#127881;</p><h3 style="color:white; margin:8px 0;">أحسنت! وصّلت جميع الرموز بشكل صحيح!</h3><p style="color:rgba(255,255,255,0.9);">+15 نقطة إضافية</p></div>';
+      }
+    }
+  } else {
+    slot.classList.add('incorrect');
+    announce('ليس بعد — جرب مكاناً آخر!');
+    setTimeout(function() { slot.classList.remove('incorrect'); }, 1000);
+    if (kbGrabbedItem) item.focus();
+  }
+}
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && kbGrabbedItem) cancelKbGrab(); });
+
+function announce(msg) {
+  var el = document.getElementById('drag-feedback');
+  if (el) el.textContent = msg;
+}
+
+/* Keyboard mode styles */
+var kbStyle = document.createElement('style');
+kbStyle.textContent = '.drag-item.kb-grabbed{border-color:var(--color-accent);background:var(--color-growth-bg);box-shadow:0 0 0 3px rgba(249,115,22,0.3);animation:kbGrabbedPulse 1.5s ease infinite;}@keyframes kbGrabbedPulse{0%,100%{box-shadow:0 0 0 3px rgba(249,115,22,0.3);}50%{box-shadow:0 0 0 6px rgba(249,115,22,0.15);}}.drop-slot.kb-target{border-color:var(--color-primary);border-style:solid;}.drop-slot.kb-target:focus-visible{border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(249,115,22,0.3);background:var(--color-growth-bg);}.drag-kb-instructions{font-size:0.9rem;color:var(--color-text-secondary);margin-top:var(--space-sm);font-style:italic;display:none;text-align:center;}.drag-kb-instructions.show{display:block;}@media(prefers-reduced-motion:reduce){.drag-item.kb-grabbed{animation:none;}}';
+document.head.appendChild(kbStyle);
+
+/* --- Confetti --- */
+function launchConfetti() {
+  var colors = ['#3B82F6','#10B981','#F59E0B','#EC4899','#006C35','#8B5CF6'];
+  for (var i=0; i<40; i++) {
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100+'vw';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = (Math.random()*8+6)+'px';
+    p.style.height = (Math.random()*8+6)+'px';
+    p.style.borderRadius = Math.random()>0.5?'50%':'2px';
+    p.style.animation = 'confetti-fall '+(Math.random()*2+1.5)+'s ease-out forwards';
+    p.style.animationDelay = (Math.random()*0.5)+'s';
+    document.body.appendChild(p);
+    (function(el){ setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 4000); })(p);
+  }
+}
+
+/* --- Slide Controller --- */
+var controller = new SlideController({
+  onSlideChange: function(index, total) { addPoints(5); },
+  onComplete: function() {
+    addPoints(20);
+    launchConfetti();
+    if (scorm && scorm.initialized) {
+      scorm.setLessonStatus('completed');
+      scorm.setScore(100, 100, 0);
+      scorm.commit();
+    }
+  }
+});
+
+/* --- Session Timing --- */
+var sessionStart = new Date();
+window.addEventListener('beforeunload', function() {
+  if (scorm && scorm.initialized) {
+    var elapsed = Math.floor((new Date() - sessionStart) / 1000);
+    scorm.setSessionTime(elapsed);
+    scorm.commit();
+    scorm.terminate();
+  }
+});
+</script>
+
+</body>
+</html>

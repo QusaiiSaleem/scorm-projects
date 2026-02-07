@@ -1,0 +1,748 @@
+<!-- Escape Room Component
+     Usage: Copy into lesson HTML. Virtual escape room with puzzles.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Room background with positioned interactive objects
+     - Multiple puzzle types: combination lock, word puzzle, key+lock
+     - Inventory system (collected items shown in bottom bar)
+     - Optional countdown timer
+     - Clue system: hints after failed attempts
+     - Sequential unlocking: solve one puzzle to reveal the next
+
+     CUSTOMIZATION:
+     - Edit PUZZLES array to define your room's puzzles
+     - Set ROOM_BG to your background image URL
+     - Adjust TIMER_SECONDS (0 = no timer)
+     - Position objects with left/top percentages
+
+     ACCESSIBILITY:
+     - All interactive objects are <button> elements
+     - Keyboard: Tab + Enter to interact with objects
+     - Screen reader: live region announces puzzle states
+     - Focus management on puzzle dialogs
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "fill-in" (for combination locks)
+     - Track time remaining + hints used for scoring
+-->
+
+<style>
+  /* === Escape Room Container === */
+  .escape-room {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Header bar: timer + progress */
+  .er-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md, 16px);
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+  }
+
+  .er-stat {
+    font-size: 0.875rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    color: var(--color-text-secondary, #666);
+  }
+
+  .er-stat strong {
+    color: var(--color-text-primary, #333);
+  }
+
+  .er-timer {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .er-timer.warning {
+    color: var(--color-error, #ef4444);
+    font-weight: 700;
+  }
+
+  /* Room scene */
+  .er-room {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--color-surface, #2d2d44);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    border: 2px solid var(--color-border, #e0e0e0);
+  }
+
+  .er-room-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Interactive objects in the room */
+  .er-object {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md, 8px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+    backdrop-filter: blur(2px);
+    color: #fff;
+  }
+
+  .er-object:hover,
+  .er-object:focus-visible {
+    transform: scale(1.1);
+    border-color: var(--color-accent, #f97316);
+    outline: none;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
+  }
+
+  .er-object.solved {
+    border-color: var(--color-success, #10b981);
+    background: rgba(16, 185, 129, 0.3);
+    pointer-events: none;
+  }
+
+  .er-object.locked {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .er-object .er-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    animation: erPulse 2.5s ease infinite;
+  }
+
+  .er-object.solved .er-pulse,
+  .er-object.locked .er-pulse {
+    display: none;
+  }
+
+  @keyframes erPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0; }
+  }
+
+  /* Inventory bar */
+  .er-inventory {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 8px);
+    margin-top: var(--space-md, 16px);
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    background: var(--color-surface-elevated, #f5f5f5);
+    border-radius: var(--radius-md, 8px);
+    min-height: 52px;
+    flex-wrap: wrap;
+  }
+
+  .er-inventory-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary, #888);
+    margin-inline-end: var(--space-sm, 8px);
+  }
+
+  .er-inv-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.8rem;
+    animation: erItemIn 0.3s ease;
+  }
+
+  @keyframes erItemIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* Puzzle dialog overlay */
+  .er-puzzle-dialog {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg, 24px);
+  }
+
+  .er-puzzle-dialog.open {
+    display: flex;
+  }
+
+  .er-puzzle-card {
+    background: var(--color-surface-elevated, #fff);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-lg, 24px);
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+    animation: erDialogIn 0.3s ease;
+  }
+
+  @keyframes erDialogIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .er-puzzle-card h3 {
+    margin: 0 0 var(--space-sm, 8px);
+    font-size: 1.1rem;
+  }
+
+  .er-puzzle-card p {
+    margin: 0 0 var(--space-md, 16px);
+    color: var(--color-text-secondary, #666);
+    line-height: 1.6;
+  }
+
+  /* Combination lock input */
+  .er-combo-row {
+    display: flex;
+    gap: var(--space-sm, 8px);
+    justify-content: center;
+    margin-bottom: var(--space-md, 16px);
+  }
+
+  .er-combo-digit {
+    width: 56px;
+    height: 64px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface, #fafafa);
+    color: var(--color-text-primary, #333);
+    font-family: inherit;
+  }
+
+  .er-combo-digit:focus {
+    border-color: var(--color-primary, #6c5ce7);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+  }
+
+  /* Word puzzle input */
+  .er-word-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    font-size: 1rem;
+    font-family: inherit;
+    margin-bottom: var(--space-md, 16px);
+  }
+
+  .er-word-input:focus {
+    border-color: var(--color-primary, #6c5ce7);
+    outline: none;
+  }
+
+  /* Dialog buttons */
+  .er-puzzle-actions {
+    display: flex;
+    gap: var(--space-sm, 8px);
+    justify-content: flex-end;
+  }
+
+  .er-btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+    font-family: inherit;
+    transition: opacity 0.2s;
+  }
+
+  .er-btn:hover { opacity: 0.9; }
+
+  .er-btn-primary {
+    background: var(--color-primary, #6c5ce7);
+    color: #fff;
+  }
+
+  .er-btn-secondary {
+    background: var(--color-surface, #f5f5f5);
+    color: var(--color-text-primary, #333);
+    border: 1px solid var(--color-border, #e0e0e0);
+  }
+
+  /* Hint text */
+  .er-hint {
+    margin-top: var(--space-sm, 8px);
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    background: var(--color-growth-bg, #fff7ed);
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.8rem;
+    color: var(--color-growth, #c2410c);
+    display: none;
+  }
+
+  .er-hint.show {
+    display: block;
+    animation: erFadeIn 0.3s ease;
+  }
+
+  /* Puzzle feedback */
+  .er-puzzle-feedback {
+    margin-bottom: var(--space-sm, 8px);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.875rem;
+    display: none;
+  }
+
+  .er-puzzle-feedback.show { display: block; }
+  .er-puzzle-feedback.success { background: var(--color-success-bg, #ecfdf5); color: var(--color-success, #10b981); }
+  .er-puzzle-feedback.error { background: var(--color-error-bg, #fef2f2); color: var(--color-error, #ef4444); }
+
+  @keyframes erFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Completion overlay */
+  .er-complete-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: rgba(16, 185, 129, 0.9);
+    border-radius: var(--radius-lg, 12px);
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-md, 16px);
+    text-align: center;
+    animation: erFadeIn 0.5s ease;
+  }
+
+  .er-complete-overlay.show {
+    display: flex;
+  }
+
+  .er-complete-overlay h2 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .er-object .er-pulse { animation: none; }
+    .er-puzzle-card { animation: none; }
+    .er-inv-item { animation: none; }
+    .er-complete-overlay { animation: none; }
+  }
+</style>
+
+<div class="escape-room" role="application" aria-label="Virtual escape room">
+
+  <!-- Header -->
+  <div class="er-header">
+    <span class="er-stat">Puzzles: <strong id="er-progress">0</strong> / <span id="er-total">4</span></span>
+    <span class="er-stat er-timer" id="er-timer" aria-live="polite">05:00</span>
+    <span class="er-stat">Hints: <strong id="er-hints-used">0</strong></span>
+  </div>
+
+  <!-- Room -->
+  <div class="er-room" id="er-room">
+    <!-- CUSTOMIZE: Add a background image here -->
+    <!-- <img class="er-room-bg" src="room.jpg" alt="Escape room"> -->
+
+    <!-- Interactive objects (positioned with %) -->
+    <button class="er-object" data-puzzle="p1" style="left:15%;top:25%"
+            aria-label="Locked safe - combination puzzle">
+      <span class="er-pulse"></span>
+      &#128274;
+    </button>
+
+    <button class="er-object locked" data-puzzle="p2" style="left:45%;top:35%"
+            aria-label="Computer - word puzzle (locked)">
+      <span class="er-pulse"></span>
+      &#128187;
+    </button>
+
+    <button class="er-object locked" data-puzzle="p3" style="left:70%;top:50%"
+            aria-label="Filing cabinet - pattern puzzle (locked)">
+      <span class="er-pulse"></span>
+      &#128193;
+    </button>
+
+    <button class="er-object locked" data-puzzle="p4" style="left:55%;top:70%"
+            aria-label="Exit door - final lock (locked)">
+      <span class="er-pulse"></span>
+      &#128682;
+    </button>
+
+    <!-- Completion overlay -->
+    <div class="er-complete-overlay" id="er-complete" role="status">
+      <h2>You Escaped!</h2>
+      <p id="er-final-msg">Great work solving all the puzzles!</p>
+    </div>
+  </div>
+
+  <!-- Inventory -->
+  <div class="er-inventory" aria-label="Inventory">
+    <span class="er-inventory-label">Inventory:</span>
+    <div id="er-inv-items">
+      <span style="font-size:0.8rem;color:var(--color-text-secondary,#888)">Empty</span>
+    </div>
+  </div>
+</div>
+
+<!-- Puzzle dialog (reused for all puzzles) -->
+<div class="er-puzzle-dialog" id="er-dialog" role="dialog" aria-modal="true" aria-label="Puzzle">
+  <div class="er-puzzle-card" id="er-puzzle-card">
+    <h3 id="er-puzzle-title"></h3>
+    <p id="er-puzzle-desc"></p>
+    <div id="er-puzzle-feedback" class="er-puzzle-feedback" role="alert"></div>
+    <div id="er-puzzle-content"></div>
+    <div id="er-puzzle-hint" class="er-hint"></div>
+    <div class="er-puzzle-actions">
+      <button class="er-btn er-btn-secondary" id="er-hint-btn">Hint</button>
+      <button class="er-btn er-btn-secondary" id="er-close-btn">Close</button>
+      <button class="er-btn er-btn-primary" id="er-submit-btn">Submit</button>
+    </div>
+  </div>
+</div>
+
+<div id="er-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   ESCAPE ROOM COMPONENT
+   ============================================================
+   Edit PUZZLES array to define your room's challenges.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Puzzle definitions === */
+  var PUZZLES = [
+    {
+      id: 'p1',
+      title: 'The Safe',
+      desc: 'Enter the 4-digit combination. Hint: The year the company was founded.',
+      type: 'combination',
+      answer: '2024',
+      digits: 4,
+      hint: 'Think about when this all started. Check the plaque on the wall.',
+      reward: 'USB Key',
+      rewardEmoji: '&#128273;',
+      unlocks: 'p2'
+    },
+    {
+      id: 'p2',
+      title: 'The Computer',
+      desc: 'The computer asks for a password. What is the primary protocol for secure web traffic?',
+      type: 'word',
+      answer: 'HTTPS',
+      hint: 'It starts with HTTP and adds one letter for security.',
+      reward: 'Access Card',
+      rewardEmoji: '&#128179;',
+      unlocks: 'p3'
+    },
+    {
+      id: 'p3',
+      title: 'The Filing Cabinet',
+      desc: 'Enter the 3-digit code. The sum of each digit equals 15. First digit is 7, last digit is 3.',
+      type: 'combination',
+      answer: '753',
+      digits: 3,
+      hint: 'If first=7, last=3, then the middle digit is 15 minus 7 minus 3.',
+      reward: 'Exit Key',
+      rewardEmoji: '&#128477;',
+      unlocks: 'p4'
+    },
+    {
+      id: 'p4',
+      title: 'The Exit Door',
+      desc: 'One last challenge. What word means "to leave a place"?',
+      type: 'word',
+      answer: 'ESCAPE',
+      hint: 'It is literally the name of this game.',
+      reward: null,
+      rewardEmoji: null,
+      unlocks: null
+    }
+  ];
+
+  var TIMER_SECONDS = 300; /* 5 minutes. Set to 0 for no timer */
+
+  /* === State === */
+  var solvedCount = 0;
+  var hintsUsed = 0;
+  var inventory = [];
+  var currentPuzzle = null;
+  var failedAttempts = {};
+  var timerInterval = null;
+  var timeRemaining = TIMER_SECONDS;
+
+  var totalEl = document.getElementById('er-total');
+  var progressEl = document.getElementById('er-progress');
+  var timerEl = document.getElementById('er-timer');
+  var hintsUsedEl = document.getElementById('er-hints-used');
+  var invItemsEl = document.getElementById('er-inv-items');
+  var completeEl = document.getElementById('er-complete');
+  var finalMsgEl = document.getElementById('er-final-msg');
+
+  var dialog = document.getElementById('er-dialog');
+  var puzzleTitleEl = document.getElementById('er-puzzle-title');
+  var puzzleDescEl = document.getElementById('er-puzzle-desc');
+  var puzzleContentEl = document.getElementById('er-puzzle-content');
+  var puzzleFeedbackEl = document.getElementById('er-puzzle-feedback');
+  var puzzleHintEl = document.getElementById('er-puzzle-hint');
+  var submitBtn = document.getElementById('er-submit-btn');
+  var closeBtn = document.getElementById('er-close-btn');
+  var hintBtn = document.getElementById('er-hint-btn');
+
+  totalEl.textContent = PUZZLES.length;
+
+  /* === Timer === */
+  function startTimer() {
+    if (TIMER_SECONDS <= 0) {
+      timerEl.style.display = 'none';
+      return;
+    }
+    timerInterval = setInterval(function() {
+      timeRemaining--;
+      var m = Math.floor(timeRemaining / 60);
+      var s = timeRemaining % 60;
+      timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      if (timeRemaining <= 60) timerEl.classList.add('warning');
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        announce('Time is up! You ran out of time.');
+        timerEl.textContent = '00:00';
+      }
+    }, 1000);
+  }
+
+  /* === Object clicks === */
+  var objects = document.querySelectorAll('.er-object');
+  objects.forEach(function(obj) {
+    obj.addEventListener('click', function() {
+      var puzzleId = obj.dataset.puzzle;
+      var puzzle = PUZZLES.find(function(p) { return p.id === puzzleId; });
+      if (!puzzle) return;
+      openPuzzle(puzzle);
+    });
+  });
+
+  /* === Open puzzle dialog === */
+  function openPuzzle(puzzle) {
+    currentPuzzle = puzzle;
+    puzzleTitleEl.textContent = puzzle.title;
+    puzzleDescEl.textContent = puzzle.desc;
+    puzzleFeedbackEl.className = 'er-puzzle-feedback';
+    puzzleFeedbackEl.textContent = '';
+    puzzleHintEl.classList.remove('show');
+    puzzleHintEl.textContent = '';
+    puzzleContentEl.innerHTML = '';
+
+    if (puzzle.type === 'combination') {
+      var row = document.createElement('div');
+      row.className = 'er-combo-row';
+      for (var i = 0; i < puzzle.digits; i++) {
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.maxLength = 1;
+        inp.inputMode = 'numeric';
+        inp.pattern = '[0-9]';
+        inp.className = 'er-combo-digit';
+        inp.dataset.idx = i;
+        inp.setAttribute('aria-label', 'Digit ' + (i + 1));
+        /* Auto-advance on input */
+        inp.addEventListener('input', function(e) {
+          var next = e.target.nextElementSibling;
+          if (next && e.target.value) next.focus();
+        });
+        inp.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && !e.target.value) {
+            var prev = e.target.previousElementSibling;
+            if (prev) prev.focus();
+          }
+        });
+        row.appendChild(inp);
+      }
+      puzzleContentEl.appendChild(row);
+    } else if (puzzle.type === 'word') {
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'er-word-input';
+      inp.placeholder = 'Type your answer...';
+      inp.setAttribute('aria-label', 'Answer');
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') submitBtn.click();
+      });
+      puzzleContentEl.appendChild(inp);
+    }
+
+    dialog.classList.add('open');
+
+    /* Focus first input */
+    setTimeout(function() {
+      var firstInput = puzzleContentEl.querySelector('input');
+      if (firstInput) firstInput.focus();
+    }, 100);
+  }
+
+  /* === Submit answer === */
+  submitBtn.addEventListener('click', function() {
+    if (!currentPuzzle) return;
+    var answer = '';
+
+    if (currentPuzzle.type === 'combination') {
+      var digits = puzzleContentEl.querySelectorAll('.er-combo-digit');
+      digits.forEach(function(d) { answer += d.value; });
+    } else if (currentPuzzle.type === 'word') {
+      var inp = puzzleContentEl.querySelector('.er-word-input');
+      answer = inp ? inp.value.trim() : '';
+    }
+
+    var isCorrect = answer.toUpperCase() === currentPuzzle.answer.toUpperCase();
+
+    if (isCorrect) {
+      puzzleFeedbackEl.className = 'er-puzzle-feedback show success';
+      puzzleFeedbackEl.textContent = 'Correct! Puzzle solved!';
+      solvePuzzle(currentPuzzle);
+      setTimeout(function() { closeDialog(); }, 1200);
+    } else {
+      if (!failedAttempts[currentPuzzle.id]) failedAttempts[currentPuzzle.id] = 0;
+      failedAttempts[currentPuzzle.id]++;
+      puzzleFeedbackEl.className = 'er-puzzle-feedback show error';
+      puzzleFeedbackEl.textContent = 'Not correct. Try again!';
+      announce('Incorrect answer. Try again.');
+
+      /* Show hint after 2 failed attempts */
+      if (failedAttempts[currentPuzzle.id] >= 2 && currentPuzzle.hint) {
+        puzzleHintEl.textContent = 'Hint: ' + currentPuzzle.hint;
+        puzzleHintEl.classList.add('show');
+      }
+    }
+  });
+
+  /* === Hint button === */
+  hintBtn.addEventListener('click', function() {
+    if (!currentPuzzle || !currentPuzzle.hint) return;
+    hintsUsed++;
+    hintsUsedEl.textContent = hintsUsed;
+    puzzleHintEl.textContent = 'Hint: ' + currentPuzzle.hint;
+    puzzleHintEl.classList.add('show');
+    announce('Hint: ' + currentPuzzle.hint);
+  });
+
+  /* === Close dialog === */
+  closeBtn.addEventListener('click', closeDialog);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && dialog.classList.contains('open')) {
+      closeDialog();
+    }
+  });
+
+  function closeDialog() {
+    dialog.classList.remove('open');
+    currentPuzzle = null;
+    /* Return focus to the room */
+    var obj = document.querySelector('.er-object:not(.solved):not(.locked)');
+    if (obj) obj.focus();
+  }
+
+  /* === Solve a puzzle === */
+  function solvePuzzle(puzzle) {
+    solvedCount++;
+    progressEl.textContent = solvedCount;
+
+    /* Mark object as solved */
+    var obj = document.querySelector('.er-object[data-puzzle="' + puzzle.id + '"]');
+    if (obj) {
+      obj.classList.add('solved');
+      obj.innerHTML = '&#10004;';
+    }
+
+    /* Add reward to inventory */
+    if (puzzle.reward) {
+      inventory.push({ name: puzzle.reward, emoji: puzzle.rewardEmoji });
+      updateInventory();
+    }
+
+    /* Unlock next puzzle */
+    if (puzzle.unlocks) {
+      var nextObj = document.querySelector('.er-object[data-puzzle="' + puzzle.unlocks + '"]');
+      if (nextObj) {
+        nextObj.classList.remove('locked');
+        nextObj.setAttribute('aria-label', nextObj.getAttribute('aria-label').replace(' (locked)', ''));
+      }
+    }
+
+    announce('Puzzle solved! ' + solvedCount + ' of ' + PUZZLES.length + ' complete.');
+
+    /* Check completion */
+    if (solvedCount >= PUZZLES.length) {
+      onEscape();
+    }
+  }
+
+  /* === Update inventory display === */
+  function updateInventory() {
+    invItemsEl.innerHTML = '';
+    if (inventory.length === 0) {
+      invItemsEl.innerHTML = '<span style="font-size:0.8rem;color:var(--color-text-secondary,#888)">Empty</span>';
+      return;
+    }
+    inventory.forEach(function(item) {
+      var span = document.createElement('span');
+      span.className = 'er-inv-item';
+      span.innerHTML = item.emoji + ' ' + item.name;
+      invItemsEl.appendChild(span);
+    });
+  }
+
+  /* === Escape! === */
+  function onEscape() {
+    if (timerInterval) clearInterval(timerInterval);
+    completeEl.classList.add('show');
+    var m = Math.floor((TIMER_SECONDS - timeRemaining) / 60);
+    var s = (TIMER_SECONDS - timeRemaining) % 60;
+    var timeMsg = TIMER_SECONDS > 0 ? ' Time: ' + m + 'm ' + s + 's.' : '';
+    finalMsgEl.textContent = 'All puzzles solved! Hints used: ' + hintsUsed + '.' + timeMsg;
+    announce('Congratulations! You escaped! ' + finalMsgEl.textContent);
+  }
+
+  function announce(msg) {
+    var el = document.getElementById('er-announce');
+    if (el) el.textContent = msg;
+  }
+
+  /* === Init === */
+  startTimer();
+})();
+</script>

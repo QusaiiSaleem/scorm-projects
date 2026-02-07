@@ -1,0 +1,437 @@
+<!-- Flashlight Reveal Component
+     Usage: Copy into lesson HTML. Learner moves cursor to reveal hidden content.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A dark overlay covers the scene (opacity 0.95)
+     - A radial-gradient mask follows the cursor (120px circle)
+     - Positioned hotspot buttons sit beneath the overlay
+     - Click a hotspot to slide in an info panel
+     - Counter shows "3 of 7 discovered"
+     - All items must be discovered to proceed
+
+     CUSTOMIZATION:
+     - Change FLASHLIGHT_RADIUS to adjust circle size
+     - Edit items[] array to set hotspot positions, titles, and content
+     - Set data-required="false" on optional hotspots
+     - Adjust --fl-glow-color for the glow tint
+
+     ACCESSIBILITY:
+     - Hotspots are <button> elements with aria-labels
+     - Keyboard: Tab cycles through hotspots (overlay does not block focus)
+     - Screen reader: live region announces discoveries
+     - prefers-reduced-motion disables pulse animation
+
+     SCORM REPORTING:
+     - Track discovered count in cmi.suspend_data
+-->
+
+<style>
+  /* === Flashlight Scene === */
+  .flashlight-scene {
+    --fl-mx: 50%;
+    --fl-my: 50%;
+    --fl-radius: 120px;
+    --fl-glow-color: rgba(255, 220, 100, 0.15);
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--color-surface, #1a1a2e);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    cursor: none;
+    user-select: none;
+  }
+
+  /* Background content layer — place your image or content here */
+  .flashlight-scene .fl-content {
+    position: absolute;
+    inset: 0;
+    padding: var(--space-lg, 24px);
+  }
+
+  /* Dark overlay with radial cutout */
+  .flashlight-scene .fl-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    mask-image: radial-gradient(
+      circle var(--fl-radius) at var(--fl-mx) var(--fl-my),
+      transparent 80%,
+      black 100%
+    );
+    -webkit-mask-image: radial-gradient(
+      circle var(--fl-radius) at var(--fl-mx) var(--fl-my),
+      transparent 80%,
+      black 100%
+    );
+    pointer-events: none;
+    z-index: 2;
+    transition: none;
+  }
+
+  /* Glow effect around the flashlight circle */
+  .flashlight-scene .fl-glow {
+    position: absolute;
+    width: calc(var(--fl-radius) * 2.5);
+    height: calc(var(--fl-radius) * 2.5);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--fl-glow-color), transparent 70%);
+    transform: translate(-50%, -50%);
+    left: var(--fl-mx);
+    top: var(--fl-my);
+    pointer-events: none;
+    z-index: 1;
+    transition: none;
+  }
+
+  /* Hotspot buttons */
+  .fl-hotspot {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.25rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .fl-hotspot:hover,
+  .fl-hotspot:focus-visible {
+    transform: scale(1.15);
+    border-color: var(--color-accent, #f97316);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+  }
+
+  .fl-hotspot.discovered {
+    border-color: var(--color-success, #10b981);
+    background: rgba(16, 185, 129, 0.25);
+    pointer-events: none;
+  }
+
+  .fl-hotspot .fl-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: flPulse 2s ease-in-out infinite;
+  }
+
+  .fl-hotspot.discovered .fl-pulse {
+    display: none;
+  }
+
+  @keyframes flPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0; }
+  }
+
+  /* Info panel (slides in from right) */
+  .fl-info-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    max-width: 80%;
+    height: 100%;
+    background: var(--color-surface-elevated, #222244);
+    color: var(--color-text-primary, #fff);
+    padding: var(--space-lg, 24px);
+    z-index: 10;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md, 16px);
+  }
+
+  .fl-info-panel[dir="rtl"],
+  [dir="rtl"] .fl-info-panel {
+    right: auto;
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .fl-info-panel.open {
+    transform: translateX(0);
+  }
+
+  .fl-info-panel h3 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .fl-info-panel p {
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+
+  .fl-close-btn {
+    align-self: flex-end;
+    background: none;
+    border: 2px solid var(--color-border, rgba(255,255,255,0.2));
+    border-radius: var(--radius-md, 8px);
+    color: inherit;
+    padding: 6px 16px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    min-height: 44px;
+    transition: background 0.2s;
+  }
+
+  .fl-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Progress counter */
+  .fl-progress {
+    position: absolute;
+    top: var(--space-md, 16px);
+    left: var(--space-md, 16px);
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: var(--radius-md, 8px);
+    font-size: 0.875rem;
+    backdrop-filter: blur(4px);
+  }
+
+  [dir="rtl"] .fl-progress {
+    left: auto;
+    right: var(--space-md, 16px);
+  }
+
+  /* Completion message */
+  .fl-complete-msg {
+    position: absolute;
+    bottom: var(--space-md, 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    background: var(--color-success, #10b981);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: var(--radius-md, 8px);
+    font-weight: 600;
+    display: none;
+    animation: flFadeUp 0.5s ease;
+  }
+
+  .fl-complete-msg.show {
+    display: block;
+  }
+
+  @keyframes flFadeUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Custom cursor dot */
+  .fl-cursor {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 220, 100, 0.8);
+    pointer-events: none;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    left: var(--fl-mx);
+    top: var(--fl-my);
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .fl-hotspot .fl-pulse { animation: none; }
+    .fl-info-panel { transition-duration: 0.01s; }
+    .fl-complete-msg { animation: none; }
+  }
+</style>
+
+<div class="flashlight-scene" role="application"
+     aria-label="Flashlight exploration: move your cursor to reveal hidden items">
+
+  <!-- Background content layer -->
+  <div class="fl-content">
+    <!-- CUSTOMIZE: Add background image or HTML content here -->
+    <!-- Example: <img src="scene.jpg" alt="Scene to explore" style="width:100%;height:100%;object-fit:cover;"> -->
+  </div>
+
+  <!-- Glow effect -->
+  <div class="fl-glow" aria-hidden="true"></div>
+
+  <!-- Dark overlay with flashlight cutout -->
+  <div class="fl-overlay" aria-hidden="true"></div>
+
+  <!-- Custom cursor -->
+  <div class="fl-cursor" aria-hidden="true"></div>
+
+  <!-- CUSTOMIZE: Position hotspots with left/top percentages -->
+  <button class="fl-hotspot" data-id="h1" style="left:20%;top:30%"
+          aria-label="Hotspot 1: Security basics">
+    <span class="fl-pulse"></span>
+    &#128270;
+  </button>
+
+  <button class="fl-hotspot" data-id="h2" style="left:55%;top:25%"
+          aria-label="Hotspot 2: Password policy">
+    <span class="fl-pulse"></span>
+    &#128273;
+  </button>
+
+  <button class="fl-hotspot" data-id="h3" style="left:75%;top:60%"
+          aria-label="Hotspot 3: Data protection">
+    <span class="fl-pulse"></span>
+    &#128274;
+  </button>
+
+  <button class="fl-hotspot" data-id="h4" style="left:35%;top:70%"
+          aria-label="Hotspot 4: Email safety">
+    <span class="fl-pulse"></span>
+    &#9993;
+  </button>
+
+  <!-- Progress counter -->
+  <div class="fl-progress" aria-live="polite">
+    <span id="fl-count">0</span> of <span id="fl-total">4</span> discovered
+  </div>
+
+  <!-- Completion message -->
+  <div class="fl-complete-msg" id="fl-complete" role="status">
+    All items discovered! You may proceed.
+  </div>
+
+  <!-- Info panel (slides in) -->
+  <div class="fl-info-panel" id="fl-panel" role="dialog" aria-label="Item details">
+    <button class="fl-close-btn" id="fl-close" aria-label="Close panel">Got it</button>
+    <h3 id="fl-panel-title"></h3>
+    <p id="fl-panel-body"></p>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="fl-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   FLASHLIGHT REVEAL COMPONENT
+   ============================================================
+   Move cursor/finger to shine a light on the dark scene.
+   Click hotspots to discover information.
+   ============================================================ */
+
+(function() {
+  /* === CUSTOMIZE: Hotspot content data === */
+  var HOTSPOT_DATA = {
+    h1: { title: 'Security Basics', body: 'Always verify the identity of people requesting sensitive information. Trust but verify is the golden rule of workplace security.' },
+    h2: { title: 'Password Policy', body: 'Use at least 12 characters with a mix of uppercase, lowercase, numbers, and symbols. Never reuse passwords across accounts.' },
+    h3: { title: 'Data Protection', body: 'Classify all documents before sharing. Sensitive data must be encrypted at rest and in transit.' },
+    h4: { title: 'Email Safety', body: 'Check sender addresses carefully. Never click links in unexpected emails. When in doubt, verify with the sender directly.' }
+  };
+
+  var scene = document.querySelector('.flashlight-scene');
+  var panel = document.getElementById('fl-panel');
+  var panelTitle = document.getElementById('fl-panel-title');
+  var panelBody = document.getElementById('fl-panel-body');
+  var closeBtn = document.getElementById('fl-close');
+  var countEl = document.getElementById('fl-count');
+  var totalEl = document.getElementById('fl-total');
+  var completeEl = document.getElementById('fl-complete');
+
+  var hotspots = scene.querySelectorAll('.fl-hotspot');
+  var totalCount = hotspots.length;
+  var discoveredCount = 0;
+
+  totalEl.textContent = totalCount;
+
+  /* === Mouse/Touch tracking === */
+  function updatePosition(x, y) {
+    var rect = scene.getBoundingClientRect();
+    var mx = x - rect.left;
+    var my = y - rect.top;
+    /* Clamp within bounds */
+    mx = Math.max(0, Math.min(mx, rect.width));
+    my = Math.max(0, Math.min(my, rect.height));
+    scene.style.setProperty('--fl-mx', mx + 'px');
+    scene.style.setProperty('--fl-my', my + 'px');
+  }
+
+  scene.addEventListener('mousemove', function(e) {
+    updatePosition(e.clientX, e.clientY);
+  });
+
+  scene.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    var touch = e.touches[0];
+    updatePosition(touch.clientX, touch.clientY);
+  }, { passive: false });
+
+  /* Enter scene: center the light */
+  scene.addEventListener('mouseenter', function(e) {
+    updatePosition(e.clientX, e.clientY);
+  });
+
+  /* === Hotspot clicks === */
+  hotspots.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = btn.dataset.id;
+      var data = HOTSPOT_DATA[id];
+      if (!data) return;
+
+      /* Mark as discovered */
+      if (!btn.classList.contains('discovered')) {
+        btn.classList.add('discovered');
+        discoveredCount++;
+        countEl.textContent = discoveredCount;
+        announce('Discovered: ' + data.title + '. ' + discoveredCount + ' of ' + totalCount + ' found.');
+      }
+
+      /* Show info panel */
+      panelTitle.textContent = data.title;
+      panelBody.textContent = data.body;
+      panel.classList.add('open');
+      closeBtn.focus();
+
+      /* Check completion */
+      if (discoveredCount >= totalCount) {
+        completeEl.classList.add('show');
+        announce('All items discovered! You may proceed.');
+      }
+    });
+  });
+
+  /* === Close panel === */
+  closeBtn.addEventListener('click', function() {
+    panel.classList.remove('open');
+    /* Return focus to the hotspot that opened it */
+    var openHotspot = scene.querySelector('.fl-hotspot:focus') ||
+                      scene.querySelector('.fl-hotspot:not(.discovered)') ||
+                      scene.querySelector('.fl-hotspot');
+    if (openHotspot) openHotspot.focus();
+  });
+
+  /* Close on Escape */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && panel.classList.contains('open')) {
+      closeBtn.click();
+    }
+  });
+
+  function announce(msg) {
+    var el = document.getElementById('fl-announce');
+    if (el) el.textContent = msg;
+  }
+})();
+</script>

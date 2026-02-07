@@ -1,0 +1,298 @@
+<!-- Text Response Component (Short Answer / Essay)
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A textarea for the learner to type a response
+     - Character/word counter shows progress toward limit
+     - Configurable max length and row count
+     - Ungraded by default (instructor reviews or self-reflection)
+     - Submit button saves the response
+
+     ACCESSIBILITY:
+     - <label> properly associated with <textarea>
+     - Character count announced to screen readers via aria-live
+     - Resizable textarea for comfort
+     - Placeholder text for guidance
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "fill-in"
+     - learner_response = the typed text (truncated if over 255 chars for SCORM 1.2)
+-->
+
+<style>
+  /* === Text Response Container === */
+  .text-response-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Textarea Wrapper === */
+  .text-response-wrapper {
+    position: relative;
+    margin: var(--space-md) 0;
+  }
+
+  /* The main textarea */
+  .text-response-input {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--space-md);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-elevated);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.8;
+    color: var(--color-text);
+    resize: vertical;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .text-response-input::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+  }
+
+  .text-response-input:hover {
+    border-color: var(--color-primary-light);
+  }
+
+  .text-response-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  }
+
+  /* When submitted, make it read-only with a subtle background */
+  .text-response-input.submitted {
+    background: var(--color-surface);
+    border-color: var(--color-success);
+    cursor: default;
+  }
+
+  /* === Character/Word Counter === */
+  .text-response-counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-sm);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  /* Warning state: approaching limit */
+  .text-response-counter.warning .counter-chars {
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  /* Error state: at or over limit */
+  .text-response-counter.over-limit .counter-chars {
+    color: var(--color-error);
+    font-weight: 700;
+  }
+
+  .counter-chars, .counter-words {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* === Actions === */
+  .text-response-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* === Confirmation === */
+  .text-response-confirmation {
+    margin-top: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-success-bg);
+    border: 2px solid var(--color-success);
+    border-radius: var(--radius-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .text-response-confirmation.show {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  /* === Prompt/Instructions === */
+  .text-response-prompt {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-sm);
+    font-style: italic;
+  }
+
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .text-response-input {
+      min-height: 100px;
+      font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="text-response-activity" role="region" aria-label="Text response activity">
+  <p class="question-stem">
+    Reflect on what you learned in this module:
+  </p>
+
+  <p class="text-response-prompt">
+    Write at least 50 words describing how you would apply these concepts in your work.
+  </p>
+
+  <div class="text-response-wrapper">
+    <label for="text-response-1" class="sr-only">Your response</label>
+    <textarea class="text-response-input" id="text-response-1"
+              rows="6"
+              maxlength="2000"
+              data-max-chars="2000"
+              data-min-words="50"
+              placeholder="Type your response here..."
+              aria-describedby="text-counter-1"
+              oninput="updateTextCounter(this)"></textarea>
+  </div>
+
+  <!-- Counter: shows characters used and word count -->
+  <div class="text-response-counter" id="text-counter-1" aria-live="polite">
+    <span class="counter-words">
+      Words: <strong id="word-count-1">0</strong>
+    </span>
+    <span class="counter-chars">
+      <span id="char-count-1">0</span> / <span id="char-max-1">2000</span> characters
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="text-response-actions">
+    <button class="btn-primary" id="submit-text-1" onclick="submitTextResponse('text-response-1')">
+      Submit Response
+    </button>
+    <button class="btn-ghost" onclick="clearTextResponse('text-response-1')">Clear</button>
+  </div>
+
+  <!-- Confirmation -->
+  <div class="text-response-confirmation" id="text-confirm-1" role="alert" aria-live="polite">
+    <span aria-hidden="true">&#10004;</span>
+    <span>Your response has been saved. Thank you!</span>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="text-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   TEXT RESPONSE COMPONENT — Short Answer / Essay
+   ============================================================
+   - Counts characters and words in real time
+   - Warns when approaching character limit
+   - Saves response on submit
+   ============================================================ */
+
+/**
+ * Update the character and word counters as the learner types.
+ * Called on every input event.
+ */
+function updateTextCounter(textarea) {
+  var id = textarea.id;
+  var text = textarea.value;
+  var maxChars = parseInt(textarea.getAttribute('data-max-chars')) || 2000;
+
+  /* Character count */
+  var charCount = text.length;
+  var charEl = document.getElementById('char-count-' + id.replace('text-response-', ''));
+  if (charEl) charEl.textContent = charCount;
+
+  /* Word count: split by whitespace, filter empty strings */
+  var words = text.trim() ? text.trim().split(/\s+/) : [];
+  var wordCount = words.length;
+  var wordEl = document.getElementById('word-count-' + id.replace('text-response-', ''));
+  if (wordEl) wordEl.textContent = wordCount;
+
+  /* Counter warning/error states */
+  var counterEl = textarea.closest('.text-response-activity').querySelector('.text-response-counter');
+  if (counterEl) {
+    counterEl.classList.remove('warning', 'over-limit');
+    if (charCount > maxChars * 0.9) {
+      counterEl.classList.add('warning');
+    }
+    if (charCount >= maxChars) {
+      counterEl.classList.add('over-limit');
+    }
+  }
+}
+
+/**
+ * Submit the text response.
+ * Validates minimum word count if specified.
+ */
+function submitTextResponse(textareaId) {
+  var textarea = document.getElementById(textareaId);
+  if (!textarea) return;
+
+  var text = textarea.value.trim();
+  var num = textareaId.replace('text-response-', '');
+  var minWords = parseInt(textarea.getAttribute('data-min-words')) || 0;
+
+  /* Check minimum word count */
+  var words = text ? text.split(/\s+/) : [];
+  if (minWords > 0 && words.length < minWords) {
+    announceText('Please write at least ' + minWords + ' words. You have ' + words.length + ' so far.');
+    return;
+  }
+
+  /* Check not empty */
+  if (!text) {
+    announceText('Please type a response before submitting.');
+    return;
+  }
+
+  /* Mark as submitted */
+  textarea.classList.add('submitted');
+  textarea.readOnly = true;
+
+  /* Disable submit button */
+  var submitBtn = document.getElementById('submit-text-' + num);
+  if (submitBtn) submitBtn.disabled = true;
+
+  /* Show confirmation */
+  var confirm = document.getElementById('text-confirm-' + num);
+  if (confirm) confirm.classList.add('show');
+
+  announceText('Response submitted successfully.');
+
+  /* In a real SCORM package, this would report via:
+     scormAPI.setInteraction(n, 'fill-in', text.substring(0, 255), '', textareaId); */
+}
+
+/**
+ * Clear the textarea and reset counters.
+ */
+function clearTextResponse(textareaId) {
+  var textarea = document.getElementById(textareaId);
+  if (!textarea || textarea.readOnly) return;
+
+  textarea.value = '';
+  updateTextCounter(textarea);
+}
+
+/**
+ * Announce to screen readers.
+ */
+function announceText(msg) {
+  var el = document.getElementById('text-announce');
+  if (el) el.textContent = msg;
+}
+</script>

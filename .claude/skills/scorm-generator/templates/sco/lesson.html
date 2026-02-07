@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" dir="{{DIR}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{LESSON_TITLE}} | {{COURSE_TITLE}}</title>
+  <link rel="stylesheet" href="../shared/styles.css">
+</head>
+<body>
+  <!-- Skip Navigation (QM 8.1 / WCAG) -->
+  <a href="#content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to main content</a>
+
+  <div class="sco-container">
+    <!-- Header with Points Display -->
+    <header class="sco-header">
+      <div class="header-top" style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="progress-bar" style="flex:1;margin-right:16px;">
+          <div class="progress-fill" id="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div id="points-display"></div>
+      </div>
+      <h1 class="lesson-title">{{LESSON_TITLE}}</h1>
+    </header>
+
+    <!-- Content -->
+    <main class="sco-content" id="content">
+      <!-- Section 1: Hook / Attention Getter -->
+      <section class="section" data-section="1">
+        <div class="callout callout-info">
+          <p><strong>{{HOOK_TITLE}}</strong></p>
+          <p>{{HOOK_CONTENT}}</p>
+        </div>
+      </section>
+
+      <!-- Section 2: Learning Objective -->
+      <section class="section" data-section="2">
+        <h2 class="section-title">What You'll Learn</h2>
+        <p>By the end of this lesson, you will be able to:</p>
+        <ul>
+          {{#each OBJECTIVES}}
+          <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </section>
+
+      <!-- Section 3: Core Content -->
+      <section class="section" data-section="3">
+        <h2 class="section-title">{{CONTENT_TITLE}}</h2>
+        {{CONTENT_HTML}}
+      </section>
+
+      <!-- Section 4: Example / Practice -->
+      <section class="section" data-section="4">
+        <h2 class="section-title">Example</h2>
+        <div class="content-card">
+          {{EXAMPLE_HTML}}
+        </div>
+      </section>
+
+      <!-- Section 5: Knowledge Check -->
+      <section class="section" data-section="5">
+        <h2 class="section-title">Check Your Understanding</h2>
+        <div id="knowledge-check">
+          <!-- Quiz inserted dynamically -->
+        </div>
+      </section>
+
+      <!-- Section 6: Summary -->
+      <section class="section" data-section="6">
+        <h2 class="section-title">Key Takeaways</h2>
+        <div class="callout callout-success">
+          <ul>
+            {{#each TAKEAWAYS}}
+            <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- Navigation -->
+    <nav class="sco-nav">
+      <button class="btn btn-secondary btn-prev" id="prevBtn" disabled>Previous</button>
+      <span class="page-indicator" id="pageIndicator">1 / 6</span>
+      <button class="btn btn-primary btn-next" id="nextBtn">Next</button>
+    </nav>
+  </div>
+
+  <!-- SCORM API + Behavioral Tracking + Gamification -->
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+  <script src="content.js"></script>
+</body>
+</html>

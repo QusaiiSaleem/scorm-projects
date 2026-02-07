@@ -1,0 +1,377 @@
+<!-- Hotspot Interaction Component
+     Usage: Copy into lesson HTML. Overlay clickable regions on an image.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - An image is displayed with invisible SVG overlay regions
+     - Learner clicks on the image to find the correct area(s)
+     - Correct clicks highlight green, incorrect clicks flash red
+     - Can be GRADED (quiz mode) or UNGRADED (explore mode)
+     - In quiz mode: Submit button checks if all correct hotspots were found
+     - In explore mode: clicking reveals information about each area
+
+     CUSTOMIZATION:
+     - Define hotspot regions using SVG <polygon>, <circle>, or <rect>
+     - Set data-correct="true" on correct regions
+     - data-feedback="..." for per-region feedback text
+     - Switch modes with data-mode="quiz" or data-mode="explore"
+
+     ACCESSIBILITY:
+     - Each hotspot region has an aria-label
+     - A list of clickable regions is provided for keyboard/screen reader users
+     - Tab + Enter to select regions from the list
+     - SCORM type: "other" with x,y coordinates
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "other"
+     - learner_response = "x,y" coordinates of clicks
+-->
+
+<style>
+  /* === Hotspot Container === */
+  .hotspot-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  /* The background image */
+  .hotspot-container .hotspot-image {
+    width: 100%;
+    display: block;
+  }
+
+  /* Placeholder when no image is set */
+  .hotspot-container .hotspot-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, var(--color-surface), var(--color-border-subtle));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+  }
+
+  /* SVG overlay covers the entire image */
+  .hotspot-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+
+  /* Individual hotspot regions (SVG shapes) */
+  .hotspot-region {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 2;
+    cursor: pointer;
+    transition: fill 0.3s ease, stroke 0.3s ease;
+  }
+
+  /* Hover: subtle highlight so learner knows it's clickable */
+  .hotspot-region:hover {
+    fill: rgba(108, 92, 231, 0.15);
+    stroke: var(--color-primary);
+  }
+
+  /* Focus for keyboard navigation */
+  .hotspot-region:focus-visible {
+    outline: none;
+    stroke: var(--color-accent);
+    stroke-width: 3;
+    fill: rgba(249, 115, 22, 0.15);
+  }
+
+  /* Correct click: green highlight */
+  .hotspot-region.correct-click {
+    fill: rgba(16, 185, 129, 0.3);
+    stroke: var(--color-success);
+    stroke-width: 3;
+  }
+
+  /* Incorrect click: red flash */
+  .hotspot-region.incorrect-click {
+    fill: rgba(239, 68, 68, 0.3);
+    stroke: var(--color-error);
+    stroke-width: 3;
+    animation: hotspotFlash 0.6s ease;
+  }
+
+  @keyframes hotspotFlash {
+    0%, 100% { fill: rgba(239, 68, 68, 0.3); }
+    50% { fill: rgba(239, 68, 68, 0.5); }
+  }
+
+  /* === Accessibility: Region List === */
+  /* For keyboard/screen reader users who cannot click on image areas */
+  .hotspot-region-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-md) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .hotspot-region-list li {
+    margin: 0;
+  }
+
+  .hotspot-region-btn {
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-elevated);
+    font-family: var(--font-body);
+    font-size: var(--font-size-small);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .hotspot-region-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-growth-bg);
+  }
+
+  .hotspot-region-btn.selected {
+    border-color: var(--color-primary);
+    background: var(--color-growth-bg);
+    font-weight: 600;
+  }
+
+  .hotspot-region-btn.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+  }
+
+  .hotspot-region-btn.incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+  }
+
+  /* === Feedback Area === */
+  .hotspot-feedback {
+    margin-top: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .hotspot-feedback.show {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .hotspot-feedback.correct {
+    background: var(--color-success-bg);
+    border: 2px solid var(--color-success);
+  }
+
+  .hotspot-feedback.incorrect {
+    background: var(--color-growth-bg);
+    border: 2px solid var(--color-growth);
+  }
+
+  /* === Submit/Check Button (quiz mode) === */
+  .hotspot-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+    align-items: center;
+  }
+
+  /* Instructions text */
+  .hotspot-instruction {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-sm);
+    font-style: italic;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .hotspot-region.incorrect-click {
+      animation: none;
+    }
+  }
+</style>
+
+<!-- === EXAMPLE: QUIZ MODE (graded) === -->
+<div class="hotspot-activity" data-mode="quiz" role="application"
+     aria-label="Hotspot quiz: click the correct area on the image">
+
+  <p class="question-stem">Click on the correct area of the image:</p>
+
+  <div class="hotspot-container">
+    <!-- Replace with your actual image -->
+    <div class="hotspot-placeholder" aria-hidden="true">
+      Replace with your image (set &lt;img class="hotspot-image"&gt;)
+    </div>
+
+    <!-- SVG overlay with clickable regions.
+         Coordinates use percentages (viewBox 0 0 100 100).
+         data-correct="true" marks the right answer.
+         data-region-id links to the accessible button list. -->
+    <svg class="hotspot-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"
+         aria-hidden="true">
+
+      <!-- Correct region (example: rectangle area) -->
+      <rect class="hotspot-region" data-correct="true" data-region-id="r1"
+            data-feedback="Correct! This is the right area."
+            x="20" y="25" width="25" height="30"
+            tabindex="0" role="button"
+            aria-label="Region A (top-left area)"
+            onclick="handleHotspotClick(this)"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleHotspotClick(this)}"/>
+
+      <!-- Incorrect region -->
+      <rect class="hotspot-region" data-correct="false" data-region-id="r2"
+            data-feedback="Not quite. This area shows the secondary element."
+            x="55" y="25" width="25" height="30"
+            tabindex="0" role="button"
+            aria-label="Region B (top-right area)"
+            onclick="handleHotspotClick(this)"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleHotspotClick(this)}"/>
+
+      <!-- Incorrect region -->
+      <rect class="hotspot-region" data-correct="false" data-region-id="r3"
+            data-feedback="Not yet — this area is the background element. Keep exploring!"
+            x="35" y="60" width="30" height="25"
+            tabindex="0" role="button"
+            aria-label="Region C (bottom-center area)"
+            onclick="handleHotspotClick(this)"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleHotspotClick(this)}"/>
+    </svg>
+  </div>
+
+  <!-- Accessible alternative: clickable button list for keyboard users -->
+  <p class="hotspot-instruction">
+    Or choose a region below (keyboard accessible):
+  </p>
+  <ul class="hotspot-region-list" role="listbox" aria-label="Clickable regions">
+    <li><button class="hotspot-region-btn" data-region-id="r1"
+                onclick="handleHotspotBtnClick(this)" role="option">Region A</button></li>
+    <li><button class="hotspot-region-btn" data-region-id="r2"
+                onclick="handleHotspotBtnClick(this)" role="option">Region B</button></li>
+    <li><button class="hotspot-region-btn" data-region-id="r3"
+                onclick="handleHotspotBtnClick(this)" role="option">Region C</button></li>
+  </ul>
+
+  <!-- Feedback display -->
+  <div class="hotspot-feedback" id="hotspot-feedback" role="alert" aria-live="polite"></div>
+</div>
+
+<!-- Screen reader live region -->
+<div id="hotspot-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   HOTSPOT COMPONENT — Click-on-image interaction
+   ============================================================
+   Modes:
+   - "quiz" : graded, correct/incorrect feedback, one attempt
+   - "explore" : ungraded, each region reveals info
+   ============================================================ */
+
+var hotspotAnswered = false;
+
+/**
+ * Handle click on an SVG hotspot region.
+ * Shows feedback based on correct/incorrect and the mode.
+ */
+function handleHotspotClick(region) {
+  if (hotspotAnswered) return; /* Already answered in quiz mode */
+
+  var isCorrect = region.getAttribute('data-correct') === 'true';
+  var feedback = region.getAttribute('data-feedback') || '';
+  var regionId = region.getAttribute('data-region-id');
+  var activity = region.closest('.hotspot-activity') || document;
+  var mode = 'quiz';
+  var activityEl = document.querySelector('.hotspot-activity');
+  if (activityEl) mode = activityEl.getAttribute('data-mode') || 'quiz';
+
+  /* Clear previous highlights */
+  var allRegions = document.querySelectorAll('.hotspot-region');
+  allRegions.forEach(function(r) {
+    r.classList.remove('correct-click', 'incorrect-click');
+  });
+
+  /* Highlight the clicked region */
+  if (isCorrect) {
+    region.classList.add('correct-click');
+    showHotspotFeedback(feedback, true);
+    /* Also highlight the matching button */
+    highlightRegionBtn(regionId, true);
+  } else {
+    region.classList.add('incorrect-click');
+    showHotspotFeedback(feedback, false);
+    highlightRegionBtn(regionId, false);
+  }
+
+  /* In quiz mode, lock after first answer */
+  if (mode === 'quiz') {
+    hotspotAnswered = true;
+  }
+
+  announceHotspot(isCorrect ? 'Correct!' : 'Not quite. ' + feedback);
+}
+
+/**
+ * Handle click on an accessible button (keyboard alternative).
+ * Finds the matching SVG region and triggers the same logic.
+ */
+function handleHotspotBtnClick(btn) {
+  var regionId = btn.getAttribute('data-region-id');
+  var svgRegion = document.querySelector('.hotspot-region[data-region-id="' + regionId + '"]');
+  if (svgRegion) {
+    handleHotspotClick(svgRegion);
+  }
+}
+
+/**
+ * Highlight the accessible button list item.
+ */
+function highlightRegionBtn(regionId, isCorrect) {
+  /* Clear previous button highlights */
+  var allBtns = document.querySelectorAll('.hotspot-region-btn');
+  allBtns.forEach(function(b) {
+    b.classList.remove('selected', 'correct', 'incorrect');
+  });
+
+  var btn = document.querySelector('.hotspot-region-btn[data-region-id="' + regionId + '"]');
+  if (btn) {
+    btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+  }
+}
+
+/**
+ * Show feedback below the hotspot image.
+ */
+function showHotspotFeedback(text, isCorrect) {
+  var el = document.getElementById('hotspot-feedback');
+  if (!el) return;
+
+  el.className = 'hotspot-feedback show ' + (isCorrect ? 'correct' : 'incorrect');
+  el.innerHTML = '<span aria-hidden="true">' + (isCorrect ? '&#10004;' : '&#128161;') + '</span> ' +
+                 '<span>' + text + '</span>';
+}
+
+/**
+ * Announce to screen readers.
+ */
+function announceHotspot(msg) {
+  var el = document.getElementById('hotspot-announce');
+  if (el) el.textContent = msg;
+}
+</script>

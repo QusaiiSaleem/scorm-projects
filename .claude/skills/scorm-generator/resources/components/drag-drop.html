@@ -1,0 +1,415 @@
+<!-- Drag & Drop Component (Enhanced with Keyboard Support)
+     Usage: Copy into lesson HTML. Customize items and slots.
+     Requires: base.css (drag-drop styles are included)
+
+     IMPORTANT: Uses THREE interaction modes:
+     1. HTML5 drag events (desktop mouse)
+     2. Touch events (mobile/tablet) — fixes known moon-phases bug
+     3. Keyboard mode (Tab + Enter to select, arrow to choose slot, Enter to drop)
+
+     KEYBOARD INSTRUCTIONS:
+     - Tab to focus a drag item
+     - Press Enter or Space to "pick up" the item
+     - Tab to navigate between drop slots (they become focusable when an item is picked up)
+     - Press Enter or Space on a slot to "drop" the item there
+     - Press Escape to cancel and put the item back
+
+     ACCESSIBILITY:
+     - role="listbox" on source area, role="option" on items
+     - aria-grabbed / aria-dropeffect attributes
+     - Live region announces all state changes to screen readers
+     - Focus management: focus moves logically through the workflow
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "matching"
+     - learner_response = "item1[.]slot1,item2[.]slot2,..."
+-->
+
+<style>
+  /* === Keyboard Mode Styles === */
+
+  /* When an item is "picked up" via keyboard, highlight it */
+  .drag-item.kb-grabbed {
+    border-color: var(--color-accent);
+    background: var(--color-growth-bg);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+    animation: kbGrabbedPulse 1.5s ease infinite;
+  }
+
+  @keyframes kbGrabbedPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.15); }
+  }
+
+  /* Make drop slots focusable and visible during keyboard mode */
+  .drop-slot.kb-target {
+    border-color: var(--color-primary);
+    border-style: solid;
+    outline: none;
+  }
+
+  .drop-slot.kb-target:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+    background: var(--color-growth-bg);
+  }
+
+  /* Instruction text for keyboard mode */
+  .drag-kb-instructions {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-sm);
+    font-style: italic;
+    display: none;
+  }
+
+  .drag-kb-instructions.show {
+    display: block;
+  }
+
+  /* Make drag items focusable with clear focus ring */
+  .drag-item:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .drag-item.kb-grabbed { animation: none; }
+  }
+</style>
+
+<div class="drag-drop-activity" role="application" aria-label="Drag and drop activity">
+  <p class="question-stem">Drag each item to the correct slot:</p>
+
+  <!-- Keyboard instruction hint (shown when item is grabbed) -->
+  <p class="drag-kb-instructions" id="drag-kb-hint" aria-live="polite">
+    Item selected. Tab to a drop slot and press Enter to place it. Press Escape to cancel.
+  </p>
+
+  <!-- Draggable items — now with tabindex, role, and keyboard handlers -->
+  <div class="drag-drop-area" id="source-area" role="listbox" aria-label="Draggable items">
+    <div class="drag-item" draggable="true" data-id="item-1"
+         role="option" tabindex="0"
+         aria-grabbed="false"
+         ondragstart="handleDragStart(event)"
+         ontouchstart="handleTouchStart(event)"
+         ontouchmove="handleTouchMove(event)"
+         ontouchend="handleTouchEnd(event)"
+         onkeydown="handleDragItemKey(event, this)">
+      Item 1
+    </div>
+    <div class="drag-item" draggable="true" data-id="item-2"
+         role="option" tabindex="0"
+         aria-grabbed="false"
+         ondragstart="handleDragStart(event)"
+         ontouchstart="handleTouchStart(event)"
+         ontouchmove="handleTouchMove(event)"
+         ontouchend="handleTouchEnd(event)"
+         onkeydown="handleDragItemKey(event, this)">
+      Item 2
+    </div>
+    <div class="drag-item" draggable="true" data-id="item-3"
+         role="option" tabindex="0"
+         aria-grabbed="false"
+         ondragstart="handleDragStart(event)"
+         ontouchstart="handleTouchStart(event)"
+         ontouchmove="handleTouchMove(event)"
+         ontouchend="handleTouchEnd(event)"
+         onkeydown="handleDragItemKey(event, this)">
+      Item 3
+    </div>
+  </div>
+
+  <!-- Drop targets — now with aria-dropeffect -->
+  <div class="drop-zone" role="list" aria-label="Drop targets">
+    <div class="drop-slot" data-accept="item-1" role="listitem"
+         aria-dropeffect="move" aria-label="Slot 1"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)"
+         onkeydown="handleSlotKey(event, this)">
+      Slot 1
+    </div>
+    <div class="drop-slot" data-accept="item-2" role="listitem"
+         aria-dropeffect="move" aria-label="Slot 2"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)"
+         onkeydown="handleSlotKey(event, this)">
+      Slot 2
+    </div>
+    <div class="drop-slot" data-accept="item-3" role="listitem"
+         aria-dropeffect="move" aria-label="Slot 3"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)"
+         onkeydown="handleSlotKey(event, this)">
+      Slot 3
+    </div>
+  </div>
+
+  <div id="drag-feedback" class="sr-only" aria-live="polite"></div>
+</div>
+
+<script>
+/* ============================================================
+   DRAG & DROP COMPONENT — Enhanced with Keyboard Accessibility
+   ============================================================
+   Three interaction modes:
+   1. HTML5 Drag & Drop (desktop mouse)
+   2. Touch events (mobile/tablet)
+   3. Keyboard (Tab + Enter workflow)
+   ============================================================ */
+
+/* === Shared state === */
+var draggedItem = null;
+
+/* === Keyboard mode state === */
+var kbGrabbedItem = null; /* The item currently "grabbed" via keyboard */
+
+/* ============================================================
+   1. HTML5 Drag & Drop (Desktop)
+   ============================================================ */
+
+function handleDragStart(e) {
+  draggedItem = e.target;
+  e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  e.target.style.opacity = '0.5';
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('highlight');
+}
+
+function handleDragLeave(e) {
+  e.currentTarget.classList.remove('highlight');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  var slot = e.currentTarget;
+  slot.classList.remove('highlight');
+
+  if (!draggedItem) return;
+
+  executeDrop(draggedItem, slot);
+
+  draggedItem.style.opacity = '1';
+  draggedItem = null;
+}
+
+/* ============================================================
+   2. Touch Events (Mobile/Tablet)
+   ============================================================ */
+
+var touchItem = null;
+var touchClone = null;
+
+function handleTouchStart(e) {
+  touchItem = e.target;
+  var rect = touchItem.getBoundingClientRect();
+
+  touchClone = touchItem.cloneNode(true);
+  touchClone.style.position = 'fixed';
+  touchClone.style.width = rect.width + 'px';
+  touchClone.style.zIndex = '9999';
+  touchClone.style.pointerEvents = 'none';
+  touchClone.style.opacity = '0.8';
+  document.body.appendChild(touchClone);
+
+  touchItem.style.opacity = '0.3';
+}
+
+function handleTouchMove(e) {
+  e.preventDefault();
+  if (!touchClone) return;
+
+  var touch = e.touches[0];
+  touchClone.style.left = (touch.clientX - 40) + 'px';
+  touchClone.style.top = (touch.clientY - 20) + 'px';
+
+  /* Highlight slot under finger */
+  var slots = document.querySelectorAll('.drop-slot');
+  slots.forEach(function(s) {
+    var r = s.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      s.classList.add('highlight');
+    } else {
+      s.classList.remove('highlight');
+    }
+  });
+}
+
+function handleTouchEnd(e) {
+  if (!touchItem || !touchClone) return;
+
+  var touch = e.changedTouches[0];
+  document.body.removeChild(touchClone);
+  touchClone = null;
+
+  /* Find slot under final position */
+  var slots = document.querySelectorAll('.drop-slot');
+  slots.forEach(function(slot) {
+    slot.classList.remove('highlight');
+    var r = slot.getBoundingClientRect();
+    if (touch.clientX >= r.left && touch.clientX <= r.right &&
+        touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      executeDrop(touchItem, slot);
+    }
+  });
+
+  touchItem.style.opacity = '1';
+  touchItem = null;
+}
+
+/* ============================================================
+   3. Keyboard Accessible Drag & Drop
+   ============================================================
+   Workflow:
+   1. Tab to a drag item → press Enter/Space to "grab" it
+   2. The item is highlighted and drop slots become tabbable
+   3. Tab to a drop slot → press Enter/Space to "drop"
+   4. Press Escape at any time to cancel
+   ============================================================ */
+
+/**
+ * Handle keydown on a drag item.
+ * Enter/Space = grab the item for keyboard drag.
+ */
+function handleDragItemKey(e, item) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+
+    if (kbGrabbedItem === item) {
+      /* Already grabbed — toggle off (cancel) */
+      cancelKbGrab();
+      return;
+    }
+
+    /* Cancel any previous grab */
+    if (kbGrabbedItem) cancelKbGrab();
+
+    /* Grab this item */
+    kbGrabbedItem = item;
+    item.classList.add('kb-grabbed');
+    item.setAttribute('aria-grabbed', 'true');
+
+    /* Make drop slots tabbable */
+    var slots = document.querySelectorAll('.drop-slot:not(.filled)');
+    slots.forEach(function(slot) {
+      slot.tabIndex = 0;
+      slot.classList.add('kb-target');
+    });
+
+    /* Show keyboard instructions */
+    var hint = document.getElementById('drag-kb-hint');
+    if (hint) hint.classList.add('show');
+
+    announce('Grabbed ' + item.textContent.trim() + '. Tab to a drop slot and press Enter to place it.');
+
+    /* Focus the first available slot */
+    if (slots.length > 0) slots[0].focus();
+  }
+
+  /* Escape to cancel grab */
+  if (e.key === 'Escape' && kbGrabbedItem) {
+    e.preventDefault();
+    cancelKbGrab();
+  }
+}
+
+/**
+ * Handle keydown on a drop slot (when in keyboard drag mode).
+ * Enter/Space = drop the grabbed item here.
+ */
+function handleSlotKey(e, slot) {
+  if ((e.key === 'Enter' || e.key === ' ') && kbGrabbedItem) {
+    e.preventDefault();
+    executeDrop(kbGrabbedItem, slot);
+    kbGrabbedItem = null;
+    cleanupKbMode();
+  }
+
+  if (e.key === 'Escape' && kbGrabbedItem) {
+    e.preventDefault();
+    cancelKbGrab();
+  }
+}
+
+/**
+ * Cancel the current keyboard grab — return item to original state.
+ */
+function cancelKbGrab() {
+  if (kbGrabbedItem) {
+    kbGrabbedItem.classList.remove('kb-grabbed');
+    kbGrabbedItem.setAttribute('aria-grabbed', 'false');
+    announce('Cancelled. ' + kbGrabbedItem.textContent.trim() + ' returned to source.');
+    kbGrabbedItem.focus();
+    kbGrabbedItem = null;
+  }
+  cleanupKbMode();
+}
+
+/**
+ * Clean up keyboard mode: remove tabbable state from slots, hide hint.
+ */
+function cleanupKbMode() {
+  var slots = document.querySelectorAll('.drop-slot');
+  slots.forEach(function(slot) {
+    if (!slot.classList.contains('filled')) {
+      slot.tabIndex = -1;
+    }
+    slot.classList.remove('kb-target');
+  });
+
+  var hint = document.getElementById('drag-kb-hint');
+  if (hint) hint.classList.remove('show');
+}
+
+/* ============================================================
+   Shared Drop Logic (used by all three modes)
+   ============================================================ */
+
+/**
+ * Execute a drop: place item into slot, check correctness.
+ */
+function executeDrop(item, slot) {
+  var itemId = item.dataset.id;
+  var isCorrect = slot.dataset.accept === itemId;
+
+  /* Clean up keyboard mode visuals */
+  item.classList.remove('kb-grabbed');
+  item.setAttribute('aria-grabbed', 'false');
+
+  if (isCorrect) {
+    slot.classList.add('filled');
+    slot.textContent = item.textContent;
+    item.style.display = 'none';
+    announce('Correct placement! ' + item.textContent.trim() + ' placed in ' + slot.getAttribute('aria-label') + '.');
+  } else {
+    slot.classList.add('incorrect');
+    announce('Not yet — try a different slot!');
+    setTimeout(function() { slot.classList.remove('incorrect'); }, 1000);
+
+    /* In keyboard mode, return focus to the item so they can try again */
+    if (kbGrabbedItem) {
+      item.focus();
+    }
+  }
+}
+
+/* Global Escape handler for keyboard mode */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && kbGrabbedItem) {
+    cancelKbGrab();
+  }
+});
+
+function announce(msg) {
+  var el = document.getElementById('drag-feedback');
+  if (el) el.textContent = msg;
+}
+</script>

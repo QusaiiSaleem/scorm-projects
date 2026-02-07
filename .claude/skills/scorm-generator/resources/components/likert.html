@@ -1,0 +1,359 @@
+<!-- Likert Scale Component (Survey)
+     Usage: Copy into lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - Displays a statement/question with a horizontal radio scale (1-5 or 1-7)
+     - Labeled endpoints ("Strongly Disagree" ... "Strongly Agree")
+     - Optional middle labels
+     - Survey mode: no correct answer, purely data collection
+     - On mobile: stacks vertically for easier tapping
+
+     ACCESSIBILITY:
+     - Uses native <input type="radio"> for keyboard support
+     - fieldset + legend for proper grouping
+     - Each radio has a <label> with clear text
+     - focus-visible styling
+     - Touch-friendly: 48px min tap targets
+
+     SCORM REPORTING:
+     - cmi.interactions.n.type = "likert"
+     - learner_response = selected scale value
+-->
+
+<style>
+  /* === Likert Container === */
+  .likert-activity {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* === Fieldset Reset === */
+  .likert-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 var(--space-lg);
+  }
+
+  /* The statement/question being rated */
+  .likert-legend {
+    font-size: var(--font-size-body);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    display: block;
+    line-height: 1.7;
+  }
+
+  /* === Scale Row === */
+  .likert-scale {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    padding: var(--space-md) 0;
+  }
+
+  /* Each option (radio + label) is a column */
+  .likert-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Hide the native radio, show our custom circle */
+  .likert-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* Custom radio circle */
+  .likert-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid var(--color-border);
+    background: var(--color-surface-elevated);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    position: relative;
+  }
+
+  /* Hover: gentle highlight */
+  .likert-circle:hover {
+    border-color: var(--color-primary-light);
+    background: var(--color-growth-bg);
+  }
+
+  /* Focus for keyboard users */
+  .likert-radio:focus-visible + .likert-circle {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  /* Selected state: fill with primary color */
+  .likert-radio:checked + .likert-circle {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+    transform: scale(1.1);
+  }
+
+  /* Label text below each circle */
+  .likert-label-text {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 80px;
+    word-wrap: break-word;
+  }
+
+  /* Selected label text gets highlighted */
+  .likert-radio:checked ~ .likert-label-text {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  /* === Endpoint Labels (Strongly Disagree ... Strongly Agree) === */
+  .likert-endpoints {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-sm);
+    padding: 0 var(--space-xs);
+  }
+
+  .likert-endpoint {
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .likert-endpoint.start { text-align: start; }
+  .likert-endpoint.end { text-align: end; }
+
+  /* === Connecting Line (decorative) === */
+  .likert-track {
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-error), var(--color-warning), var(--color-success));
+    border-radius: 2px;
+    margin-top: calc(-22px - 1.5px); /* Center under circles */
+    margin-bottom: var(--space-md);
+    opacity: 0.3;
+    position: relative;
+    z-index: 0;
+  }
+
+  /* === Submit Response === */
+  .likert-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Confirmation after submit */
+  .likert-confirmation {
+    margin-top: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-success-bg);
+    border: 2px solid var(--color-success);
+    border-radius: var(--radius-md);
+    display: none;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .likert-confirmation.show {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  /* === Responsive: Stack Vertically on Mobile === */
+  @media (max-width: 480px) {
+    .likert-scale {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-sm);
+    }
+
+    .likert-option {
+      flex-direction: row;
+      gap: var(--space-md);
+      align-items: center;
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-elevated);
+    }
+
+    .likert-label-text {
+      max-width: none;
+      font-size: var(--font-size-small);
+      text-align: start;
+    }
+
+    .likert-track {
+      display: none;
+    }
+
+    .likert-endpoints {
+      display: none; /* Labels are now inline */
+    }
+
+    /* Make the whole row clickable */
+    .likert-option:has(.likert-radio:checked) {
+      border-color: var(--color-primary);
+      background: var(--color-growth-bg);
+    }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .likert-circle { transition: none; }
+    .likert-radio:checked + .likert-circle { transform: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP: 5-Point Likert Scale === -->
+<div class="likert-activity" role="region" aria-label="Survey question">
+
+  <fieldset class="likert-fieldset">
+    <legend class="likert-legend">
+      I feel confident applying the concepts from this module to real-world situations.
+    </legend>
+
+    <!-- The 5-point scale -->
+    <div class="likert-scale" role="radiogroup" aria-label="Agreement scale">
+
+      <!-- Option 1: Strongly Disagree -->
+      <label class="likert-option">
+        <input type="radio" class="likert-radio" name="likert-confidence" value="1"
+               aria-label="Strongly Disagree (1 of 5)">
+        <span class="likert-circle">1</span>
+        <span class="likert-label-text">Strongly Disagree</span>
+      </label>
+
+      <!-- Option 2: Disagree -->
+      <label class="likert-option">
+        <input type="radio" class="likert-radio" name="likert-confidence" value="2"
+               aria-label="Disagree (2 of 5)">
+        <span class="likert-circle">2</span>
+        <span class="likert-label-text">Disagree</span>
+      </label>
+
+      <!-- Option 3: Neutral -->
+      <label class="likert-option">
+        <input type="radio" class="likert-radio" name="likert-confidence" value="3"
+               aria-label="Neutral (3 of 5)">
+        <span class="likert-circle">3</span>
+        <span class="likert-label-text">Neutral</span>
+      </label>
+
+      <!-- Option 4: Agree -->
+      <label class="likert-option">
+        <input type="radio" class="likert-radio" name="likert-confidence" value="4"
+               aria-label="Agree (4 of 5)">
+        <span class="likert-circle">4</span>
+        <span class="likert-label-text">Agree</span>
+      </label>
+
+      <!-- Option 5: Strongly Agree -->
+      <label class="likert-option">
+        <input type="radio" class="likert-radio" name="likert-confidence" value="5"
+               aria-label="Strongly Agree (5 of 5)">
+        <span class="likert-circle">5</span>
+        <span class="likert-label-text">Strongly Agree</span>
+      </label>
+    </div>
+
+    <!-- Decorative gradient track line -->
+    <div class="likert-track" aria-hidden="true"></div>
+
+    <!-- Endpoint labels (desktop only, hidden on mobile where inline) -->
+    <div class="likert-endpoints" aria-hidden="true">
+      <span class="likert-endpoint start">Strongly Disagree</span>
+      <span class="likert-endpoint end">Strongly Agree</span>
+    </div>
+  </fieldset>
+
+  <!-- Submit -->
+  <div class="likert-actions">
+    <button class="btn-primary" onclick="submitLikert('likert-confidence')">Submit Response</button>
+  </div>
+
+  <!-- Confirmation message -->
+  <div class="likert-confirmation" id="likert-confirmation" role="alert" aria-live="polite">
+    <span aria-hidden="true">&#10004;</span>
+    <span>Thank you! Your response has been recorded.</span>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div id="likert-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   LIKERT SCALE COMPONENT — Survey/ungraded interaction
+   ============================================================
+   - No correct answer — purely data collection
+   - Saves response for SCORM reporting
+   - Shows confirmation on submit
+   ============================================================ */
+
+/**
+ * Submit the learner's Likert response.
+ * Validates that a selection was made, then shows confirmation.
+ */
+function submitLikert(radioName) {
+  var radios = document.querySelectorAll('input[name="' + radioName + '"]');
+  var selected = null;
+
+  radios.forEach(function(radio) {
+    if (radio.checked) selected = radio.value;
+  });
+
+  /* Validate: must select something */
+  if (!selected) {
+    announceLikert('Please select a response before submitting.');
+    return;
+  }
+
+  /* Show confirmation */
+  var confirmation = document.getElementById('likert-confirmation');
+  if (confirmation) {
+    confirmation.classList.add('show');
+  }
+
+  /* Disable radios after submit (one submission) */
+  radios.forEach(function(radio) {
+    radio.disabled = true;
+  });
+
+  announceLikert('Response submitted: ' + selected + ' of 5.');
+
+  /* In a real SCORM package, this would report via:
+     scormAPI.setInteraction(n, 'likert', selected, '', radioName); */
+}
+
+/**
+ * Announce to screen readers.
+ */
+function announceLikert(msg) {
+  var el = document.getElementById('likert-announce');
+  if (el) el.textContent = msg;
+}
+</script>

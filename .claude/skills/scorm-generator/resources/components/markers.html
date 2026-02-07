@@ -1,0 +1,468 @@
+<!-- Markers Component (Hotspot Explore Pattern)
+     Usage: Copy into lesson HTML. Place markers on an image or slide area.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A container holds a background image (or just serves as a slide area)
+     - Numbered marker pins are positioned with CSS (top/left percentages)
+     - Clicking a marker opens a popup panel with rich content
+     - Only one popup is open at a time
+     - Markers change color after being visited (visited state tracking)
+     - Works with keyboard (Tab + Enter), touch, and mouse
+
+     CUSTOMIZATION:
+     - Position markers using style="top: 30%; left: 50%"
+     - Change marker size via --marker-size custom property
+     - Popup content can include any HTML (text, images, lists, etc.)
+     - Set data-marker-id for unique identification
+
+     ACCESSIBILITY:
+     - Each marker is a <button> with aria-label
+     - Popup uses role="dialog" with aria-labelledby
+     - Focus is trapped inside popup when open
+     - Escape key closes popup
+     - Screen reader announces visited state
+-->
+
+<style>
+  /* === Markers Container === */
+  /* This wraps the image + all markers. Position: relative so markers
+     can be placed with absolute positioning (top/left percentages). */
+  .markers-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-surface);
+    aspect-ratio: 16 / 9; /* Default 16:9, override if needed */
+  }
+
+  /* The background image fills the container */
+  .markers-container .markers-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Fallback when no image: a gradient placeholder */
+  .markers-container .markers-bg-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-surface), var(--color-border-subtle));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+  }
+
+  /* === Individual Marker Pin === */
+  /* Each marker is a circular button placed absolutely on the image. */
+  .marker-pin {
+    --marker-size: 40px;
+    position: absolute;
+    width: var(--marker-size);
+    height: var(--marker-size);
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    border: 3px solid white;
+    box-shadow: var(--shadow-md), 0 0 0 0 rgba(108, 92, 231, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    z-index: 10;
+    /* Offset so the pin center is at the top/left position */
+    transform: translate(-50%, -50%);
+    /* Pulse animation to draw attention */
+    animation: markerPulse 2s ease-in-out infinite;
+  }
+
+  /* Hover: lift and glow */
+  .marker-pin:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: var(--shadow-lg), 0 0 0 8px rgba(108, 92, 231, 0.2);
+  }
+
+  /* Active/pressed state */
+  .marker-pin:active {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  /* Focus visible for keyboard users */
+  .marker-pin:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* Visited state: marker changes to a softer color with a checkmark feel */
+  .marker-pin.visited {
+    background: linear-gradient(135deg, var(--color-success), #06B6D4);
+    animation: none; /* Stop pulsing once visited */
+  }
+
+  /* Currently open marker gets a ring */
+  .marker-pin.active {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: var(--shadow-lg), 0 0 0 8px rgba(108, 92, 231, 0.3);
+    animation: none;
+  }
+
+  /* Pulse animation for unvisited markers */
+  @keyframes markerPulse {
+    0%, 100% { box-shadow: var(--shadow-md), 0 0 0 0 rgba(108, 92, 231, 0.4); }
+    50% { box-shadow: var(--shadow-md), 0 0 0 8px rgba(108, 92, 231, 0); }
+  }
+
+  /* === Popup Panel === */
+  /* The popup appears near the marker. It uses position: absolute within
+     the markers-container so it stays relative to the image. */
+  .marker-popup {
+    position: absolute;
+    z-index: 50;
+    width: 280px;
+    max-width: 90%;
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.95);
+    transition: opacity var(--transition-base), transform var(--transition-base), visibility var(--transition-base);
+    overflow: hidden;
+  }
+
+  /* When popup is open */
+  .marker-popup.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Popup header with colored bar */
+  .marker-popup-header {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    padding: var(--space-sm) var(--space-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .marker-popup-header h4 {
+    margin: 0;
+    font-size: 15px;
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Close button inside popup */
+  .marker-popup-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: background var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .marker-popup-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Popup body content */
+  .marker-popup-body {
+    padding: var(--space-md);
+    font-size: var(--font-size-small);
+    line-height: 1.7;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  /* === Progress Counter === */
+  /* Shows "3 of 5 explored" below the markers container */
+  .markers-progress {
+    text-align: center;
+    margin-top: var(--space-md);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  .markers-progress .progress-count {
+    color: var(--color-primary);
+  }
+
+  /* === Responsive === */
+  @media (max-width: 600px) {
+    .marker-pin {
+      --marker-size: 34px;
+      font-size: 12px;
+    }
+
+    .marker-popup {
+      width: 240px;
+    }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .marker-pin {
+      animation: none;
+    }
+    .marker-popup {
+      transition: none;
+    }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="markers-container" role="region" aria-label="Interactive image with markers">
+  <!-- Background image (replace src with your image) -->
+  <div class="markers-bg-placeholder" aria-hidden="true">
+    Replace with your image
+  </div>
+
+  <!-- Marker 1: positioned at 25% from top, 30% from left -->
+  <button class="marker-pin" data-marker-id="m1" data-popup="popup-m1"
+          style="top: 30%; left: 25%;"
+          aria-label="Marker 1: Introduction — click to explore"
+          aria-expanded="false"
+          onclick="toggleMarker(this)">
+    1
+  </button>
+
+  <!-- Marker 2 -->
+  <button class="marker-pin" data-marker-id="m2" data-popup="popup-m2"
+          style="top: 50%; left: 55%;"
+          aria-label="Marker 2: Key Concept — click to explore"
+          aria-expanded="false"
+          onclick="toggleMarker(this)">
+    2
+  </button>
+
+  <!-- Marker 3 -->
+  <button class="marker-pin" data-marker-id="m3" data-popup="popup-m3"
+          style="top: 25%; left: 75%;"
+          aria-label="Marker 3: Details — click to explore"
+          aria-expanded="false"
+          onclick="toggleMarker(this)">
+    3
+  </button>
+
+  <!-- Popup for Marker 1 -->
+  <div class="marker-popup" id="popup-m1" role="dialog" aria-labelledby="popup-m1-title">
+    <div class="marker-popup-header">
+      <h4 id="popup-m1-title">Introduction</h4>
+      <button class="marker-popup-close" aria-label="Close popup" onclick="closeAllMarkers()">&times;</button>
+    </div>
+    <div class="marker-popup-body">
+      <p>This is the content for Marker 1. Add any HTML here: text, images, lists, etc.</p>
+    </div>
+  </div>
+
+  <!-- Popup for Marker 2 -->
+  <div class="marker-popup" id="popup-m2" role="dialog" aria-labelledby="popup-m2-title">
+    <div class="marker-popup-header">
+      <h4 id="popup-m2-title">Key Concept</h4>
+      <button class="marker-popup-close" aria-label="Close popup" onclick="closeAllMarkers()">&times;</button>
+    </div>
+    <div class="marker-popup-body">
+      <p>Content for Marker 2 goes here. Explain the key concept in detail.</p>
+    </div>
+  </div>
+
+  <!-- Popup for Marker 3 -->
+  <div class="marker-popup" id="popup-m3" role="dialog" aria-labelledby="popup-m3-title">
+    <div class="marker-popup-header">
+      <h4 id="popup-m3-title">Details</h4>
+      <button class="marker-popup-close" aria-label="Close popup" onclick="closeAllMarkers()">&times;</button>
+    </div>
+    <div class="marker-popup-body">
+      <p>Content for Marker 3 goes here. Add detailed information.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Progress indicator -->
+<div class="markers-progress" aria-live="polite">
+  <span class="progress-count" id="markers-visited-count">0</span> of
+  <span id="markers-total-count">3</span> explored
+</div>
+
+<!-- Screen reader live region for announcements -->
+<div id="markers-announce" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   MARKERS COMPONENT — Interactive explore-the-image pattern
+   ============================================================
+   - Click a numbered marker to open its popup
+   - Only one popup open at a time
+   - Markers change to "visited" (green) after being opened
+   - Tracks exploration progress
+   - Keyboard: Tab between markers, Enter/Space to open
+   - Escape key closes any open popup
+   ============================================================ */
+
+/* Track which markers have been visited */
+var markersVisited = {};
+
+/**
+ * Toggle a marker's popup open/closed.
+ * If another popup is open, close it first (only-one-open rule).
+ */
+function toggleMarker(btn) {
+  var popupId = btn.getAttribute('data-popup');
+  var popup = document.getElementById(popupId);
+  var markerId = btn.getAttribute('data-marker-id');
+  var isOpen = popup.classList.contains('open');
+
+  /* Close all popups first */
+  closeAllMarkers();
+
+  /* If this one was already open, we just closed it — done */
+  if (isOpen) return;
+
+  /* Open this popup */
+  popup.classList.add('open');
+  btn.classList.add('active');
+  btn.setAttribute('aria-expanded', 'true');
+
+  /* Mark as visited (only changes once, stays green forever) */
+  if (!markersVisited[markerId]) {
+    markersVisited[markerId] = true;
+    btn.classList.add('visited');
+    updateMarkersProgress();
+  }
+
+  /* Position popup near the marker (adjust if it would overflow) */
+  positionPopup(btn, popup);
+
+  /* Move focus into popup for keyboard users */
+  var closeBtn = popup.querySelector('.marker-popup-close');
+  if (closeBtn) closeBtn.focus();
+
+  /* Announce to screen readers */
+  announceMarker('Opened: ' + popup.querySelector('h4').textContent);
+}
+
+/**
+ * Close all open marker popups.
+ */
+function closeAllMarkers() {
+  var popups = document.querySelectorAll('.marker-popup.open');
+  popups.forEach(function(p) { p.classList.remove('open'); });
+
+  var pins = document.querySelectorAll('.marker-pin.active');
+  pins.forEach(function(pin) {
+    pin.classList.remove('active');
+    pin.setAttribute('aria-expanded', 'false');
+  });
+}
+
+/**
+ * Position the popup so it doesn't overflow the container.
+ * By default it appears below-right of the marker; adjusts if near edges.
+ */
+function positionPopup(markerBtn, popup) {
+  var container = markerBtn.closest('.markers-container');
+  var containerRect = container.getBoundingClientRect();
+  var markerRect = markerBtn.getBoundingClientRect();
+
+  /* Calculate marker position relative to container */
+  var markerCenterX = markerRect.left - containerRect.left + markerRect.width / 2;
+  var markerCenterY = markerRect.top - containerRect.top + markerRect.height / 2;
+
+  /* Default: position popup below and to the right of marker */
+  var popupLeft = markerCenterX + 20;
+  var popupTop = markerCenterY + 20;
+
+  /* Check right overflow — if popup would go past right edge, flip to left */
+  var popupWidth = 280;
+  if (popupLeft + popupWidth > containerRect.width) {
+    popupLeft = markerCenterX - popupWidth - 20;
+  }
+
+  /* Check left overflow */
+  if (popupLeft < 8) {
+    popupLeft = 8;
+  }
+
+  /* Check bottom overflow — if popup would go too low, show above */
+  var popupHeight = 200; /* approximate */
+  if (popupTop + popupHeight > containerRect.height) {
+    popupTop = markerCenterY - popupHeight - 20;
+  }
+
+  /* Check top overflow */
+  if (popupTop < 8) {
+    popupTop = 8;
+  }
+
+  popup.style.left = popupLeft + 'px';
+  popup.style.top = popupTop + 'px';
+}
+
+/**
+ * Update the "X of Y explored" progress text.
+ */
+function updateMarkersProgress() {
+  var visitedCount = Object.keys(markersVisited).length;
+  var countEl = document.getElementById('markers-visited-count');
+  if (countEl) countEl.textContent = visitedCount;
+}
+
+/**
+ * Announce a message to screen readers via live region.
+ */
+function announceMarker(msg) {
+  var el = document.getElementById('markers-announce');
+  if (el) el.textContent = msg;
+}
+
+/* Close popup on Escape key */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var openPopup = document.querySelector('.marker-popup.open');
+    if (openPopup) {
+      /* Return focus to the marker that opened this popup */
+      var activeMarker = document.querySelector('.marker-pin.active');
+      closeAllMarkers();
+      if (activeMarker) activeMarker.focus();
+    }
+  }
+});
+
+/* Close popup when clicking outside markers and popups */
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.marker-pin') && !e.target.closest('.marker-popup')) {
+    closeAllMarkers();
+  }
+});
+
+/* Initialize: count total markers */
+(function() {
+  var total = document.querySelectorAll('.marker-pin').length;
+  var totalEl = document.getElementById('markers-total-count');
+  if (totalEl) totalEl.textContent = total;
+})();
+</script>

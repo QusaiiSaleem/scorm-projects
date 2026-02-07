@@ -1,0 +1,52 @@
+<!-- Tabs Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css (tab styles are included)
+
+     Accessibility: Uses role="tablist", role="tab", role="tabpanel"
+-->
+
+<div class="tabs-container">
+  <div class="tabs" role="tablist" aria-label="Content tabs">
+    <button class="tab active" role="tab" aria-selected="true"
+            aria-controls="panel-1" id="tab-1"
+            onclick="switchTab(this, 'panel-1')">Tab 1</button>
+    <button class="tab" role="tab" aria-selected="false"
+            aria-controls="panel-2" id="tab-2"
+            onclick="switchTab(this, 'panel-2')">Tab 2</button>
+    <button class="tab" role="tab" aria-selected="false"
+            aria-controls="panel-3" id="tab-3"
+            onclick="switchTab(this, 'panel-3')">Tab 3</button>
+  </div>
+
+  <div class="tab-content active" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+    <p>Content for Tab 1</p>
+  </div>
+
+  <div class="tab-content" role="tabpanel" id="panel-2" aria-labelledby="tab-2">
+    <p>Content for Tab 2</p>
+  </div>
+
+  <div class="tab-content" role="tabpanel" id="panel-3" aria-labelledby="tab-3">
+    <p>Content for Tab 3</p>
+  </div>
+</div>
+
+<script>
+function switchTab(btn, panelId) {
+  // Deactivate all tabs
+  var tabs = btn.parentElement.querySelectorAll('.tab');
+  tabs.forEach(function(t) {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+
+  // Hide all panels
+  var panels = btn.closest('.tabs-container').querySelectorAll('.tab-content');
+  panels.forEach(function(p) { p.classList.remove('active'); });
+
+  // Activate clicked tab and panel
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+  document.getElementById(panelId).classList.add('active');
+}
+</script>

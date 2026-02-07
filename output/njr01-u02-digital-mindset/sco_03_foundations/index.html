@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أساسيات الابتكار | الذهنية الرقمية وممارسات الابتكار التقني</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-nav">تخطي إلى المحتوى الرئيسي</a>
+
+  <div class="sco-container">
+    <header class="nav-bar">
+      <span class="course-title">الوحدة 1: أساسيات الابتكار</span>
+      <div class="points-badge elastic-click" id="pointsBadge" aria-label="النقاط">
+        <span>&#11088;</span>
+        <span class="points-count" id="pointsDisplay">0</span>
+      </div>
+    </header>
+
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <main class="sco-content" id="main-content">
+
+      <!-- SECTION A: What is Innovation? -->
+
+      <!-- Slide 0: Hook -->
+      <div class="slide" data-slide="0">
+        <div class="slide-inner">
+          <div class="hero-section has-grain text-center stagger-item">
+            <p style="font-size:var(--font-size-small); opacity:0.9;">الوحدة الأولى</p>
+            <h1 class="display-text" style="color:white;">أساسيات الابتكار</h1>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem;">كل شيء حولك بدأ بفكرة...</p>
+          </div>
+          <div class="callout callout-tip stagger-item" style="max-width:700px; margin:16px auto 0;">
+            <span class="callout-icon" aria-hidden="true">&#127919;</span>
+            <div>
+              <strong>أهداف هذا الدرس:</strong>
+              <p style="margin-top:4px;">تعريف الابتكار وعناصره الثلاثة &bull; تقنيات العصف الذهني &bull; طريقة <span class="ltr-inline">SCAMPER</span> &bull; ريادة الأعمال</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 1: Innovation Definition (Tabs) -->
+      <div class="slide" data-slide="1">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">ما هو الابتكار <span class="ltr-inline">(Innovation)</span>؟</h2>
+          <p class="stagger-item">الابتكار هو إيجاد <strong>حلول جديدة للمشكلات الواقعية</strong>. يشمل ثلاثة أبعاد رئيسية:</p>
+
+          <div class="tabs-container stagger-item" style="margin-top:16px;">
+            <div class="tabs" role="tablist" aria-label="أبعاد الابتكار الثلاثة">
+              <button class="tab active" role="tab" aria-selected="true" aria-controls="dim-1" id="dim-tab-1" onclick="switchTab(this,'dim-1')">حلول جديدة</button>
+              <button class="tab" role="tab" aria-selected="false" aria-controls="dim-2" id="dim-tab-2" onclick="switchTab(this,'dim-2')">تحسين القائم</button>
+              <button class="tab" role="tab" aria-selected="false" aria-controls="dim-3" id="dim-tab-3" onclick="switchTab(this,'dim-3')">تقنيات جديدة</button>
+            </div>
+            <div class="tab-content active" role="tabpanel" id="dim-1" aria-labelledby="dim-tab-1">
+              <div class="card shadow-sm">
+                <h4>&#128161; البُعد الأول: إيجاد حلول جديدة</h4>
+                <p>تطوير منتجات أو خدمات لم تكن موجودة من قبل لحل مشكلات واقعية.</p>
+                <p class="text-secondary"><strong>مثال:</strong> تطبيق «أبشر» — حل رقمي جديد للخدمات الحكومية في السعودية.</p>
+              </div>
+            </div>
+            <div class="tab-content" role="tabpanel" id="dim-2" aria-labelledby="dim-tab-2">
+              <div class="card shadow-sm">
+                <h4>&#9881; البُعد الثاني: تحسين العمليات والمنتجات القائمة</h4>
+                <p>تطوير وتحسين ما هو موجود بالفعل ليكون أفضل وأكثر كفاءة.</p>
+                <p class="text-secondary"><strong>مثال:</strong> تطبيق «نون» — تحسين تجربة التسوق التقليدية وتحويلها لمنصة رقمية.</p>
+              </div>
+            </div>
+            <div class="tab-content" role="tabpanel" id="dim-3" aria-labelledby="dim-tab-3">
+              <div class="card shadow-sm">
+                <h4>&#128640; البُعد الثالث: استخدام تقنيات جديدة</h4>
+                <p>توظيف التكنولوجيا الحديثة لإيجاد أساليب مبتكرة في العمل.</p>
+                <p class="text-secondary"><strong>مثال:</strong> تطبيق «كريم» — استخدام تقنية <span class="ltr-inline">GPS</span> والذكاء الاصطناعي لتطوير خدمة النقل.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Connect to CS studies -->
+      <div class="slide" data-slide="2">
+        <div class="slide-inner">
+          <div class="callout callout-info stagger-item" style="max-width:700px; margin:0 auto;">
+            <span class="callout-icon" aria-hidden="true">&#129300;</span>
+            <div>
+              <h3 style="margin-bottom:8px;">هل تعلم؟</h3>
+              <p>في دراستك للبرمجة وعلوم الحاسب، <strong>أنت تبتكر حلولًا يوميًا</strong> — كل مرة تكتب كودًا لحل مشكلة، أنت تمارس الابتكار! الآن سنتعلم كيف نوجّه هذه المهارة بشكل منهجي.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: KC1 - Innovation dimensions -->
+      <div class="slide" data-slide="3">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">فحص المعرفة</p>
+            <h3 class="question-stem stagger-item">أي من التالي <strong>ليس</strong> من أبعاد الابتكار الثلاثة؟</h3>
+            <div id="kc1-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="answerKC('kc1',this,'a')">إيجاد حلول جديدة للمشكلات الواقعية</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="answerKC('kc1',this,'b')">نسخ منتجات المنافسين دون تعديل</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="answerKC('kc1',this,'c')">تحسين العمليات والمنتجات الحالية</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="answerKC('kc1',this,'d')">استخدام تقنيات جديدة</button>
+            </div>
+            <div id="kc1-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION B: Brainstorming -->
+
+      <!-- Slide 4: Brainstorming techniques (Accordion) -->
+      <div class="slide" data-slide="4">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">توليد الأفكار والعصف الذهني</h2>
+          <p class="stagger-item">هناك عدة تقنيات لتوليد الأفكار الإبداعية. اضغط على كل تقنية للتعرف عليها:</p>
+
+          <div class="accordion stagger-item" style="margin-top:16px;">
+            <div class="accordion-item">
+              <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+                <span>&#128172; العصف الذهني <span class="ltr-inline">(Brainstorming)</span></span>
+                <span class="chevron" aria-hidden="true">&#9660;</span>
+              </button>
+              <div class="accordion-body" role="region">
+                <p><strong>التعريف:</strong> تقنية لتوليد أكبر عدد من الأفكار بحرية دون إصدار أحكام فورية.</p>
+                <p><strong>متى تُستخدم:</strong> في بداية أي مشروع لاستكشاف جميع الاحتمالات.</p>
+                <p><strong>القاعدة الذهبية:</strong> الكم قبل الجودة — لا تحكم على أي فكرة أثناء التوليد!</p>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+                <span>&#128506; الخرائط الذهنية <span class="ltr-inline">(Mind Maps)</span></span>
+                <span class="chevron" aria-hidden="true">&#9660;</span>
+              </button>
+              <div class="accordion-body" role="region">
+                <p><strong>التعريف:</strong> أداة بصرية لتنظيم الأفكار حول مفهوم مركزي عبر فروع مترابطة.</p>
+                <p><strong>متى تُستخدم:</strong> لتنظيم الأفكار بصريًا وربط المفاهيم ببعضها.</p>
+                <p><strong>الفائدة:</strong> تساعد على رؤية العلاقات بين الأفكار واكتشاف زوايا جديدة.</p>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-header" aria-expanded="false" onclick="toggleAccordion(this)">
+                <span>&#128295; طريقة سكامبر <span class="ltr-inline">(SCAMPER)</span></span>
+                <span class="chevron" aria-hidden="true">&#9660;</span>
+              </button>
+              <div class="accordion-body" role="region">
+                <p><strong>التعريف:</strong> أداة منهجية لتوليد الأفكار باستخدام 7 تقنيات محددة.</p>
+                <p><strong>متى تُستخدم:</strong> لتحسين منتج أو خدمة قائمة بشكل منهجي.</p>
+                <p><strong>التفاصيل:</strong> سنتعلمها بالتفصيل في الشرائح القادمة!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: KC2 - Brainstorming -->
+      <div class="slide" data-slide="5">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">فحص المعرفة</p>
+            <h3 class="question-stem stagger-item">ما هي التقنية الأنسب لتنظيم الأفكار بصريًا وربط المفاهيم ببعضها؟</h3>
+            <div id="kc2-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="answerKC('kc2',this,'a')">العصف الذهني فقط</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="answerKC('kc2',this,'b')">الخرائط الذهنية <span class="ltr-inline">(Mind Maps)</span></button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="answerKC('kc2',this,'c')">طريقة سكامبر</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="answerKC('kc2',this,'d')">كتابة القوائم</button>
+            </div>
+            <div id="kc2-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION C: SCAMPER -->
+
+      <!-- Slide 6: SCAMPER Flip Cards -->
+      <div class="slide" data-slide="6">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">طريقة سكامبر <span class="ltr-inline">(SCAMPER)</span></h2>
+          <p class="stagger-item">اضغط كل بطاقة لتعرف المعنى والمثال التطبيقي:</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:12px;">
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">S</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">استبدال <span class="ltr-inline">Substitute</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>استبدل عنصرًا بآخر. مثال: استبدال المحاضرات التقليدية بفيديوهات تفاعلية في تطبيق جامعي.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">C</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">دمج <span class="ltr-inline">Combine</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>ادمج عنصرين أو أكثر. مثال: دمج جدول المحاضرات مع نظام التنبيهات في تطبيق واحد.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">A</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">تكيف <span class="ltr-inline">Adapt</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>كيّف فكرة من مجال آخر. مثال: تطبيق نظام تقييم المطاعم على تقييم المقررات الدراسية.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">M</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">تعديل <span class="ltr-inline">Modify</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>عدّل الشكل أو الحجم أو اللون. مثال: تكبير خط التطبيق الجامعي لتحسين سهولة القراءة.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">P</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">استخدام آخر <span class="ltr-inline">Put to other use</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>استخدم لغرض مختلف. مثال: استخدام بيانات الحضور لتحليل أنماط تعلم الطلاب.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">E</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">حذف <span class="ltr-inline">Eliminate</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>احذف عنصرًا غير ضروري. مثال: إزالة خطوة التسجيل اليدوي واستبدالها بتسجيل تلقائي.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card hover-lift stagger-item" style="height:160px;" onclick="this.classList.toggle('flipped')" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('flipped')}">
+              <div class="flip-card-inner">
+                <div class="flip-card-front" style="padding:16px;">
+                  <span class="scamper-letter">R</span>
+                  <h4 style="color:white; margin:8px 0 0; font-size:15px;">عكس <span class="ltr-inline">Reverse</span></h4>
+                </div>
+                <div class="flip-card-back" style="padding:12px; font-size:14px;">
+                  <p>اعكس الترتيب أو الاتجاه. مثال: بدلاً من أن يبحث الطالب عن الموارد، تأتي الموارد المناسبة إليه تلقائيًا.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: SCAMPER worked example (Timeline) -->
+      <div class="slide" data-slide="7">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">مثال تطبيقي: تحسين تطبيق توصيل طعام بـ <span class="ltr-inline">SCAMPER</span></h2>
+
+          <div class="timeline stagger-item">
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>S — استبدال:</strong> استبدل القوائم النصية بصور عالية الجودة للأطباق</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>C — دمج:</strong> ادمج تتبع الطلب مع الدردشة المباشرة مع السائق</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>A — تكيف:</strong> طبّق نظام التوصيات الذكية مثل <span class="ltr-inline">Netflix</span></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>M — تعديل:</strong> أضف خيار «وجبات صغيرة» لتناسب ميزانية الطلاب</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>P — استخدام آخر:</strong> استخدم بيانات الطلبات لتقديم عروض مخصصة</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>E — حذف:</strong> احذف خطوة إدخال العنوان يدويًا واستخدم الموقع الحالي</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-content"><strong>R — عكس:</strong> بدلاً من أن يطلب العميل، يعرض المطعم عروضًا يومية فورية</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 8: KC3 - SCAMPER matching -->
+      <div class="slide" data-slide="8">
+        <div class="slide-inner align-top">
+          <div class="quiz-container">
+            <p class="quiz-progress">فحص المعرفة</p>
+            <h3 class="question-stem stagger-item">طابق كل حرف من <span class="ltr-inline">SCAMPER</span> مع معناه الصحيح:</h3>
+            <div class="stagger-item" style="display:grid; gap:10px; margin-top:12px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">S</span>
+                <select id="match-s" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">C</span>
+                <select id="match-c" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">A</span>
+                <select id="match-a" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">M</span>
+                <select id="match-m" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">P</span>
+                <select id="match-p" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">E</span>
+                <select id="match-e" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span class="scamper-letter" style="width:36px; height:36px; font-size:1rem;">R</span>
+                <select id="match-r" class="btn-quiz-option" style="flex:1; padding:10px; border-radius:var(--radius-md); border:2px solid var(--color-border);">
+                  <option value="">اختر...</option>
+                  <option value="substitute">استبدال</option>
+                  <option value="combine">دمج</option>
+                  <option value="adapt">تكيف</option>
+                  <option value="modify">تعديل</option>
+                  <option value="put">استخدام آخر</option>
+                  <option value="eliminate">حذف</option>
+                  <option value="reverse">عكس</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-primary elastic-click" style="margin-top:16px;" id="checkMatchBtn" onclick="checkSCAMPERMatch()">تحقق من الإجابات</button>
+            <div id="kc3-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION D: Entrepreneurship -->
+
+      <!-- Slide 9: Entrepreneurship definition -->
+      <div class="slide" data-slide="9">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">ريادة الأعمال <span class="ltr-inline">(Entrepreneurship)</span></h2>
+          <p class="stagger-item" style="margin-bottom:16px;">ريادة الأعمال هي <strong>تحويل الأفكار إلى مشاريع ناجحة</strong>. يتميز رواد الأعمال بثلاث صفات أساسية:</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
+            <div class="card shadow-sm hover-lift stagger-item">
+              <h4>&#129504; حل المشكلات</h4>
+              <p>القدرة على تحديد المشكلات الحقيقية وإيجاد حلول عملية لها.</p>
+            </div>
+            <div class="card shadow-sm hover-lift stagger-item">
+              <h4>&#127912; الإبداع</h4>
+              <p>التفكير خارج الصندوق والقدرة على رؤية الفرص التي لا يراها الآخرون.</p>
+            </div>
+            <div class="card shadow-sm hover-lift stagger-item">
+              <h4>&#128260; المرونة</h4>
+              <p>التكيف مع التغيرات والتعامل مع المخاطر والتحديات بإيجابية.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-tip stagger-item" style="margin-top:16px;">
+            <span class="callout-icon" aria-hidden="true">&#128161;</span>
+            <div>رواد الأعمال يحددون <strong>الفرص</strong> ويخاطرون لتطوير منتجات أو خدمات جديدة تلبي احتياجات السوق.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: Entrepreneur profiles (Click-reveal) -->
+      <div class="slide" data-slide="10">
+        <div class="slide-inner align-top">
+          <h2 class="stagger-item">أمثلة ملهمة من رواد الأعمال</h2>
+          <p class="stagger-item">اضغط على كل شخصية لمعرفة قصتها:</p>
+
+          <div style="display:grid; gap:12px; margin-top:12px;">
+            <div class="reveal-trigger stagger-item" onclick="toggleReveal(this)" role="button" tabindex="0" aria-expanded="false"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal(this)}">
+              <span class="hint-text">&#128100; مؤسس «أبشر» — تحويل الخدمات الحكومية رقميًا</span>
+            </div>
+            <div class="reveal-content">
+              <div class="card shadow-sm">
+                <p>تطبيق «أبشر» حوّل الخدمات الحكومية السعودية من طوابير ومعاملات ورقية إلى منصة رقمية شاملة يستخدمها الملايين. <strong>الفرصة:</strong> مشكلة حقيقية (طوابير طويلة) + حل تقني (تطبيق جوال) = ابتكار ناجح.</p>
+              </div>
+            </div>
+
+            <div class="reveal-trigger stagger-item" onclick="toggleReveal(this)" role="button" tabindex="0" aria-expanded="false"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal(this)}">
+              <span class="hint-text">&#128100; مدثر شيخة — مؤسس كريم <span class="ltr-inline">(Careem)</span></span>
+            </div>
+            <div class="reveal-content">
+              <div class="card shadow-sm">
+                <p>رأى مشكلة النقل في المنطقة وبنى حلاً يناسب السوق المحلي. بدأ بفكرة بسيطة وطورها حتى استحوذت عليها <span class="ltr-inline">Uber</span> بـ 3.1 مليار دولار. <strong>الدرس:</strong> المرونة والتكيف مع احتياجات السوق المحلي.</p>
+              </div>
+            </div>
+
+            <div class="reveal-trigger stagger-item" onclick="toggleReveal(this)" role="button" tabindex="0" aria-expanded="false"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal(this)}">
+              <span class="hint-text">&#128100; رائد سعودي — رؤية 2030 والفرص الرقمية</span>
+            </div>
+            <div class="reveal-content">
+              <div class="card shadow-sm">
+                <p>رؤية 2030 فتحت أبوابًا واسعة لريادة الأعمال التقنية في السعودية. قطاعات مثل التعليم الإلكتروني، والصحة الرقمية، والتجارة الإلكترونية تنمو بسرعة. <strong>الفرصة لك:</strong> أنت في كلية علوم الحاسب — لديك المهارات التقنية التي يحتاجها السوق!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 11: KC4 - Entrepreneurship -->
+      <div class="slide" data-slide="11">
+        <div class="slide-inner">
+          <div class="quiz-container">
+            <p class="quiz-progress">فحص المعرفة</p>
+            <h3 class="question-stem stagger-item">أي من التالي يصف ريادة الأعمال <span class="ltr-inline">(Entrepreneurship)</span> بشكل أفضل؟</h3>
+            <div id="kc4-options">
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="a" onclick="answerKC('kc4',this,'a')">العمل في وظيفة ثابتة بدون مخاطر</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="b" onclick="answerKC('kc4',this,'b')">تحويل الأفكار إلى مشاريع ناجحة مع تقبل المخاطرة المحسوبة</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="c" onclick="answerKC('kc4',this,'c')">نسخ مشاريع الآخرين الناجحة كما هي</button>
+              <button class="btn-quiz-option elastic-click stagger-item" data-id="d" onclick="answerKC('kc4',this,'d')">الاستثمار المالي فقط دون مشاركة في العمل</button>
+            </div>
+            <div id="kc4-feedback" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 12: Module Summary -->
+      <div class="slide" data-slide="12">
+        <div class="slide-inner">
+          <h2 class="text-center stagger-item">ملخص الوحدة الأولى</h2>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:16px; margin-top:20px;">
+            <div class="card shadow-sm stagger-item" style="border-right:4px solid var(--color-primary);">
+              <h4>&#128161; الابتكار</h4>
+              <p>إيجاد حلول جديدة + تحسين القائم + تقنيات جديدة</p>
+            </div>
+            <div class="card shadow-sm stagger-item" style="border-right:4px solid var(--color-secondary);">
+              <h4>&#128295; توليد الأفكار</h4>
+              <p>العصف الذهني + الخرائط الذهنية + <span class="ltr-inline">SCAMPER</span></p>
+            </div>
+            <div class="card shadow-sm stagger-item" style="border-right:4px solid var(--color-accent);">
+              <h4>&#128640; ريادة الأعمال</h4>
+              <p>حل المشكلات + الإبداع + المرونة = مشاريع ناجحة</p>
+            </div>
+          </div>
+
+          <div class="callout callout-success stagger-item" style="margin-top:20px; max-width:600px; margin-left:auto; margin-right:auto;">
+            <span class="callout-icon" aria-hidden="true">&#127775;</span>
+            <div>
+              <strong>أحسنت! أكملت الوحدة الأولى.</strong>
+              <p style="margin-top:4px;">في الوحدة القادمة: عقلية الابتكار التقني والتفكير التصميمي.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <nav class="sco-nav" aria-label="تنقل الدرس">
+      <button class="btn-prev elastic-click" id="prevBtn" disabled>السابق</button>
+      <span class="page-indicator" id="pageIndicator">1 / 13</span>
+      <button class="btn-next elastic-click" id="nextBtn" data-next-text="التالي" data-complete-text="إكمال الوحدة">التالي</button>
+    </nav>
+  </div>
+
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="../shared/engine/confetti.js"></script>
+  <script src="../shared/engine/achievement-system.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // --- Helpers ---
+    window.switchTab = function(btn, panelId) {
+      var tabs = btn.parentElement.querySelectorAll('.tab');
+      tabs.forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      var panels = btn.closest('.tabs-container').querySelectorAll('.tab-content');
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected','true');
+      document.getElementById(panelId).classList.add('active');
+    };
+
+    window.toggleAccordion = function(btn) {
+      var item = btn.parentElement;
+      var isOpen = item.classList.contains('open');
+      var siblings = item.parentElement.querySelectorAll('.accordion-item');
+      siblings.forEach(function(s) { s.classList.remove('open'); s.querySelector('.accordion-header').setAttribute('aria-expanded','false'); });
+      if (!isOpen) { item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+    };
+
+    window.toggleReveal = function(trigger) {
+      var content = trigger.nextElementSibling;
+      var isVisible = content.classList.contains('visible');
+      content.classList.toggle('visible');
+      trigger.setAttribute('aria-expanded', !isVisible);
+    };
+
+    // --- SCORM ---
+    var scorm = new SCORMWrapper();
+    scorm.initialize();
+    var currentStatus = scorm.getValue('cmi.core.lesson_status');
+    if (!currentStatus || currentStatus === 'not attempted') {
+      scorm.setValue('cmi.core.lesson_status', 'incomplete');
+    }
+
+    var sounds = new SoundEffects();
+    var confetti = new Confetti();
+    var startTime = new Date();
+    var points = 0;
+    var pointsDisplay = document.getElementById('pointsDisplay');
+    var pointsBadge = document.getElementById('pointsBadge');
+    var kcCorrect = 0;
+
+    try {
+      var saved = scorm.getValue('cmi.suspend_data');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (parsed.points) { points = parsed.points; pointsDisplay.textContent = points; }
+      }
+    } catch(e) {}
+
+    function awardPoints(amount) {
+      points += amount;
+      pointsDisplay.textContent = points;
+      pointsBadge.classList.add('glow');
+      setTimeout(function() { pointsBadge.classList.remove('glow'); }, 600);
+    }
+
+    // --- Knowledge Checks ---
+    var kcAnswers = { kc1: 'b', kc2: 'b', kc4: 'b' };
+    var kcAnswered = {};
+
+    window.answerKC = function(kcId, btn, selectedId) {
+      if (kcAnswered[kcId]) return;
+      kcAnswered[kcId] = true;
+
+      var correct = kcAnswers[kcId];
+      var isCorrect = selectedId === correct;
+      var feedback = document.getElementById(kcId + '-feedback');
+      feedback.classList.remove('hidden');
+
+      var options = document.querySelectorAll('#' + kcId + '-options .btn-quiz-option');
+      options.forEach(function(o) { o.disabled = true; });
+      btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      if (!isCorrect) {
+        options.forEach(function(o) { if (o.getAttribute('data-id') === correct) o.classList.add('correct'); });
+      }
+
+      if (isCorrect) {
+        kcCorrect++;
+        awardPoints(5);
+        sounds.playSound('success');
+        feedback.className = 'feedback-correct';
+        feedback.innerHTML = '<span>&#10004;</span><div>أحسنت! إجابة صحيحة.</div>';
+      } else {
+        sounds.playSound('error');
+        feedback.className = 'feedback-incorrect';
+        feedback.innerHTML = '<span>&#128161;</span><div>ليس بعد — أنت تتعلم! راجع المحتوى وحاول مرة أخرى في المرة القادمة.</div>';
+      }
+    };
+
+    // --- SCAMPER Matching ---
+    var scamperChecked = false;
+    window.checkSCAMPERMatch = function() {
+      if (scamperChecked) return;
+      scamperChecked = true;
+
+      var answers = {
+        's': 'substitute', 'c': 'combine', 'a': 'adapt',
+        'm': 'modify', 'p': 'put', 'e': 'eliminate', 'r': 'reverse'
+      };
+      var correct = 0;
+      var total = 7;
+
+      Object.keys(answers).forEach(function(letter) {
+        var sel = document.getElementById('match-' + letter);
+        if (sel.value === answers[letter]) {
+          correct++;
+          sel.style.borderColor = 'var(--color-success)';
+          sel.style.background = 'var(--color-success-bg)';
+        } else {
+          sel.style.borderColor = 'var(--color-error)';
+          sel.style.background = 'var(--color-error-bg)';
+        }
+        sel.disabled = true;
+      });
+
+      var feedback = document.getElementById('kc3-feedback');
+      feedback.classList.remove('hidden');
+      document.getElementById('checkMatchBtn').disabled = true;
+
+      if (correct === total) {
+        kcCorrect++;
+        awardPoints(5);
+        sounds.playSound('success');
+        feedback.className = 'feedback-correct';
+        feedback.innerHTML = '<span>&#10004;</span><div>ممتاز! طابقت جميع عناصر SCAMPER بشكل صحيح.</div>';
+      } else {
+        sounds.playSound('error');
+        feedback.className = 'feedback-incorrect';
+        feedback.innerHTML = '<span>&#128161;</span><div>ليس بعد — أنت تتعلم! حصلت على ' + correct + ' من ' + total + ' صحيحة. راجع بطاقات SCAMPER.</div>';
+      }
+    };
+
+    // --- Slide Controller ---
+    var slideController = new SlideController({
+      onSlideChange: function(index, total) {
+        sounds.playSound('whoosh');
+      },
+      onComplete: function() {
+        awardPoints(15);
+        sounds.playSound('celebration');
+        confetti.fire();
+
+        scorm.setValue('cmi.core.lesson_status', 'completed');
+        var duration = Math.floor((new Date() - startTime) / 1000);
+        var h = Math.floor(duration / 3600);
+        var m = Math.floor((duration % 3600) / 60);
+        var s = duration % 60;
+        scorm.setValue('cmi.core.session_time',
+          (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+
+        try {
+          scorm.setValue('cmi.suspend_data', JSON.stringify({ points: points, kcCorrect: kcCorrect, completed: true }));
+        } catch(e) {}
+        scorm.commit();
+      }
+    });
+
+    var bookmark = scorm.getValue('cmi.core.lesson_location');
+    if (bookmark) {
+      var savedSlide = parseInt(bookmark, 10);
+      if (!isNaN(savedSlide) && savedSlide > 0) slideController.resumeFrom(savedSlide);
+    }
+
+    window.addEventListener('beforeunload', function() {
+      scorm.setValue('cmi.core.lesson_location', String(slideController.currentIndex));
+      scorm.commit();
+    });
+
+  })();
+  </script>
+</body>
+</html>

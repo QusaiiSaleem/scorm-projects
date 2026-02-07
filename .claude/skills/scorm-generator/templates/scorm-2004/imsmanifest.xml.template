@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SCORM 2004 4th Edition Manifest Template
+  Replace {{PLACEHOLDERS}} with actual values
+-->
+<manifest identifier="{{COURSE_ID}}"
+          version="1.0"
+          xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
+          xmlns:adlseq="http://www.adlnet.org/xsd/adlseq_v1p3"
+          xmlns:adlnav="http://www.adlnet.org/xsd/adlnav_v1p3"
+          xmlns:imsss="http://www.imsglobal.org/xsd/imsss"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd
+                              http://www.adlnet.org/xsd/adlcp_v1p3 adlcp_v1p3.xsd
+                              http://www.adlnet.org/xsd/adlseq_v1p3 adlseq_v1p3.xsd
+                              http://www.adlnet.org/xsd/adlnav_v1p3 adlnav_v1p3.xsd
+                              http://www.imsglobal.org/xsd/imsss imsss_v1p0.xsd">
+
+  <!-- Metadata -->
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>2004 4th Edition</schemaversion>
+  </metadata>
+
+  <!-- Organizations -->
+  <organizations default="{{ORG_ID}}">
+    <organization identifier="{{ORG_ID}}" structure="hierarchical">
+      <title>{{COURSE_TITLE}}</title>
+
+      <!-- Global Sequencing -->
+      <imsss:sequencing>
+        <imsss:controlMode choice="true" choiceExit="true" flow="true"/>
+      </imsss:sequencing>
+
+      <!-- {{ORGANIZATION_ITEMS}} -->
+      <!--
+        Example item structure with sequencing:
+        <item identifier="module_1">
+          <title>Module 1: Introduction</title>
+          <imsss:sequencing>
+            <imsss:controlMode choice="true" flow="true"/>
+          </imsss:sequencing>
+
+          <item identifier="item_sco_01" identifierref="sco_01">
+            <title>Welcome</title>
+            <imsss:sequencing>
+              <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+            </imsss:sequencing>
+          </item>
+
+          <item identifier="item_sco_quiz" identifierref="sco_quiz">
+            <title>Module Quiz</title>
+            <imsss:sequencing>
+              <imsss:preconditionRules>
+                <imsss:preConditionRule>
+                  <imsss:ruleConditions conditionCombination="all">
+                    <imsss:ruleCondition referencedObjective="previous_complete" operator="not" condition="satisfied"/>
+                  </imsss:ruleConditions>
+                  <imsss:ruleAction action="disabled"/>
+                </imsss:preConditionRule>
+              </imsss:preconditionRules>
+            </imsss:sequencing>
+          </item>
+        </item>
+      -->
+
+    </organization>
+  </organizations>
+
+  <!-- Resources -->
+  <resources>
+
+    <!-- {{SCO_RESOURCES}} -->
+    <!--
+      Example SCO resource:
+      <resource identifier="sco_01"
+                type="webcontent"
+                adlcp:scormType="sco"
+                href="sco_01_introduction/index.html">
+        <file href="sco_01_introduction/index.html"/>
+        <file href="sco_01_introduction/content.js"/>
+        <file href="sco_01_introduction/data.json"/>
+        <dependency identifierref="shared_resources"/>
+      </resource>
+    -->
+
+    <!-- Shared Resources -->
+    <resource identifier="shared_resources"
+              type="webcontent"
+              adlcp:scormType="asset">
+      <file href="shared/scorm-api.js"/>
+      <file href="shared/styles.css"/>
+      <!-- {{SHARED_FILES}} -->
+    </resource>
+
+  </resources>
+
+</manifest>

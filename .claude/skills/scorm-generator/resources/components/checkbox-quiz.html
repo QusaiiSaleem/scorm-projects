@@ -1,0 +1,254 @@
+<!-- Checkbox Quiz (Multiple Response) Component
+     Usage: Copy into lesson HTML for "select ALL that apply" questions.
+     Requires: base.css (quiz styles + .quiz-checkbox styles)
+
+     IMPORTANT differences from single-select (radio) quiz:
+     - Uses checkboxes instead of radio buttons
+     - Learner must select ALL correct answers AND no incorrect ones
+     - Visual distinction: square checkboxes (not round radio circles)
+     - Supports optional partial credit scoring
+
+     Customization via data attributes:
+     - data-partial-credit="true"  — Award partial points
+     - data-max-attempts="2"       — Allow retries (default: 1)
+-->
+
+<fieldset class="quiz-container quiz-checkbox-container"
+         role="group"
+         aria-labelledby="checkbox-q-stem"
+         data-question-id="checkbox-q1"
+         data-partial-credit="false"
+         data-max-attempts="1">
+
+  <!-- Question stem -->
+  <legend class="question-stem" id="checkbox-q-stem">
+    Select ALL that apply: Which of the following are renewable energy sources?
+  </legend>
+
+  <!-- Instruction hint -->
+  <p class="quiz-instruction text-secondary text-small" aria-hidden="true">
+    Select all correct answers, then press Submit.
+  </p>
+
+  <!-- Checkbox options -->
+  <div class="quiz-options" role="group" aria-label="Answer choices">
+
+    <label class="quiz-checkbox-option" data-value="a">
+      <span class="checkbox-indicator" aria-hidden="true">
+        <!-- Square checkbox icon (unchecked) -->
+        <svg class="icon-unchecked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <!-- Square checkbox icon (checked) -->
+        <svg class="icon-checked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2"/>
+          <path d="M6 11L9.5 14.5L16 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <input type="checkbox" name="checkbox-q1" value="a" class="sr-only">
+      <span class="option-text">Solar power</span>
+    </label>
+
+    <label class="quiz-checkbox-option" data-value="b">
+      <span class="checkbox-indicator" aria-hidden="true">
+        <svg class="icon-unchecked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <svg class="icon-checked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2"/>
+          <path d="M6 11L9.5 14.5L16 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <input type="checkbox" name="checkbox-q1" value="b" class="sr-only">
+      <span class="option-text">Natural gas</span>
+    </label>
+
+    <label class="quiz-checkbox-option" data-value="c">
+      <span class="checkbox-indicator" aria-hidden="true">
+        <svg class="icon-unchecked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <svg class="icon-checked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2"/>
+          <path d="M6 11L9.5 14.5L16 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <input type="checkbox" name="checkbox-q1" value="c" class="sr-only">
+      <span class="option-text">Wind energy</span>
+    </label>
+
+    <label class="quiz-checkbox-option" data-value="d">
+      <span class="checkbox-indicator" aria-hidden="true">
+        <svg class="icon-unchecked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <svg class="icon-checked" width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="20" height="20" rx="4" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2"/>
+          <path d="M6 11L9.5 14.5L16 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <input type="checkbox" name="checkbox-q1" value="d" class="sr-only">
+      <span class="option-text">Hydroelectric power</span>
+    </label>
+  </div>
+
+  <!-- Submit button -->
+  <div class="quiz-nav">
+    <button type="button" class="btn-primary quiz-submit" id="checkboxSubmitBtn" disabled>
+      Submit Answer
+    </button>
+  </div>
+
+  <!-- Feedback area (hidden until answer is submitted) -->
+  <div class="quiz-feedback" id="checkboxFeedback" role="alert" aria-live="polite" hidden></div>
+</fieldset>
+
+<script>
+(function() {
+  'use strict';
+
+  // ---- Configuration ----
+  var container = document.querySelector('[data-question-id="checkbox-q1"]');
+  if (!container) return;
+
+  var correctAnswers = ['a', 'c', 'd'];  // Solar, Wind, Hydro
+  var partialCredit = container.dataset.partialCredit === 'true';
+  var maxAttempts = parseInt(container.dataset.maxAttempts, 10) || 1;
+  var attemptsRemaining = maxAttempts;
+
+  var options = container.querySelectorAll('.quiz-checkbox-option');
+  var checkboxes = container.querySelectorAll('input[type="checkbox"]');
+  var submitBtn = container.querySelector('.quiz-submit');
+  var feedbackEl = container.querySelector('.quiz-feedback');
+
+  // ---- Selection Handling ----
+
+  // Toggle checkbox when option card is clicked
+  options.forEach(function(option) {
+    option.addEventListener('click', function(e) {
+      // Don't toggle if question is locked
+      if (container.classList.contains('quiz-locked')) return;
+
+      var checkbox = option.querySelector('input[type="checkbox"]');
+      checkbox.checked = !checkbox.checked;
+      option.classList.toggle('selected', checkbox.checked);
+
+      // Enable submit if at least one option is selected
+      var anyChecked = container.querySelector('input[type="checkbox"]:checked');
+      submitBtn.disabled = !anyChecked;
+    });
+
+    // Keyboard: Enter or Space toggles the option
+    option.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        option.click();
+      }
+    });
+  });
+
+  // ---- Submit Handling ----
+
+  submitBtn.addEventListener('click', function() {
+    if (container.classList.contains('quiz-locked')) return;
+
+    // Gather selected values
+    var selected = [];
+    checkboxes.forEach(function(cb) {
+      if (cb.checked) selected.push(cb.value);
+    });
+
+    // Evaluate answer
+    var isCorrect = evaluateAnswer(selected, correctAnswers);
+    attemptsRemaining--;
+
+    // Determine feedback type
+    var feedbackType;
+    if (isCorrect) {
+      feedbackType = 'correct';
+    } else if (attemptsRemaining > 0) {
+      feedbackType = 'tryAgain';
+    } else {
+      feedbackType = 'incorrect';
+    }
+
+    // Show feedback
+    showFeedback(feedbackType, selected);
+
+    // Mark options correct/incorrect
+    if (feedbackType !== 'tryAgain') {
+      markOptions(selected, correctAnswers);
+      lockQuestion();
+    }
+  });
+
+  // ---- Evaluation ----
+
+  function evaluateAnswer(selected, correct) {
+    if (selected.length !== correct.length) return false;
+    var sorted = selected.slice().sort();
+    var correctSorted = correct.slice().sort();
+    for (var i = 0; i < sorted.length; i++) {
+      if (sorted[i] !== correctSorted[i]) return false;
+    }
+    return true;
+  }
+
+  // ---- Feedback Display ----
+
+  function showFeedback(type, selected) {
+    feedbackEl.hidden = false;
+    feedbackEl.className = 'quiz-feedback';
+
+    if (type === 'correct') {
+      feedbackEl.classList.add('feedback-correct');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#10003;</span> ' +
+        '<span>Excellent work! You identified all the correct answers.</span>';
+    } else if (type === 'tryAgain') {
+      feedbackEl.classList.add('feedback-tryagain');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#8635;</span> ' +
+        '<span>Not yet \u2014 you\'re learning! Check your selections and try again. ' +
+        '(' + attemptsRemaining + ' attempt' + (attemptsRemaining > 1 ? 's' : '') + ' remaining)</span>';
+    } else {
+      feedbackEl.classList.add('feedback-incorrect');
+      feedbackEl.innerHTML =
+        '<span aria-hidden="true">&#10140;</span> ' +
+        '<span>Not quite this time \u2014 but every attempt teaches you something! ' +
+        'The correct answers are highlighted.</span>';
+    }
+  }
+
+  // ---- Mark Options as Correct/Incorrect ----
+
+  function markOptions(selected, correct) {
+    options.forEach(function(option) {
+      var value = option.dataset.value;
+      var isSelectedByLearner = selected.indexOf(value) >= 0;
+      var isActuallyCorrect = correct.indexOf(value) >= 0;
+
+      if (isActuallyCorrect) {
+        option.classList.add('option-correct');
+      }
+
+      if (isSelectedByLearner && !isActuallyCorrect) {
+        option.classList.add('option-incorrect');
+      }
+    });
+  }
+
+  // ---- Lock Question ----
+
+  function lockQuestion() {
+    container.classList.add('quiz-locked');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitted';
+
+    checkboxes.forEach(function(cb) {
+      cb.disabled = true;
+    });
+  }
+
+})();
+</script>

@@ -1,0 +1,436 @@
+<!-- Character Avatar Component
+     Usage: Copy this snippet into your lesson HTML.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - A grid of character avatars (images or emoji) for the learner to choose
+     - Click an avatar to select it — highlighted with a primary-color border
+     - Selected character is stored in a variable for use in later dialogue/scenarios
+     - Speech bubble integration: selected character appears beside text
+     - Optional: text input for the learner to enter their character's name
+
+     CUSTOMIZATION:
+     - Add/remove .avatar-option elements for more/fewer characters
+     - Set data-avatar-id on each option for unique identification
+     - Use img or .avatar-emoji inside each option
+     - Change grid columns via --avatar-cols custom property
+     - Speech bubble can contain any HTML in .speech-bubble-text
+
+     ACCESSIBILITY:
+     - Uses role="radiogroup" on the avatar grid
+     - Each avatar is role="radio" with aria-checked
+     - Keyboard: arrow keys to navigate, Enter/Space to select
+     - Focus-visible outlines for keyboard navigation
+     - Screen reader announces selected character name
+-->
+
+<style>
+  /* === Avatar Selection Container === */
+  .avatar-select {
+    --avatar-cols: 4;
+    --avatar-size: 80px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .avatar-select-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text, #1f2937);
+    margin-block-end: var(--space-sm, 8px);
+  }
+
+  /* === Avatar Grid === */
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--avatar-cols), 1fr);
+    gap: var(--space-md, 16px);
+    padding: 0;
+    list-style: none;
+    margin: 0;
+  }
+
+  /* === Individual Avatar Option === */
+  .avatar-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs, 4px);
+    padding: var(--space-sm, 8px);
+    border: 3px solid transparent;
+    border-radius: var(--radius-lg, 12px);
+    background: var(--color-surface-elevated, #fff);
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    text-align: center;
+  }
+
+  .avatar-option:hover {
+    border-color: var(--color-border, #d1d5db);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
+  }
+
+  .avatar-option:focus-visible {
+    outline: 3px solid var(--color-accent, #f59e0b);
+    outline-offset: 2px;
+  }
+
+  /* Selected state */
+  .avatar-option[aria-checked="true"] {
+    border-color: var(--color-primary, #6366f1);
+    background: rgba(99, 102, 241, 0.06);
+    box-shadow: 0 0 0 2px var(--color-primary, #6366f1);
+  }
+
+  /* Avatar image */
+  .avatar-option img {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    background: var(--color-surface, #f3f4f6);
+  }
+
+  /* Emoji avatar fallback */
+  .avatar-emoji {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: 50%;
+    background: var(--color-surface, #f3f4f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  /* Character name label */
+  .avatar-name {
+    font-size: var(--font-size-small, 0.85rem);
+    font-weight: 600;
+    color: var(--color-text-secondary, #6b7280);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .avatar-option[aria-checked="true"] .avatar-name {
+    color: var(--color-primary, #6366f1);
+  }
+
+  /* === Name Input (optional) === */
+  .avatar-name-input {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: var(--space-md, 16px) auto 0;
+    padding: var(--space-sm, 8px) var(--space-md, 16px);
+    border: 2px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    font-size: 1rem;
+    font-family: var(--font-body, sans-serif);
+    color: var(--color-text, #1f2937);
+    background: var(--color-surface-elevated, #fff);
+    text-align: center;
+    transition: border-color 0.2s ease;
+  }
+
+  .avatar-name-input:focus {
+    outline: none;
+    border-color: var(--color-primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  .avatar-name-input::placeholder {
+    color: var(--color-text-secondary, #9ca3af);
+  }
+
+  /* === Speech Bubble Preview === */
+  .speech-preview {
+    display: none; /* shown after selection */
+    align-items: flex-start;
+    gap: var(--space-md, 16px);
+    margin-block-start: var(--space-lg, 24px);
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .speech-preview.visible { display: flex; }
+
+  .speech-preview-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid var(--color-primary, #6366f1);
+    background: var(--color-surface, #f3f4f6);
+  }
+
+  .speech-preview-emoji {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-surface, #f3f4f6);
+    border: 2px solid var(--color-primary, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .speech-bubble {
+    position: relative;
+    background: var(--color-surface-elevated, #fff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-md, 16px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
+    flex: 1;
+  }
+
+  /* Bubble tail pointing to avatar */
+  .speech-bubble::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -8px;
+    top: 16px;
+    width: 0;
+    height: 0;
+    border-block-start: 8px solid transparent;
+    border-block-end: 8px solid transparent;
+    border-inline-end: 8px solid var(--color-border, #e5e7eb);
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: -6px;
+    top: 17px;
+    width: 0;
+    height: 0;
+    border-block-start: 7px solid transparent;
+    border-block-end: 7px solid transparent;
+    border-inline-end: 7px solid var(--color-surface-elevated, #fff);
+  }
+
+  .speech-bubble-name {
+    font-weight: 700;
+    font-size: var(--font-size-small, 0.85rem);
+    color: var(--color-primary, #6366f1);
+    margin: 0 0 var(--space-xs, 4px);
+  }
+
+  .speech-bubble-text {
+    margin: 0;
+    font-size: var(--font-size-small, 0.9rem);
+    color: var(--color-text, #1f2937);
+    line-height: 1.6;
+  }
+
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .avatar-select { --avatar-cols: 3; --avatar-size: 64px; }
+    .avatar-emoji { font-size: 2rem; }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .avatar-option { transition: none; }
+  }
+</style>
+
+<!-- === EXAMPLE MARKUP === -->
+<div class="avatar-select" role="region" aria-label="Choose your character">
+  <span class="avatar-select-label" id="avatar-label">Choose your character</span>
+
+  <!-- Avatar grid -->
+  <div class="avatar-grid" role="radiogroup" aria-labelledby="avatar-label">
+    <!-- Option 1: Image avatar -->
+    <div class="avatar-option" role="radio" aria-checked="false" tabindex="0"
+         data-avatar-id="a1" data-avatar-name="Nora" data-avatar-type="image"
+         data-avatar-src="shared/assets/images/avatar-nora.jpg"
+         onclick="selectAvatar(this)">
+      <img src="shared/assets/images/avatar-nora.jpg" alt="Nora">
+      <span class="avatar-name">Nora</span>
+    </div>
+
+    <!-- Option 2: Image avatar -->
+    <div class="avatar-option" role="radio" aria-checked="false" tabindex="-1"
+         data-avatar-id="a2" data-avatar-name="Khalid" data-avatar-type="image"
+         data-avatar-src="shared/assets/images/avatar-khalid.jpg"
+         onclick="selectAvatar(this)">
+      <img src="shared/assets/images/avatar-khalid.jpg" alt="Khalid">
+      <span class="avatar-name">Khalid</span>
+    </div>
+
+    <!-- Option 3: Emoji avatar -->
+    <div class="avatar-option" role="radio" aria-checked="false" tabindex="-1"
+         data-avatar-id="a3" data-avatar-name="Alex" data-avatar-type="emoji"
+         data-avatar-emoji="&#x1F9D1;&#x200D;&#x1F4BB;"
+         onclick="selectAvatar(this)">
+      <div class="avatar-emoji">&#x1F9D1;&#x200D;&#x1F4BB;</div>
+      <span class="avatar-name">Alex</span>
+    </div>
+
+    <!-- Option 4: Emoji avatar -->
+    <div class="avatar-option" role="radio" aria-checked="false" tabindex="-1"
+         data-avatar-id="a4" data-avatar-name="Sara" data-avatar-type="emoji"
+         data-avatar-emoji="&#x1F469;&#x200D;&#x1F52C;"
+         onclick="selectAvatar(this)">
+      <div class="avatar-emoji">&#x1F469;&#x200D;&#x1F52C;</div>
+      <span class="avatar-name">Sara</span>
+    </div>
+  </div>
+
+  <!-- Optional: name input -->
+  <input class="avatar-name-input" type="text" id="avatar-custom-name"
+         placeholder="Enter your name (optional)" aria-label="Enter your character name"
+         oninput="updateSpeechName(this.value)">
+
+  <!-- Speech bubble preview (appears after selection) -->
+  <div class="speech-preview" id="speech-preview">
+    <div id="speech-avatar-slot"></div>
+    <div class="speech-bubble">
+      <p class="speech-bubble-name" id="speech-char-name">Character</p>
+      <p class="speech-bubble-text">Welcome! You've chosen your character. This is how dialogue will appear throughout the course.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Screen reader announcements -->
+<div class="sr-only" aria-live="polite" id="avatar-announce"></div>
+
+<script>
+/* ============================================================
+   CHARACTER AVATAR — Select a character for branching scenarios
+   ============================================================
+   - Click to select an avatar (radio-group pattern)
+   - Stores selection in selectedAvatar variable
+   - Shows speech bubble preview with selected character
+   - Keyboard: arrow keys navigate, Enter/Space select
+   - Integrates with variable-store.js if available
+   ============================================================ */
+
+var selectedAvatar = null;
+
+/**
+ * Select an avatar from the grid.
+ * Updates ARIA state, shows speech preview, stores selection.
+ */
+function selectAvatar(el) {
+  var grid = el.closest('.avatar-grid');
+  var options = grid.querySelectorAll('.avatar-option');
+
+  /* Deselect all */
+  options.forEach(function(opt) {
+    opt.setAttribute('aria-checked', 'false');
+    opt.setAttribute('tabindex', '-1');
+  });
+
+  /* Select this one */
+  el.setAttribute('aria-checked', 'true');
+  el.setAttribute('tabindex', '0');
+
+  /* Store selected avatar data */
+  selectedAvatar = {
+    id: el.getAttribute('data-avatar-id'),
+    name: el.getAttribute('data-avatar-name'),
+    type: el.getAttribute('data-avatar-type'),
+    src: el.getAttribute('data-avatar-src') || null,
+    emoji: el.getAttribute('data-avatar-emoji') || null
+  };
+
+  /* Update speech bubble preview */
+  showSpeechPreview(selectedAvatar);
+
+  /* Announce to screen reader */
+  var announceEl = document.getElementById('avatar-announce');
+  if (announceEl) announceEl.textContent = 'Selected: ' + selectedAvatar.name;
+
+  /* If variable-store is loaded, save the selection */
+  if (typeof window.VariableStore !== 'undefined') {
+    window.VariableStore.set('selectedCharacter', selectedAvatar);
+  }
+}
+
+/**
+ * Show the speech bubble preview with the selected character.
+ */
+function showSpeechPreview(avatar) {
+  var preview = document.getElementById('speech-preview');
+  var slot = document.getElementById('speech-avatar-slot');
+  var nameEl = document.getElementById('speech-char-name');
+
+  if (!preview || !slot) return;
+
+  /* Build avatar element for the preview */
+  slot.innerHTML = '';
+  if (avatar.type === 'image' && avatar.src) {
+    var img = document.createElement('img');
+    img.className = 'speech-preview-avatar';
+    img.src = avatar.src;
+    img.alt = avatar.name;
+    slot.appendChild(img);
+  } else {
+    var emojiDiv = document.createElement('div');
+    emojiDiv.className = 'speech-preview-emoji';
+    emojiDiv.textContent = avatar.emoji || avatar.name.charAt(0);
+    slot.appendChild(emojiDiv);
+  }
+
+  /* Set name */
+  var customName = document.getElementById('avatar-custom-name');
+  nameEl.textContent = (customName && customName.value.trim()) || avatar.name;
+
+  /* Show preview */
+  preview.classList.add('visible');
+}
+
+/**
+ * Update the speech bubble name when user types a custom name.
+ */
+function updateSpeechName(value) {
+  var nameEl = document.getElementById('speech-char-name');
+  if (nameEl && selectedAvatar) {
+    nameEl.textContent = value.trim() || selectedAvatar.name;
+    if (typeof window.VariableStore !== 'undefined') {
+      window.VariableStore.set('characterName', value.trim() || selectedAvatar.name);
+    }
+  }
+}
+
+/* --- Keyboard navigation (arrow keys in radiogroup) --- */
+(function() {
+  var grid = document.querySelector('.avatar-grid');
+  if (!grid) return;
+
+  grid.addEventListener('keydown', function(e) {
+    var options = grid.querySelectorAll('.avatar-option');
+    var current = grid.querySelector('[aria-checked="true"]') ||
+                  grid.querySelector('[tabindex="0"]');
+    var idx = Array.prototype.indexOf.call(options, current);
+
+    var next = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      next = (idx + 1) % options.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      next = (idx - 1 + options.length) % options.length;
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (current) selectAvatar(current);
+      return;
+    }
+
+    if (next !== -1) {
+      options[next].focus();
+      selectAvatar(options[next]);
+    }
+  });
+})();
+</script>

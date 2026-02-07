@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(open \"/Users/qusaiabushanap/dev/scorm-projects/output/blockchain-journey-enhanced/index.html\")",
+      "WebFetch(domain:www.eduarabia.com)",
+      "WebFetch(domain:educationaldevelopment.uams.edu)",
+      "WebFetch(domain:qualitymatters.psu.edu)",
+      "WebFetch(domain:nelc.gov.sa)",
+      "WebFetch(domain:inside.collin.edu)",
+      "WebFetch(domain:blogs.oregonstate.edu)",
+      "WebFetch(domain:www.fgcu.edu)",
+      "WebFetch(domain:ceedar.education.ufl.edu)",
+      "WebFetch(domain:articulate.com)",
+      "WebFetch(domain:community.articulate.com)",
+      "WebFetch(domain:bonlinelearning.com)",
+      "WebFetch(domain:blog.elblearning.com)",
+      "WebFetch(domain:access.articulate.com)",
+      "WebFetch(domain:scorm.com)",
+      "WebFetch(domain:www.articulatesupport.com)",
+      "WebFetch(domain:courses.learningdojo.ninja)"
+    ]
+  }
+}

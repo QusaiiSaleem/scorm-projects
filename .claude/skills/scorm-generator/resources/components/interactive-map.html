@@ -1,0 +1,468 @@
+<!-- Interactive Map Component (SVG Region Explorer)
+     Usage: Copy into lesson HTML. Customize REGION_DATA and SVG paths.
+     Requires: base.css for foundation styles.
+
+     HOW IT WORKS:
+     - SVG map with clickable path regions
+     - Hover highlights region with fill change
+     - Click opens info panel sliding in from right
+     - Zoom (+/-) and pan (drag) support
+     - Region states: unvisited, visited, active
+     - Progress tracker: "Explored X of Y regions"
+
+     ACCESSIBILITY:
+     - SVG paths are role="button" with aria-label
+     - Info panel focus-trapped while open
+     - Keyboard: Tab between regions, Enter to open
+     - Live region announces region names and progress
+
+     CUSTOMIZATION POINTS marked with [CUSTOMIZE]
+
+     USE CASES:
+     - World/country maps, anatomy diagrams, facility floorplans
+     - Process diagrams, product feature maps
+-->
+
+<style>
+  /* === Map Container === */
+  .interactive-map-activity {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .map-wrapper {
+    position: relative;
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    background: var(--color-surface, #fff);
+    touch-action: none; /* Allow JS pan/zoom */
+  }
+
+  .map-viewport {
+    width: 100%;
+    cursor: grab;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+  }
+
+  .map-viewport:active {
+    cursor: grabbing;
+  }
+
+  /* === SVG Region Styles === */
+  .map-region {
+    fill: var(--color-border, #d1d5db);
+    stroke: var(--color-surface, #fff);
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: fill 0.3s ease, stroke 0.3s ease;
+  }
+
+  .map-region:hover,
+  .map-region:focus-visible {
+    fill: var(--color-primary-light, #93c5fd);
+    stroke: var(--color-primary, #2563eb);
+    stroke-width: 2;
+  }
+
+  .map-region:focus-visible {
+    outline: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 4 2;
+  }
+
+  .map-region.visited {
+    fill: var(--color-primary, #2563eb);
+    opacity: 0.6;
+  }
+
+  .map-region.visited:hover,
+  .map-region.visited:focus-visible {
+    opacity: 0.8;
+    fill: var(--color-primary, #2563eb);
+  }
+
+  .map-region.active {
+    fill: var(--color-accent, #f97316);
+    stroke: var(--color-accent, #f97316);
+    stroke-width: 2.5;
+    opacity: 1;
+  }
+
+  /* === Zoom Controls === */
+  .map-controls {
+    position: absolute;
+    bottom: var(--space-md, 1rem);
+    right: var(--space-md, 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
+  }
+
+  .map-zoom-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-sm, 4px);
+    background: var(--color-surface, #fff);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text, #222);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+    transition: background var(--transition-fast, 0.15s ease);
+  }
+
+  .map-zoom-btn:hover {
+    background: var(--color-growth-bg, #f0f0f0);
+  }
+
+  .map-zoom-btn:focus-visible {
+    outline: 2px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+  }
+
+  /* === Info Panel === */
+  .map-info-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100%;
+    background: var(--color-surface-elevated, #fff);
+    border-left: 2px solid var(--color-border, #e0e0e0);
+    box-shadow: var(--shadow-lg, -4px 0 16px rgba(0,0,0,0.1));
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .map-info-panel.open {
+    transform: translateX(0);
+  }
+
+  .map-info-header {
+    padding: var(--space-md, 1rem);
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .map-info-header h3 {
+    margin: 0;
+    font-size: var(--font-size-body, 1rem);
+    font-weight: 700;
+    color: var(--color-text, #222);
+  }
+
+  .map-info-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: var(--radius-sm, 4px);
+    color: var(--color-text-secondary, #666);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-info-close:hover {
+    background: var(--color-growth-bg, #f0f0f0);
+  }
+
+  .map-info-close:focus-visible {
+    outline: 2px solid var(--color-primary, #2563eb);
+  }
+
+  .map-info-body {
+    padding: var(--space-md, 1rem);
+    font-size: var(--font-size-small, 0.875rem);
+    line-height: 1.6;
+    color: var(--color-text, #222);
+    flex: 1;
+  }
+
+  /* === Progress Bar === */
+  .map-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 0.5rem);
+    margin-top: var(--space-md, 1rem);
+    font-size: var(--font-size-small, 0.875rem);
+    color: var(--color-text-secondary, #666);
+  }
+
+  .map-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .map-progress-fill {
+    height: 100%;
+    background: var(--color-primary, #2563eb);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* === Mobile === */
+  @media (max-width: 600px) {
+    .map-info-panel { width: 100%; }
+    .map-zoom-btn { width: 44px; height: 44px; }
+  }
+
+  /* === Reduced Motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .map-info-panel { transition: none; }
+    .map-progress-fill { transition: none; }
+    .map-region { transition: none; }
+  }
+</style>
+
+<div class="interactive-map-activity" role="region" aria-label="Interactive map exploration">
+
+  <div class="map-wrapper" id="map-wrapper">
+    <!-- [CUSTOMIZE] Replace this SVG with your own map.
+         Each region path needs: class="map-region", id matching region data, tabindex="0", role="button" -->
+    <svg class="map-viewport" id="map-viewport" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Explorable map">
+      <!-- Example regions — replace with real map paths -->
+      <path class="map-region" id="region-1" tabindex="0" role="button" aria-label="North District"
+            d="M50,30 L200,30 L220,80 L180,150 L60,140 Z" />
+      <path class="map-region" id="region-2" tabindex="0" role="button" aria-label="East Province"
+            d="M220,30 L400,40 L420,120 L350,180 L220,80 Z" />
+      <path class="map-region" id="region-3" tabindex="0" role="button" aria-label="Central Valley"
+            d="M60,140 L180,150 L220,80 L350,180 L300,260 L100,250 Z" />
+      <path class="map-region" id="region-4" tabindex="0" role="button" aria-label="South Coast"
+            d="M100,250 L300,260 L350,180 L420,120 L500,160 L520,300 L80,320 Z" />
+      <path class="map-region" id="region-5" tabindex="0" role="button" aria-label="West Highlands"
+            d="M420,120 L550,50 L570,200 L520,300 L500,160 Z" />
+    </svg>
+
+    <!-- Info panel (slides in from right) -->
+    <div class="map-info-panel" id="map-info-panel" role="complementary" aria-label="Region details">
+      <div class="map-info-header">
+        <h3 id="map-info-title">Region Name</h3>
+        <button class="map-info-close" onclick="closeInfoPanel()" aria-label="Close panel">&times;</button>
+      </div>
+      <div class="map-info-body" id="map-info-body">
+        Select a region to learn more.
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="map-controls">
+      <button class="map-zoom-btn" onclick="mapZoom(1)" aria-label="Zoom in">+</button>
+      <button class="map-zoom-btn" onclick="mapZoom(-1)" aria-label="Zoom out">&minus;</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="map-progress">
+    <span id="map-progress-text">Explored 0 of 0 regions</span>
+    <div class="map-progress-bar">
+      <div class="map-progress-fill" id="map-progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Screen reader announcements -->
+  <div id="map-announce" class="sr-only" aria-live="polite"></div>
+</div>
+
+<script>
+/* ============================================================
+   INTERACTIVE MAP COMPONENT — SVG Region Explorer
+   ============================================================
+   Supports hover, click, zoom, pan, keyboard navigation.
+   ============================================================ */
+
+/* [CUSTOMIZE] Replace with your own region data.
+   id must match the SVG path element id. */
+var REGION_DATA = [
+  { id: "region-1", name: "North District", description: "The northern district is known for its mountainous terrain and mining industry. Key resources include iron ore and timber. Population: 1.2 million." },
+  { id: "region-2", name: "East Province", description: "A fertile agricultural region producing most of the nation's grain. Known for its universities and research institutions. Population: 2.5 million." },
+  { id: "region-3", name: "Central Valley", description: "The economic heartland with the capital city. Major industries include finance, technology, and manufacturing. Population: 4.8 million." },
+  { id: "region-4", name: "South Coast", description: "Coastal region with major ports and tourism. Known for marine biology research and fishing industry. Population: 3.1 million." },
+  { id: "region-5", name: "West Highlands", description: "Rugged highlands with unique biodiversity. Home to several national parks and indigenous communities. Population: 0.8 million." }
+];
+
+/* --- State --- */
+var mapVisited = {};
+var mapActiveRegion = null;
+var mapScale = 1;
+var mapPanX = 0;
+var mapPanY = 0;
+var mapIsPanning = false;
+var mapPanStartX = 0;
+var mapPanStartY = 0;
+
+/* --- Initialize --- */
+(function initMap() {
+  var regions = document.querySelectorAll('.map-region');
+  regions.forEach(function(region) {
+    region.addEventListener('click', function() { openRegion(region.id); });
+    region.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openRegion(region.id);
+      }
+    });
+  });
+
+  /* Pan support */
+  var wrapper = document.getElementById('map-wrapper');
+  wrapper.addEventListener('mousedown', panStart);
+  wrapper.addEventListener('mousemove', panMove);
+  wrapper.addEventListener('mouseup', panEnd);
+  wrapper.addEventListener('mouseleave', panEnd);
+  wrapper.addEventListener('touchstart', panTouchStart, { passive: false });
+  wrapper.addEventListener('touchmove', panTouchMove, { passive: false });
+  wrapper.addEventListener('touchend', panEnd);
+
+  /* Pinch zoom on mobile */
+  wrapper.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    mapZoom(e.deltaY < 0 ? 1 : -1);
+  }, { passive: false });
+
+  updateProgress();
+})();
+
+/* --- Region interaction --- */
+
+function openRegion(regionId) {
+  var data = null;
+  for (var i = 0; i < REGION_DATA.length; i++) {
+    if (REGION_DATA[i].id === regionId) { data = REGION_DATA[i]; break; }
+  }
+  if (!data) return;
+
+  /* Clear previous active */
+  document.querySelectorAll('.map-region.active').forEach(function(el) {
+    el.classList.remove('active');
+  });
+
+  /* Mark visited and active */
+  mapVisited[regionId] = true;
+  var pathEl = document.getElementById(regionId);
+  if (pathEl) {
+    pathEl.classList.add('visited', 'active');
+  }
+  mapActiveRegion = regionId;
+
+  /* Update info panel */
+  document.getElementById('map-info-title').textContent = data.name;
+  document.getElementById('map-info-body').textContent = data.description;
+  document.getElementById('map-info-panel').classList.add('open');
+
+  /* Focus close button for accessibility */
+  var closeBtn = document.querySelector('.map-info-close');
+  if (closeBtn) closeBtn.focus();
+
+  updateProgress();
+  mapAnnounce('Opened ' + data.name + '. ' + Object.keys(mapVisited).length + ' of ' + REGION_DATA.length + ' explored.');
+}
+
+function closeInfoPanel() {
+  document.getElementById('map-info-panel').classList.remove('open');
+  document.querySelectorAll('.map-region.active').forEach(function(el) {
+    el.classList.remove('active');
+  });
+
+  /* Return focus to the region that was active */
+  if (mapActiveRegion) {
+    var el = document.getElementById(mapActiveRegion);
+    if (el) el.focus();
+  }
+  mapActiveRegion = null;
+}
+
+/* Close panel on Escape */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeInfoPanel();
+});
+
+/* --- Zoom --- */
+
+function mapZoom(dir) {
+  var step = 0.2;
+  mapScale += dir * step;
+  mapScale = Math.max(0.5, Math.min(3, mapScale));
+  applyTransform();
+}
+
+/* --- Pan --- */
+
+function panStart(e) {
+  if (e.target.closest('.map-controls') || e.target.closest('.map-info-panel')) return;
+  mapIsPanning = true;
+  mapPanStartX = e.clientX - mapPanX;
+  mapPanStartY = e.clientY - mapPanY;
+}
+
+function panMove(e) {
+  if (!mapIsPanning) return;
+  mapPanX = e.clientX - mapPanStartX;
+  mapPanY = e.clientY - mapPanStartY;
+  applyTransform();
+}
+
+function panEnd() {
+  mapIsPanning = false;
+}
+
+function panTouchStart(e) {
+  if (e.touches.length === 1) {
+    mapIsPanning = true;
+    mapPanStartX = e.touches[0].clientX - mapPanX;
+    mapPanStartY = e.touches[0].clientY - mapPanY;
+  }
+}
+
+function panTouchMove(e) {
+  if (!mapIsPanning || e.touches.length !== 1) return;
+  e.preventDefault();
+  mapPanX = e.touches[0].clientX - mapPanStartX;
+  mapPanY = e.touches[0].clientY - mapPanStartY;
+  applyTransform();
+}
+
+function applyTransform() {
+  var svg = document.getElementById('map-viewport');
+  svg.style.transform = 'translate(' + mapPanX + 'px, ' + mapPanY + 'px) scale(' + mapScale + ')';
+}
+
+/* --- Progress --- */
+
+function updateProgress() {
+  var total = REGION_DATA.length;
+  var visited = Object.keys(mapVisited).length;
+  var pct = total > 0 ? (visited / total) * 100 : 0;
+
+  var textEl = document.getElementById('map-progress-text');
+  if (textEl) textEl.textContent = 'Explored ' + visited + ' of ' + total + ' regions';
+
+  var fillEl = document.getElementById('map-progress-fill');
+  if (fillEl) fillEl.style.width = pct + '%';
+}
+
+function mapAnnounce(msg) {
+  var el = document.getElementById('map-announce');
+  if (el) el.textContent = msg;
+}
+</script>
