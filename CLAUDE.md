@@ -12,78 +12,46 @@ claude
 
 ## What This System Does
 
-SCORM Content Studio combines specialized AI agents and skills into a content production pipeline that creates complete SCORM packages through a structured interview process.
+SCORM Content Studio provides specialized skills as reference documentation that power a content production pipeline, creating complete SCORM packages through a structured interview process.
 
-## DELEGATION RULE (NON-NEGOTIABLE)
+## Skill Graph (2 Skills — Always Loaded)
 
-**NEVER do SCORM content work directly in the main conversation.** ALL course creation work MUST be delegated to subagents or Agent Teams. The main agent is a coordinator/orchestrator ONLY.
-
-This applies to:
-- Writing HTML/CSS/JS for SCOs
-- Creating imsmanifest.xml
-- Generating course specifications
-- Building assessments/quizzes
-- Creating visual assets
-- Any file writing inside `output/`
-
-**How to delegate:**
-
-| Approach | When to Use |
-|----------|-------------|
-| **Agent Teams** (preferred) | Full `/scorm` pipeline, multi-phase work, complex courses |
-| **Individual subagents** | Single focused tasks (e.g., "just package this course", "just build the quiz") |
-
-**Both approaches work equally** because all pipeline instructions live in the `scorm-generator` skill (SKILL.md), which is loaded by ANY agent type that references it. Agent `.md` files add specialized workflow details on top.
-
-**Why this matters:**
-- Subagents have focused context = better quality output
-- Parallel work = faster delivery
-- Main agent stays responsive to user
-- Each agent writes its own files without conflicts
-
-## The Content Creation Team
-
-| Agent | Role |
-|-------|------|
-| scorm-interview | Requirements gathering (7-phase interview) |
-| scorm-instructional-designer | Learning architecture (Bloom's, Gagne's) |
-| scorm-art-director | Visual style guide creation |
-| scorm-visual-generator | AI image generation |
-| scorm-animation-creator | Video/animation creation |
-| scorm-assessment-builder | Quizzes and knowledge checks |
-| scorm-content-renderer | HTML/CSS/JS page generation |
-| scorm-packager | Manifest and ZIP packaging |
-
-All agents use `model: inherit` so they always run on your current model (Opus for best quality).
-
-## Integrated Skills
-
-| Skill | Purpose |
-|-------|---------|
-| scorm-generator | SCORM API, manifest templates, packaging standards, behavioral tracking |
-| course-builder | Instructional design, Bloom's taxonomy, QM alignment, Arabic support |
-| nano-banana-pro | AI image generation with style presets |
-| remotion-best-practices | Animation patterns, video creation |
-
-## How Agents Work Together
-
-When `/scorm` is invoked, use **Agent Teams** for the full pipeline:
-
-1. **Spawn a team** with `Teammate(spawnTeam)` for the course
-2. **Create tasks** for each phase using TaskCreate
-3. **Launch agents** as teammates using the Task tool with `team_name`
-4. **Run phases sequentially** where outputs depend on each other
-5. **Run phases in parallel** where they don't (visual + animation + assessment)
+All work happens in the main conversation. Both skills are **always available** — read them directly when needed.
 
 ```
-Sequential:  Interview → Design → Art Direction
-Parallel:    [Visual Generator + Animation Creator + Assessment Builder]
-Sequential:  Content Renderer → Packager
+scorm-generator/                    create-animated-video/
+(Hub — 8-phase pipeline)            (Standalone video)
+  │                                   │
+  ├── modules/                        ├── rules/ (7 pattern files)
+  │   ├── course-design.md            │   ├── text-animations.md
+  │   ├── art-direction.md            │   ├── transitions.md
+  │   └── visual-generation.md        │   ├── timing.md
+  │                                   │   ├── visual-layers.md
+  ├── references/                     │   ├── visual-assets.md
+  │   ├── interview-guide.md          │   ├── typography-fonts.md
+  │   ├── assessment-guide.md         │   └── advanced-effects.md
+  │   └── curriculum-design.md        │
+  │                                   └── scripts/generate_svg.py
+  ├── resources/
+  │   ├── rendering-guide.md
+  │   ├── packaging-guide.md
+  │   ├── css/ (base.css, player-shell.css)
+  │   ├── engine/ (16 JS files)
+  │   ├── components/ (42 HTML components)
+  │   └── icons/ (8 SVGs)
+  │
+  ├── scripts/generate_image.py
+  └── templates/ (SCORM schemas)
+
+Pipeline flow:
+  Phase 1-2 → modules/course-design.md
+  Phase 3   → modules/art-direction.md
+  Phase 4   → modules/visual-generation.md
+  Phase 5   → create-animated-video skill (external link)
+  Phase 6   → references/assessment-guide.md
+  Phase 7   → resources/rendering-guide.md
+  Phase 8   → resources/packaging-guide.md
 ```
-
-Each agent reads the previous agent's output files (specs/, art-direction/, output/) and writes its own. The pipeline tracks progress in `specs/[course]_progress.json` so it can resume if interrupted.
-
-Always use Agent Teams (not individual subagents) for the full /scorm workflow - teammates can coordinate and the team lead can monitor progress.
 
 ## Quality Standards
 
@@ -131,10 +99,10 @@ All generated content must meet:
 Courses use a **three-layer CSS system** instead of rebuilding styles from scratch:
 
 ```
-Layer 1: base.css        ← Shared foundation (never changes)
-Layer 2: theme.css       ← Style theme (space-explorer, corporate-clean, etc.)
-Layer 3: brand.css       ← Brand overlay (optional: eduarabia, nelc)
-         + course-custom.css  ← Tiny file for truly unique styles (~50 lines)
+Layer 1: base.css        <- Shared foundation (never changes)
+Layer 2: theme.css       <- Style theme (space-explorer, corporate-clean, etc.)
+Layer 3: brand.css       <- Brand overlay (optional: eduarabia, nelc)
+         + course-custom.css  <- Tiny file for truly unique styles (~50 lines)
 ```
 
 ### Available Themes
@@ -142,32 +110,32 @@ Layer 3: brand.css       ← Brand overlay (optional: eduarabia, nelc)
 ```
 themes/
   _base/
-    base.css                ← ~1,900 lines: reset, layout, buttons, quiz, nav, player
-  space-explorer/           ← Dark cosmic (astronomy, physics)
-  corporate-clean/          ← Light professional (business, compliance)
-  bold-gradient/            ← Vibrant gradients (creative, marketing)
-  playful-bright/           ← Colorful gamified (onboarding, youth)
-  technical-dark/           ← Code editor (programming, IT)
+    base.css                <- ~1,900 lines: reset, layout, buttons, quiz, nav, player
+  space-explorer/           <- Dark cosmic (astronomy, physics)
+  corporate-clean/          <- Light professional (business, compliance)
+  bold-gradient/            <- Vibrant gradients (creative, marketing)
+  playful-bright/           <- Colorful gamified (onboarding, youth)
+  technical-dark/           <- Code editor (programming, IT)
   brands/
-    eduarabia/              ← EduArabia brand overlay
-    nelc/                   ← NELC institutional overlay
+    eduarabia/              <- EduArabia brand overlay
+    nelc/                   <- NELC institutional overlay
 
 .claude/skills/scorm-generator/resources/
-  css/                      ← base.css + player-shell.css
-  engine/                   ← 13 JS engine files (quiz, state, trigger, player, etc.)
-  components/               ← 22 reusable HTML+CSS+JS interactive components
-  icons/                    ← 8 SVG icons (currentColor for auto-theming)
+  css/                      <- base.css + player-shell.css
+  engine/                   <- 16 JS engine files (quiz, state, trigger, player, sound, confetti, achievements, etc.)
+  components/               <- 42 reusable HTML+CSS+JS interactive components
+  icons/                    <- 8 SVG icons (currentColor for auto-theming)
 ```
 
 ### How It Works
 
-1. **Art Director** reads themes, picks or customizes one → outputs `_tokens.json` + `_theme.css`
-2. **Content Renderer** COPIES `base.css` + `theme.css` + engine JS + components from skill folder into `shared/`
+1. **Art direction phase** reads themes, picks or customizes one -> outputs `_tokens.json` + `_theme.css`
+2. **Content rendering phase** COPIES `base.css` + `theme.css` + engine JS + components from skill folder into `shared/`
 3. Only `course-custom.css` is written fresh (~50-100 lines vs old ~700 lines)
 
 ### tokens.json Format
 
-Each theme has a `tokens.json` — the single source of truth for colors, fonts, spacing:
+Each theme has a `tokens.json` -- the single source of truth for colors, fonts, spacing:
 - CSS reads it via generated `theme.css` (`:root` custom properties)
 - Remotion imports it directly as JSON (TypeScript-native)
 - Humans read the README.md alongside it
@@ -207,7 +175,7 @@ Every output must be visually impressive and production-ready:
 - Quiz options: full-width cards, not cramped radio buttons
 
 ### Interactive Elements
-- Every lesson needs at least 2 interactive elements from the 22-component library (markers, hotspot, tabs, accordions, flip cards, drag-drop, sequence-sort, slider, word-bank, etc.)
+- Every lesson needs at least 2 interactive elements from the 42-component library (markers, hotspot, tabs, accordions, flip cards, drag-drop, sequence-sort, slider, word-bank, etc.)
 - Touch-friendly: use touch events alongside HTML5 drag-and-drop
 - Smooth CSS transitions on all state changes
 - Hover effects that feel responsive and alive
@@ -241,26 +209,26 @@ Every output must be visually impressive and production-ready:
 output/[course-name]/
   imsmanifest.xml
   shared/
-    scorm-api.js          ← COPIED from skill resources/
-    behavior-tracker.js   ← COPIED from skill resources/
-    gamification.js       ← COPIED from skill resources/
-    base.css              ← COPIED from themes/_base/
-    player-shell.css      ← COPIED from skill resources/css/
-    theme.css             ← COPIED from art-direction/
-    decorations.css       ← COPIED from art-direction/ (optional)
-    brand.css             ← COPIED from themes/brands/ (optional)
-    course-custom.css     ← Only unique course styles (~50 lines)
-    engine/               ← Only the JS files needed for this course
-      slide-controller.js ← Always included
-      quiz-engine.js      ← If course has quizzes
-      player-shell.js     ← If full player chrome needed
-      state-engine.js     ← If complex interactions
-      trigger-engine.js   ← If declarative triggers used
-      variable-store.js   ← If variables used
-      ...                 ← Other engine files as needed
+    scorm-api.js          <- COPIED from skill resources/
+    behavior-tracker.js   <- COPIED from skill resources/
+    gamification.js       <- COPIED from skill resources/
+    base.css              <- COPIED from themes/_base/
+    player-shell.css      <- COPIED from skill resources/css/
+    theme.css             <- COPIED from art-direction/
+    decorations.css       <- COPIED from art-direction/ (optional)
+    brand.css             <- COPIED from themes/brands/ (optional)
+    course-custom.css     <- Only unique course styles (~50 lines)
+    engine/               <- Only the JS files needed for this course
+      slide-controller.js <- Always included
+      quiz-engine.js      <- If course has quizzes
+      player-shell.js     <- If full player chrome needed
+      state-engine.js     <- If complex interactions
+      trigger-engine.js   <- If declarative triggers used
+      variable-store.js   <- If variables used
+      ...                 <- Other engine files as needed
     assets/
-      icons/              ← SVG icons from skill resources/icons/
-      fonts/              ← Bundled locally
+      icons/              <- SVG icons from skill resources/icons/
+      fonts/              <- Bundled locally
       images/
   sco_01_introduction/
   sco_02_lesson_1/
@@ -280,7 +248,7 @@ output/[course-name]/
 
 | Command | Purpose |
 |---------|---------|
-| `/scorm` | Start the full SCORM creation workflow |
+| `/scorm` | Start the full SCORM creation workflow (runs in the main conversation) |
 | `/scorm [topic]` | Quick start with a pre-filled topic |
 
 ## Testing Your Package

@@ -18,7 +18,8 @@
       "WebFetch(domain:access.articulate.com)",
       "WebFetch(domain:scorm.com)",
       "WebFetch(domain:www.articulatesupport.com)",
-      "WebFetch(domain:courses.learningdojo.ninja)"
+      "WebFetch(domain:courses.learningdojo.ninja)",
+      "WebFetch(domain:ai.google.dev)"
     ]
   }
 }
