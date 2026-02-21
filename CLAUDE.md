@@ -99,46 +99,32 @@ All generated content must meet:
 Courses use a **three-layer CSS system** instead of rebuilding styles from scratch:
 
 ```
-Layer 1: base.css        <- Shared foundation (never changes)
-Layer 2: theme.css       <- Style theme (space-explorer, corporate-clean, etc.)
-Layer 3: brand.css       <- Brand overlay (optional: eduarabia, nelc)
-         + course-custom.css  <- Tiny file for truly unique styles (~50 lines)
+Layer 1: base.css           <- Shared foundation (never changes)
+Layer 2: theme.css          <- Unique per-course theme (created by art direction)
+Layer 3: course-custom.css  <- Tiny file for truly unique styles (~50 lines)
 ```
 
-### Available Themes
+### Resources (in `.claude/skills/scorm-generator/resources/`)
 
 ```
-themes/
-  _base/
-    base.css                <- ~1,900 lines: reset, layout, buttons, quiz, nav, player
-  space-explorer/           <- Dark cosmic (astronomy, physics)
-  corporate-clean/          <- Light professional (business, compliance)
-  bold-gradient/            <- Vibrant gradients (creative, marketing)
-  playful-bright/           <- Colorful gamified (onboarding, youth)
-  technical-dark/           <- Code editor (programming, IT)
-  brands/
-    eduarabia/              <- EduArabia brand overlay
-    nelc/                   <- NELC institutional overlay
-
-.claude/skills/scorm-generator/resources/
-  css/                      <- base.css + player-shell.css
-  engine/                   <- 16 JS engine files (quiz, state, trigger, player, sound, confetti, achievements, etc.)
-  components/               <- 42 reusable HTML+CSS+JS interactive components
-  icons/                    <- 8 SVG icons (currentColor for auto-theming)
+css/          <- base.css (~1,900 lines) + player-shell.css
+engine/       <- 16 JS engine files (quiz, state, trigger, player, sound, confetti, achievements)
+components/   <- 42 reusable HTML+CSS+JS interactive components
+icons/        <- 8 SVG icons (currentColor for auto-theming)
+theme-dna.md  <- Palette recipes, font pairings, background patterns (art direction reference)
 ```
 
 ### How It Works
 
-1. **Art direction phase** reads themes, picks or customizes one -> outputs `_tokens.json` + `_theme.css`
-2. **Content rendering phase** COPIES `base.css` + `theme.css` + engine JS + components from skill folder into `shared/`
-3. Only `course-custom.css` is written fresh (~50-100 lines vs old ~700 lines)
+1. **Art direction phase** creates a unique theme using `theme-dna.md` as reference -> outputs `_tokens.json` + `_theme.css`
+2. **Content rendering phase** COPIES `base.css` + `theme.css` + engine JS + components into `shared/`
+3. Only `course-custom.css` is written fresh (~50-100 lines)
 
 ### tokens.json Format
 
-Each theme has a `tokens.json` -- the single source of truth for colors, fonts, spacing:
+Each course gets a `tokens.json` -- the single source of truth for colors, fonts, spacing:
 - CSS reads it via generated `theme.css` (`:root` custom properties)
 - Remotion imports it directly as JSON (TypeScript-native)
-- Humans read the README.md alongside it
 
 ## Critical Rules
 
@@ -212,7 +198,7 @@ output/[course-name]/
     scorm-api.js          <- COPIED from skill resources/
     behavior-tracker.js   <- COPIED from skill resources/
     gamification.js       <- COPIED from skill resources/
-    base.css              <- COPIED from themes/_base/
+    base.css              <- COPIED from skill resources/css/
     player-shell.css      <- COPIED from skill resources/css/
     theme.css             <- COPIED from art-direction/
     decorations.css       <- COPIED from art-direction/ (optional)
