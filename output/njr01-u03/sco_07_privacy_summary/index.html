@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الخصوصية والأخلاقيات | عقلية البيانات</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/player-shell.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+  <a href="#main-content" class="sr-only" style="position:absolute;right:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">تخطي إلى المحتوى الرئيسي</a>
+  <div class="sco-container">
+
+    <!-- SLIDE 1: Section Divider -->
+    <div class="slide" data-slide="0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--section-gradient);color:var(--color-section-text);text-align:center;padding:48px;position:relative;">
+      <div class="has-grain" style="position:absolute;inset:0;pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <h1 style="font-size:2.5rem;font-weight:var(--font-weight-extrabold);margin-bottom:16px;text-shadow:0 2px 8px rgba(0,0,0,0.2);" class="stagger-item">الخصوصية والأخلاقيات</h1>
+        <p style="font-size:var(--text-h3);font-weight:var(--font-weight-medium);opacity:0.85;" class="stagger-item">تحديات حماية البيانات في العصر الرقمي</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Slider Explorer — 6 stops (3 challenges + 3 solutions) -->
+    <div class="slide" data-slide="1" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h2);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:6px;" class="stagger-item">استكشف تحديات الخصوصية وحلولها</h2>
+        <p style="font-size:var(--text-caption);color:var(--color-text-muted);margin-bottom:24px;" class="stagger-item">انقر على كل رقم لاستكشاف المحتوى</p>
+
+        <!-- Step buttons -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;justify-content:center;" class="stagger-item">
+          <button class="elastic-click" onclick="showStep(1)" id="step-1" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-warning);background:var(--color-surface);color:var(--color-warning);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">1</button>
+          <button class="elastic-click" onclick="showStep(2)" id="step-2" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-warning);background:var(--color-surface);color:var(--color-warning);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">2</button>
+          <button class="elastic-click" onclick="showStep(3)" id="step-3" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-warning);background:var(--color-surface);color:var(--color-warning);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">3</button>
+          <div style="width:2px;background:var(--color-border);margin:0 4px;"></div>
+          <button class="elastic-click" onclick="showStep(4)" id="step-4" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-success);background:var(--color-surface);color:var(--color-success);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">4</button>
+          <button class="elastic-click" onclick="showStep(5)" id="step-5" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-success);background:var(--color-surface);color:var(--color-success);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">5</button>
+          <button class="elastic-click" onclick="showStep(6)" id="step-6" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--color-success);background:var(--color-surface);color:var(--color-success);font-weight:700;font-size:var(--text-body);cursor:pointer;font-family:var(--font-body);">6</button>
+        </div>
+        <p style="display:flex;justify-content:center;gap:80px;font-size:var(--text-small);color:var(--color-text-muted);margin-bottom:16px;">
+          <span style="color:var(--color-warning);">⚠ التحديات</span>
+          <span style="color:var(--color-success);">✓ الحلول</span>
+        </p>
+
+        <!-- Content panels -->
+        <div id="step-panels" style="min-height:120px;">
+          <div id="sp-empty" style="background:var(--color-surface-alt);border-radius:var(--card-radius);padding:36px;text-align:center;border:2px dashed var(--color-border);">
+            <p style="color:var(--color-text-muted);">👆 انقر على أحد الأرقام لاستكشاف المحتوى</p>
+          </div>
+          <div id="sp-1" class="step-panel" style="display:none;background:var(--color-warning-light);border:1px solid var(--color-warning);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#92400E;margin-bottom:8px;">1. خروقات البيانات</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">تسريب معلومات شخصية من قواعد بيانات الشركات. ملايين الحسابات تتعرض للاختراق سنوياً.</p>
+          </div>
+          <div id="sp-2" class="step-panel" style="display:none;background:var(--color-warning-light);border:1px solid var(--color-warning);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#92400E;margin-bottom:8px;">2. المراقبة الشاملة</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">تتبع نشاط المستخدمين دون علمهم عبر التطبيقات والمواقع وأجهزة التتبع.</p>
+          </div>
+          <div id="sp-3" class="step-panel" style="display:none;background:var(--color-warning-light);border:1px solid var(--color-warning);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#92400E;margin-bottom:8px;">3. الإعلانات الموجهة</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">استخدام البيانات الشخصية لاستهداف المستخدمين بإعلانات مخصصة بناءً على سلوكهم.</p>
+          </div>
+          <div id="sp-4" class="step-panel" style="display:none;background:var(--color-success-light);border:1px solid var(--color-success);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#065F46;margin-bottom:8px;">4. اللائحة العامة (GDPR)</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">قوانين أوروبية لحماية الخصوصية تمنح المواطنين حق الوصول والتعديل والحذف لبياناتهم.</p>
+          </div>
+          <div id="sp-5" class="step-panel" style="display:none;background:var(--color-success-light);border:1px solid var(--color-success);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#065F46;margin-bottom:8px;">5. قانون خصوصية المستهلك</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">تشريعات تمنح المستخدمين حق التحكم ببياناتهم ومعرفة كيف تُستخدم ومشاركتها.</p>
+          </div>
+          <div id="sp-6" class="step-panel" style="display:none;background:var(--color-success-light);border:1px solid var(--color-success);border-radius:var(--card-radius);padding:24px;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#065F46;margin-bottom:8px;">6. رفع الوعي</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">تثقيف المستخدمين حول حقوقهم الرقمية وطرق حماية بياناتهم من الاستغلال.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Dropdown Matching — طابق المفهوم بالتعريف -->
+    <div class="slide" data-slide="2" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span><span style="font-size:var(--text-small);opacity:0.7;">نشاط تفاعلي</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h2);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:6px;" class="stagger-item">طابق المفهوم بالتعريف الصحيح</h2>
+        <p style="font-size:var(--text-caption);color:var(--color-text-muted);margin-bottom:24px;" class="stagger-item">اختر التعريف المناسب لكل مفهوم من القائمة المنسدلة</p>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+          <div class="match-row stagger-item">
+            <span style="font-weight:var(--font-weight-bold);min-width:140px;font-size:var(--text-body);">عقلية البيانات</span>
+            <select class="match-dropdown" data-correct="a" onchange="checkMatchReady()">
+              <option value="">-- اختر التعريف --</option>
+              <option value="a">التفكير بالبيانات والتعلم منها والتواصل بها</option>
+              <option value="b">مجموعات بيانات ضخمة لا تعالج بالأدوات التقليدية</option>
+              <option value="c">قياس دقة واكتمال واتساق وتوقيت البيانات</option>
+              <option value="d">أجهزة متصلة بالإنترنت تولد بيانات مستمرة</option>
+            </select>
+          </div>
+          <div class="match-row stagger-item">
+            <span style="font-weight:var(--font-weight-bold);min-width:140px;font-size:var(--text-body);">البيانات الضخمة</span>
+            <select class="match-dropdown" data-correct="b" onchange="checkMatchReady()">
+              <option value="">-- اختر التعريف --</option>
+              <option value="a">التفكير بالبيانات والتعلم منها والتواصل بها</option>
+              <option value="b">مجموعات بيانات ضخمة لا تعالج بالأدوات التقليدية</option>
+              <option value="c">قياس دقة واكتمال واتساق وتوقيت البيانات</option>
+              <option value="d">أجهزة متصلة بالإنترنت تولد بيانات مستمرة</option>
+            </select>
+          </div>
+          <div class="match-row stagger-item">
+            <span style="font-weight:var(--font-weight-bold);min-width:140px;font-size:var(--text-body);">جودة البيانات</span>
+            <select class="match-dropdown" data-correct="c" onchange="checkMatchReady()">
+              <option value="">-- اختر التعريف --</option>
+              <option value="a">التفكير بالبيانات والتعلم منها والتواصل بها</option>
+              <option value="b">مجموعات بيانات ضخمة لا تعالج بالأدوات التقليدية</option>
+              <option value="c">قياس دقة واكتمال واتساق وتوقيت البيانات</option>
+              <option value="d">أجهزة متصلة بالإنترنت تولد بيانات مستمرة</option>
+            </select>
+          </div>
+          <div class="match-row stagger-item">
+            <span style="font-weight:var(--font-weight-bold);min-width:140px;font-size:var(--text-body);">إنترنت الأشياء</span>
+            <select class="match-dropdown" data-correct="d" onchange="checkMatchReady()">
+              <option value="">-- اختر التعريف --</option>
+              <option value="a">التفكير بالبيانات والتعلم منها والتواصل بها</option>
+              <option value="b">مجموعات بيانات ضخمة لا تعالج بالأدوات التقليدية</option>
+              <option value="c">قياس دقة واكتمال واتساق وتوقيت البيانات</option>
+              <option value="d">أجهزة متصلة بالإنترنت تولد بيانات مستمرة</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;">
+          <button id="checkMatchBtn" class="btn-check elastic-click" onclick="checkMatching()" disabled style="opacity:0.5;">تحقق من الإجابات</button>
+          <div id="match-feedback" style="display:none;" role="alert"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Summary -->
+    <div class="slide" data-slide="3" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h1);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:28px;text-align:center;" class="stagger-item">ملخّص الوحدة الدراسيّة</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="card hover-lift stagger-item" style="padding:16px 20px;display:flex;align-items:center;gap:16px;border-right:4px solid var(--color-primary);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--color-info-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:var(--color-primary);font-size:var(--text-caption);">1</div>
+            <p style="font-size:var(--text-caption);color:var(--color-text);margin:0;"><strong>عقلية البيانات:</strong> التفكير بالبيانات والتعلم منها والتواصل بها مع الآخرين</p>
+          </div>
+          <div class="card hover-lift stagger-item" style="padding:16px 20px;display:flex;align-items:center;gap:16px;border-right:4px solid var(--color-secondary);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--color-info-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:var(--color-primary);font-size:var(--text-caption);">2</div>
+            <p style="font-size:var(--text-caption);color:var(--color-text);margin:0;"><strong>البيانات الضخمة:</strong> تتميز بثلاث خصائص: الحجم والسرعة والتنوع</p>
+          </div>
+          <div class="card hover-lift stagger-item" style="padding:16px 20px;display:flex;align-items:center;gap:16px;border-right:4px solid var(--color-accent);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--color-warning-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:var(--color-accent);font-size:var(--text-caption);">3</div>
+            <p style="font-size:var(--text-caption);color:var(--color-text);margin:0;"><strong>جودة البيانات:</strong> تقاس بالدقة والاكتمال والاتساق والتوقيت</p>
+          </div>
+          <div class="card hover-lift stagger-item" style="padding:16px 20px;display:flex;align-items:center;gap:16px;border-right:4px solid var(--color-success);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--color-success-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:var(--color-success);font-size:var(--text-caption);">4</div>
+            <p style="font-size:var(--text-caption);color:var(--color-text);margin:0;"><strong>التواصل بالبيانات:</strong> استخدام المخططات والإنفوجرافيك لتوصيل الرسالة بوضوح</p>
+          </div>
+          <div class="card hover-lift stagger-item" style="padding:16px 20px;display:flex;align-items:center;gap:16px;border-right:4px solid var(--color-error);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--color-error-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:var(--color-error);font-size:var(--text-caption);">5</div>
+            <p style="font-size:var(--text-caption);color:var(--color-text);margin:0;"><strong>الخصوصية:</strong> حماية البيانات الشخصية حق أساسي في العصر الرقمي</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Closing / Thank You -->
+    <div class="slide" data-slide="4" style="display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--section-gradient);color:var(--color-section-text);text-align:center;padding:48px;position:relative;">
+      <div class="has-grain" style="position:absolute;inset:0;pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <div class="stagger-item" style="font-size:4rem;margin-bottom:16px;">🎓</div>
+        <h1 style="font-size:2.5rem;font-weight:var(--font-weight-extrabold);margin-bottom:16px;" class="stagger-item">شكراً لكم</h1>
+        <p style="font-size:var(--text-h3);font-weight:var(--font-weight-medium);opacity:0.85;margin-bottom:32px;" class="stagger-item">الخطوات القادمة:</p>
+        <div style="display:flex;flex-direction:column;gap:12px;text-align:right;max-width:400px;">
+          <div class="stagger-item" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.1);padding:12px 16px;border-radius:8px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:var(--color-text-on-accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-small);flex-shrink:0;">1</span>
+            <span style="font-size:var(--text-caption);">مراجعة المحاضرة والأهداف التعليمية</span>
+          </div>
+          <div class="stagger-item" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.1);padding:12px 16px;border-radius:8px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:var(--color-text-on-accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-small);flex-shrink:0;">2</span>
+            <span style="font-size:var(--text-caption);">إكمال النشاط التفاعلي للوحدة</span>
+          </div>
+          <div class="stagger-item" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.1);padding:12px 16px;border-radius:8px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:var(--color-text-on-accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-small);flex-shrink:0;">3</span>
+            <span style="font-size:var(--text-caption);">الاستعداد للاختبار البعدي</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="slide-nav" aria-label="تنقل الشرائح" id="main-content">
+      <button class="btn-secondary elastic-click" id="prevBtn" disabled style="padding:10px 24px;border-radius:var(--btn-radius);font-family:var(--font-body);font-weight:var(--font-weight-bold);font-size:var(--text-caption);cursor:pointer;">السابق</button>
+      <div class="progress-bar" style="flex:1;margin:0 20px;height:var(--progress-height);background:var(--progress-track);border-radius:var(--progress-radius);overflow:hidden;">
+        <div class="progress-fill" style="height:100%;background:var(--progress-fill);border-radius:var(--progress-radius);transition:width 400ms ease;"></div>
+      </div>
+      <span class="page-indicator" id="pageIndicator" style="font-size:var(--text-small);color:var(--color-text-muted);min-width:50px;text-align:center;" aria-live="polite">1 / 5</span>
+      <button class="btn-primary elastic-click" id="nextBtn" data-next-text="التالي" data-complete-text="إكمال" style="padding:10px 24px;border-radius:var(--btn-radius);font-family:var(--font-body);font-weight:var(--font-weight-bold);font-size:var(--text-caption);cursor:pointer;">التالي</button>
+    </nav>
+  </div>
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="../shared/engine/confetti.js"></script>
+  <script src="content.js"></script>
+</body>
+</html>

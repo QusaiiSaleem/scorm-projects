@@ -27,6 +27,11 @@ Every question must:
 3. Reflect real-world application
 4. Be unambiguous and fair
 
+**WHY alignment matters:** A quiz that tests facts when the objective says "apply"
+teaches learners that memorization is enough. This misalignment is the #1 reason
+corporate training fails — people pass tests but can't perform on the job. Each
+question should simulate the real-world task the learner needs to perform.
+
 ### Bloom's Level to Question Type Mapping
 
 | Bloom's Level | Question Types | Example Verbs |
@@ -48,6 +53,10 @@ Every question must:
 - Immediate feedback
 - Purpose: Reinforce learning
 
+**WHY knowledge checks work:** They interrupt the "passive reading" pattern and force
+active recall. Research shows testing enhances learning more than re-reading (the
+"testing effect"). Immediate feedback corrects misconceptions before they solidify.
+
 ### Module Quizzes
 - 5-10 questions
 - Track score in SCORM
@@ -55,12 +64,21 @@ Every question must:
 - Can retry (if enabled)
 - Purpose: Confirm module mastery
 
+**WHY module quizzes use retries:** Allowing retries with feedback creates a "mastery loop"
+— the learner sees what they got wrong, reviews the material, and tries again. This is
+growth mindset in action. The goal is learning, not gatekeeping.
+
 ### Final Assessment
 - Comprehensive coverage
 - Track score and completion
 - Higher passing threshold
 - Limited retries
 - Purpose: Prove transformation
+
+**WHY the final assessment is harder:** It proves the learning transformation happened.
+If it's too easy, the certificate means nothing. If it's too hard, it demoralizes.
+The sweet spot: questions that require applying knowledge to novel scenarios — not
+repeating the exact examples from the course.
 
 ---
 

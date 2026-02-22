@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="NJR01_U03_data_mindset"
+          version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <organizations default="org_njr01_u03">
+    <organization identifier="org_njr01_u03">
+      <title>عقلية البيانات: التعلم والتواصل باستخدام البيانات</title>
+
+      <item identifier="item_sco_01" identifierref="sco_01" isvisible="true">
+        <title>المقدمة والأهداف التعليمية</title>
+      </item>
+
+      <item identifier="item_sco_02" identifierref="sco_02" isvisible="true">
+        <title>مقدمة عن عقلية البيانات</title>
+      </item>
+
+      <item identifier="item_sco_03" identifierref="sco_03" isvisible="true">
+        <title>البيانات الضخمة</title>
+      </item>
+
+      <item identifier="item_sco_04" identifierref="sco_04" isvisible="true">
+        <title>أهمية البيانات في حياتنا</title>
+      </item>
+
+      <item identifier="item_sco_05" identifierref="sco_05" isvisible="true">
+        <title>جودة البيانات</title>
+      </item>
+
+      <item identifier="item_sco_06" identifierref="sco_06" isvisible="true">
+        <title>التواصل باستخدام البيانات</title>
+      </item>
+
+      <item identifier="item_sco_07" identifierref="sco_07" isvisible="true">
+        <title>الخصوصية والملخص</title>
+      </item>
+
+    </organization>
+  </organizations>
+
+  <resources>
+
+    <resource identifier="sco_01" type="webcontent" adlcp:scormtype="sco" href="sco_01_intro/index.html">
+      <file href="sco_01_intro/index.html"/>
+      <file href="sco_01_intro/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_02" type="webcontent" adlcp:scormtype="sco" href="sco_02_data_mindset/index.html">
+      <file href="sco_02_data_mindset/index.html"/>
+      <file href="sco_02_data_mindset/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_03" type="webcontent" adlcp:scormtype="sco" href="sco_03_big_data/index.html">
+      <file href="sco_03_big_data/index.html"/>
+      <file href="sco_03_big_data/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_04" type="webcontent" adlcp:scormtype="sco" href="sco_04_data_importance/index.html">
+      <file href="sco_04_data_importance/index.html"/>
+      <file href="sco_04_data_importance/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_05" type="webcontent" adlcp:scormtype="sco" href="sco_05_data_quality/index.html">
+      <file href="sco_05_data_quality/index.html"/>
+      <file href="sco_05_data_quality/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_06" type="webcontent" adlcp:scormtype="sco" href="sco_06_communication/index.html">
+      <file href="sco_06_communication/index.html"/>
+      <file href="sco_06_communication/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="sco_07" type="webcontent" adlcp:scormtype="sco" href="sco_07_privacy_summary/index.html">
+      <file href="sco_07_privacy_summary/index.html"/>
+      <file href="sco_07_privacy_summary/content.js"/>
+      <dependency identifierref="shared_resources"/>
+    </resource>
+
+    <resource identifier="shared_resources" type="webcontent" adlcp:scormtype="asset">
+      <file href="shared/scorm-api.js"/>
+      <file href="shared/behavior-tracker.js"/>
+      <file href="shared/gamification.js"/>
+      <file href="shared/base.css"/>
+      <file href="shared/player-shell.css"/>
+      <file href="shared/theme.css"/>
+      <file href="shared/course-custom.css"/>
+      <file href="shared/engine/slide-controller.js"/>
+      <file href="shared/engine/quiz-engine.js"/>
+      <file href="shared/engine/state-engine.js"/>
+      <file href="shared/engine/interactivity-engine.js"/>
+      <file href="shared/engine/confetti.js"/>
+      <file href="shared/engine/achievement-system.js"/>
+      <file href="shared/engine/sound-effects.js"/>
+      <file href="shared/assets/fonts/Tajawal-Regular.ttf"/>
+      <file href="shared/assets/fonts/Tajawal-Medium.ttf"/>
+      <file href="shared/assets/fonts/Tajawal-Bold.ttf"/>
+      <file href="shared/assets/fonts/Tajawal-ExtraBold.ttf"/>
+      <file href="shared/assets/icons/arrow-next.svg"/>
+      <file href="shared/assets/icons/arrow-prev.svg"/>
+      <file href="shared/assets/icons/check-circle.svg"/>
+      <file href="shared/assets/icons/info.svg"/>
+      <file href="shared/assets/icons/warning.svg"/>
+      <file href="shared/assets/icons/star.svg"/>
+      <file href="shared/assets/icons/trophy.svg"/>
+      <file href="shared/assets/icons/x-circle.svg"/>
+    </resource>
+
+  </resources>
+
+</manifest>

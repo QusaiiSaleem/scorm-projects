@@ -53,6 +53,57 @@ STYLE_PRESETS = {
 }
 
 # ---------------------------------------------------------------------------
+# Use-case templates — ready-to-use prompt prefixes per SCORM context
+# ---------------------------------------------------------------------------
+USE_CASE_TEMPLATES = {
+    "section-bg": (
+        "Abstract background illustration for an e-learning slide section. "
+        "Subtle, decorative, low visual weight — content will overlay this. "
+        "Use soft shapes, flowing curves, or geometric patterns. "
+    ),
+    "card-icon": (
+        "Simple, recognizable icon for an e-learning card or button. "
+        "Single concept, immediately readable at 48x48px. "
+        "Minimal detail, bold shapes. "
+    ),
+    "content-illustration": (
+        "Educational illustration explaining a concept. "
+        "Clear visual hierarchy, simple enough for a learner to scan quickly. "
+        "Use visual metaphors rather than literal depictions. "
+    ),
+    "quiz-decoration": (
+        "Decorative illustration for a quiz or assessment screen. "
+        "Encouraging and motivational — conveys thinking/discovery. "
+        "Light, unobtrusive — the quiz questions are the star. "
+    ),
+    "module-header": (
+        "Wide banner illustration for an e-learning module header. "
+        "Landscape orientation, bold composition, thematic to the topic. "
+        "Works well at 1280x400px with text overlaid on top. "
+    ),
+}
+
+# ---------------------------------------------------------------------------
+# Prompt patterns — battle-tested structures for different quality levels
+# ---------------------------------------------------------------------------
+PROMPT_PATTERNS = {
+    "simple": (
+        "Create a clean, minimal SVG. Focus on clarity and readability. "
+        "Use 3-4 shapes maximum. Every element must serve a purpose."
+    ),
+    "cinematic": (
+        "Create an atmospheric, layered SVG illustration. "
+        "Use depth through overlapping shapes with varying opacity. "
+        "Add subtle gradients for dimension. Think movie poster composition."
+    ),
+    "isometric": (
+        "Create an isometric 3D-style SVG illustration. "
+        "Use 30-degree angles for the isometric grid. "
+        "Consistent lighting from top-left. Clean geometric precision."
+    ),
+}
+
+# ---------------------------------------------------------------------------
 # Model config — flash is default (fast + cheap), pro for complex work
 # ---------------------------------------------------------------------------
 MODELS = {
@@ -100,11 +151,19 @@ def load_api_key() -> str:
 # ---------------------------------------------------------------------------
 # Prompt builders
 # ---------------------------------------------------------------------------
-def build_prompt(user_prompt: str, style: str, width: int, height: int, animated: bool) -> str:
-    """Build the full prompt for SVG generation."""
-    style_desc = STYLE_PRESETS.get(style, STYLE_PRESETS["line-icon"])
+def build_prompt(user_prompt: str, style: str, width: int, height: int, animated: bool,
+                 use_case: str = "", pattern: str = "") -> str:
+    """Build the full prompt for SVG generation.
 
-    base = f"""Create a single SVG for: {user_prompt}
+    Args:
+        use_case: Optional context template (section-bg, card-icon, etc.)
+        pattern: Optional quality pattern (simple, cinematic, isometric)
+    """
+    style_desc = STYLE_PRESETS.get(style, STYLE_PRESETS["line-icon"])
+    use_case_prefix = USE_CASE_TEMPLATES.get(use_case, "")
+    pattern_suffix = PROMPT_PATTERNS.get(pattern, "")
+
+    base = f"""Create a single SVG for: {use_case_prefix}{user_prompt}
 
 Requirements:
 - Clean, minimal SVG code
@@ -126,6 +185,9 @@ Animation requirements:
 - Use ease-in-out or ease-out easing
 - Total animation duration: 1-2 seconds
 - animation-fill-mode: forwards (hold final state)"""
+
+    if pattern_suffix:
+        base += f"\n\nQuality direction: {pattern_suffix}"
 
     base += "\n\nOutput ONLY the raw SVG code. No markdown fences, no explanation."
     return base
@@ -239,6 +301,8 @@ def generate_svg(
     style: str,
     animated: bool,
     model: str,
+    use_case: str = "",
+    pattern: str = "",
 ) -> bool:
     """Generate an SVG from a text prompt using the Gemini API."""
     # Ensure output directory exists
@@ -261,7 +325,7 @@ def generate_svg(
 
     if api_key:
         # Build and send prompt
-        full_prompt = build_prompt(prompt, style, width, height, animated)
+        full_prompt = build_prompt(prompt, style, width, height, animated, use_case, pattern)
         raw_response, finish_reason = call_gemini_api(full_prompt, api_key, model)
 
         if finish_reason == "MAX_TOKENS":
@@ -288,6 +352,73 @@ def generate_svg(
 
 
 # ---------------------------------------------------------------------------
+# Batch generation from a JSON manifest
+# ---------------------------------------------------------------------------
+def batch_generate(manifest_path: str, output_dir: str, style: str, animated: bool, model: str) -> int:
+    """Generate all SVGs listed in a manifest JSON file.
+
+    Manifest format (array of objects):
+    [
+      {"name": "hero-bg", "prompt": "...", "use_case": "section-bg", "width": 1280, "height": 400},
+      {"name": "quiz-icon", "prompt": "...", "use_case": "card-icon", "width": 64, "height": 64}
+    ]
+
+    Returns the number of successfully generated SVGs.
+    """
+    manifest_file = Path(manifest_path)
+    if not manifest_file.exists():
+        print(f"Error: Manifest file not found: {manifest_path}", file=sys.stderr)
+        return 0
+
+    try:
+        items = json.loads(manifest_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in manifest: {e}", file=sys.stderr)
+        return 0
+
+    if not isinstance(items, list):
+        print(f"Error: Manifest must be a JSON array", file=sys.stderr)
+        return 0
+
+    success_count = 0
+    total = len(items)
+    print(f"\nBatch generating {total} SVGs from {manifest_path}\n")
+
+    for i, item in enumerate(items):
+        name = item.get("name", f"svg_{i:02d}")
+        prompt = item.get("prompt", "")
+        use_case = item.get("use_case", "")
+        pattern = item.get("pattern", "")
+        w = item.get("width", 64)
+        h = item.get("height", 64)
+        item_style = item.get("style", style)
+
+        if not prompt:
+            print(f"  [{i+1}/{total}] Skipping {name} — no prompt")
+            continue
+
+        output_path = os.path.join(output_dir, f"{name}.svg")
+        print(f"  [{i+1}/{total}] {name}...")
+
+        ok = generate_svg(
+            prompt=prompt,
+            output_path=output_path,
+            width=w,
+            height=h,
+            style=item_style,
+            animated=animated,
+            model=model,
+            use_case=use_case,
+            pattern=pattern,
+        )
+        if ok:
+            success_count += 1
+
+    print(f"\nBatch complete: {success_count}/{total} generated successfully")
+    return success_count
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def main():
@@ -295,12 +426,12 @@ def main():
         description="Generate AI-powered SVG icons and illustrations via Gemini API"
     )
     parser.add_argument(
-        "--prompt", "-p", required=True,
-        help="Text description of the SVG to generate"
+        "--prompt", "-p", default="",
+        help="Text description of the SVG to generate (required unless using --batch)"
     )
     parser.add_argument(
-        "--output", "-o", required=True,
-        help="Output file path (.svg)"
+        "--output", "-o", default="",
+        help="Output file path (.svg) (required unless using --batch)"
     )
     parser.add_argument(
         "--style", "-s",
@@ -330,8 +461,46 @@ def main():
         default=DEFAULT_MODEL,
         help=f"Gemini model (default: {DEFAULT_MODEL}). 'flash' is fast+cheap, 'pro' for complex work"
     )
+    parser.add_argument(
+        "--use-case", "-u",
+        choices=list(USE_CASE_TEMPLATES.keys()),
+        default="",
+        help="Context template: section-bg, card-icon, content-illustration, quiz-decoration, module-header"
+    )
+    parser.add_argument(
+        "--pattern",
+        choices=list(PROMPT_PATTERNS.keys()),
+        default="",
+        help="Quality pattern: simple (minimal), cinematic (layered), isometric (3D)"
+    )
+    parser.add_argument(
+        "--batch", "-b",
+        default="",
+        help="Path to a JSON manifest file for batch generation. Overrides --prompt and --output."
+    )
+    parser.add_argument(
+        "--batch-output-dir",
+        default="",
+        help="Output directory for batch mode (default: same directory as manifest)"
+    )
 
     args = parser.parse_args()
+
+    # Batch mode
+    if args.batch:
+        output_dir = args.batch_output_dir or os.path.dirname(args.batch) or "."
+        count = batch_generate(
+            manifest_path=args.batch,
+            output_dir=output_dir,
+            style=args.style,
+            animated=args.animated,
+            model=args.model,
+        )
+        sys.exit(0 if count > 0 else 1)
+
+    # Single file mode
+    if not args.prompt or not args.output:
+        parser.error("--prompt and --output are required (unless using --batch)")
 
     success = generate_svg(
         prompt=args.prompt,
@@ -341,6 +510,8 @@ def main():
         style=args.style,
         animated=args.animated,
         model=args.model,
+        use_case=args.use_case,
+        pattern=args.pattern,
     )
 
     sys.exit(0 if success else 1)

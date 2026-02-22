@@ -240,9 +240,6 @@ pre code {
    The entire SCO fills the viewport. Content is displayed one slide
    at a time. No page scrolling. Navigation advances between slides. */
 
-/* PRINCIPLE: rendering-guide.md > "The Non-Negotiable Slide Structure"
-   The sco-container is the outermost viewport wrapper. It MUST be 100vh
-   with flex-column layout. Never add max-width or padding here. */
 .sco-container {
   width: 100%;
   height: 100vh;
@@ -252,20 +249,14 @@ pre code {
   position: relative;
 }
 
-/* PRINCIPLE: rendering-guide.md > "The Non-Negotiable Slide Structure"
-   The sco-content wrapper is MANDATORY. Without it, slides compete with
-   the nav bar for space, causing content overflow. flex:1 gives it all
-   remaining space between header and nav. */
+/* The slide viewport — takes all available space between header and nav */
 .sco-content {
   flex: 1;
   position: relative;
   overflow: hidden; /* Clips slide content to the viewport */
 }
 
-/* PRINCIPLE: rendering-guide.md > "BANNED: Inline Styles on Slides"
-   Slides use position:absolute + inset:0 to stack on top of each other.
-   NEVER override these with inline styles (display:flex, padding:48px, etc.)
-   — that breaks the viewport containment. */
+/* Individual slides — only .active is visible */
 .slide {
   position: absolute;
   inset: 0;
@@ -446,11 +437,8 @@ hr, .divider {
   color: var(--color-text);
 }
 
-/* PRINCIPLE: rendering-guide.md > "The Non-Negotiable Slide Structure"
-   flex-shrink:0 prevents the nav from being compressed when slide content
-   is tall. The nav ALWAYS stays at the bottom at its full 56px height.
-   .slide-nav is an alias for generated HTML that uses either class name. */
-.sco-nav, .slide-nav, .nav-lesson {
+/* Lesson navigation — fixed bottom bar in slide layout */
+.sco-nav, .nav-lesson {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1635,116 +1623,6 @@ hr, .divider {
 
 
 /* ==========================================================================
-   11d. SLIDE STRUCTURAL COMPONENTS
-   ==========================================================================
-   These layout classes ensure common slide content patterns fit within the
-   fixed viewport without overflow. Use these instead of inline styles. */
-
-/* Slide header banner — decorative band at top of a slide */
-.slide-header-banner {
-  padding: var(--space-lg) var(--space-xl);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-lg);
-  text-align: center;
-  flex-shrink: 0; /* Don't compress — keep full height */
-}
-
-/* Bullet list — for objectives, key points, etc. */
-.bullet-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 var(--space-md) 0;
-}
-
-.bullet-list li {
-  position: relative;
-  padding-inline-start: var(--space-lg);
-  margin-bottom: var(--space-sm);
-}
-
-.bullet-list li::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0.6em;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-primary);
-}
-
-/* Objective row — used for learning objective displays */
-.objective-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-sm);
-}
-
-.objective-row .objective-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-/* Comparison columns — side-by-side comparison layout */
-.comparison-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
-
-.comparison-col {
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  border: 1px solid var(--color-border);
-}
-
-.comparison-col h3,
-.comparison-col h4 {
-  margin-bottom: var(--space-sm);
-}
-
-/* Reveal tab — tabbed reveal content within a slide */
-.reveal-tab {
-  display: none;
-  padding: var(--space-lg);
-  animation: fadeUp 0.3s ease-out;
-}
-
-.reveal-tab.active {
-  display: block;
-}
-
-/* Quiz option layout — ensures options don't overflow slide */
-.quiz-options-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  max-height: 60vh; /* Prevent quiz options from pushing nav off screen */
-  overflow-y: auto;
-  padding-inline-end: var(--space-xs); /* Space for scrollbar */
-}
-
-/* Two-column card grid for content slides */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
-
-
-/* ==========================================================================
    12. GAMIFICATION UI
    ========================================================================== */
 
@@ -1952,7 +1830,7 @@ hr, .divider {
     justify-content: center;
   }
 
-  .sco-nav, .slide-nav, .nav-lesson {
+  .sco-nav, .nav-lesson {
     flex-wrap: wrap;
     gap: var(--space-sm);
     padding: var(--space-sm);
@@ -1993,7 +1871,7 @@ hr, .divider {
     font-size: 12pt;
   }
 
-  .nav-bar, .sco-nav, .slide-nav, .nav-lesson, .skip-nav,
+  .nav-bar, .sco-nav, .nav-lesson, .skip-nav,
   .points-badge, .confetti-piece, .progress-bar,
   .progress-bar-container, .btn-prev, .btn-next {
     display: none !important;

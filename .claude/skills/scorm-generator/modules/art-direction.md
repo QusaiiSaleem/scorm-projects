@@ -377,7 +377,7 @@ Create a comprehensive style guide:
 
 ### Thumbnail Prompt
 ```
-[Detailed prompt for generating course thumbnail with nano-banana-pro]
+[Detailed prompt for generating course thumbnail with generate_svg.py or generate_image.py]
 ```
 
 ### Module Header Prompts
@@ -417,3 +417,32 @@ These files will be used by:
 - Visual Generator (image creation prompts, SVG/CSS decision)
 - Animation Creator (motion design, import tokens.json for Remotion)
 - Content Renderer (COPY theme.css instead of rebuilding CSS)
+
+---
+
+## Code Implementation Map
+
+How art direction principles map to actual code in the system:
+
+| Principle | Implemented In | Location |
+|-----------|---------------|----------|
+| CSS custom properties from tokens.json | `resources/css/base.css` | `:root` defaults (L31-97) |
+| Premium shadow system | `resources/css/base.css` | Section 18a: `--shadow-small/medium/large` |
+| Micro-interactions (.elastic-click, .hover-lift) | `resources/css/base.css` | Section 18b |
+| Spring easing variables | `resources/css/base.css` | Section 18c: `--spring-gentle/bouncy/snappy` |
+| Film grain texture | `resources/css/base.css` | Section 18e: `.has-grain` |
+| Glassmorphism | `resources/css/base.css` | Section 18f: `.glass`, `.glass-dark`, `.glass-light` |
+| Gradient text | `resources/css/base.css` | Section 18g: `.text-gradient` |
+| Animated backgrounds | `resources/css/base.css` | Section 18h: `.animated-bg`, `.mesh-gradient` |
+| Font loading | Generated `theme.css` | `@font-face` declarations per course |
+| Color palette | Generated `theme.css` | `:root` overrides for `--color-*` variables |
+| Reduced motion | `resources/css/base.css` | Sections 16 + 18j |
+| High contrast | `resources/css/base.css` | Section 17 |
+
+### WHY This Architecture Works
+
+**The "CSS Sandwich"** — base.css provides ALL the mechanical layout and interaction code.
+theme.css only needs to set color/font/spacing variables. This means:
+- Art direction outputs are tiny (50-100 lines of `:root` overrides)
+- Every course automatically gets premium utilities, accessibility, and responsive behavior
+- Changing a theme never breaks layout — because layout lives in base.css, not theme.css

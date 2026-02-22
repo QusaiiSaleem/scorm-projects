@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Course Custom CSS — NJR01 Unit 03: Data Mindset
+   This is the ONLY file written fresh per course (~80 lines)
+   Everything else is COPIED from skill resources
+   ========================================================================== */
+
+/* --- Local Font Faces (bundled, no CDN) --- */
+@font-face {
+  font-family: 'Tajawal';
+  src: url('assets/fonts/Tajawal-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tajawal';
+  src: url('assets/fonts/Tajawal-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tajawal';
+  src: url('assets/fonts/Tajawal-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tajawal';
+  src: url('assets/fonts/Tajawal-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Section Divider Background Image Overlay --- */
+.slide-section {
+  background-size: cover;
+  background-position: center;
+}
+
+.slide-section .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(15, 46, 79, 0.88) 0%,
+    rgba(27, 77, 126, 0.82) 50%,
+    rgba(46, 110, 171, 0.78) 100%
+  );
+  z-index: 0;
+}
+
+.slide-section .content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Objective Row (objectives slide) --- */
+.objective-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--color-surface);
+  border-radius: 8px;
+  border-right: 4px solid var(--color-primary); /* RTL accent */
+  margin-bottom: 10px;
+}
+
+.objective-row .icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+/* --- Numbered Step Badge (slider, closing) --- */
+.step-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* --- Grip Handle for Drag Items --- */
+.grip-handle {
+  color: var(--color-text-muted);
+  cursor: grab;
+  font-size: 1.25rem;
+}

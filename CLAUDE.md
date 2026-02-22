@@ -40,7 +40,9 @@ scorm-generator/                    create-animated-video/
   │   ├── components/ (42 HTML components)
   │   └── icons/ (8 SVGs)
   │
-  ├── scripts/generate_image.py
+  ├── scripts/generate_svg.py  ← PRIMARY (Gemini SVG)
+  ├── scripts/generate_image.py ← FALLBACK (raster)
+  ├── SYSTEM.md  ← Architecture map
   └── templates/ (SCORM schemas)
 
 Pipeline flow:

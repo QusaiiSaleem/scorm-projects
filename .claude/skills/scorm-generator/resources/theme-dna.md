@@ -25,6 +25,11 @@ Border:       rgba(255,255,255,0.08)
 **Personality:** Authoritative, sophisticated, data-driven. Like Stripe meets Bloomberg Terminal.
 **Grain opacity:** 0.06 | **Glass style:** glass-dark | **Shadow tint:** indigo
 
+**WHY this palette works:** The deep navy-black (#0a1628) creates a "cinema screen" effect —
+content floats in darkness, making every color pop. Electric indigo (#635bff) as primary
+ensures clickable elements are instantly recognizable without competing with content.
+Mint green (#00d4aa) as accent provides the "reward" color for success states and CTAs.
+
 ### 2. Warm Premium (Leadership, HR, Culture)
 ```
 Background:   #1a1418  (warm charcoal)
@@ -58,6 +63,11 @@ Border:       #e2e8f0  (light border)
 ```
 **Personality:** Clean, trustworthy, calming. Like a modern hospital or university website.
 **Grain opacity:** 0.04 | **Glass style:** glass-light | **Shadow tint:** blue
+
+**WHY this palette works:** Light backgrounds reduce cognitive load — the brain doesn't
+fight the environment, so it can focus on content. Sky blue (#0ea5e9) triggers trust
+(used by healthcare, banking, and education). Violet accent (#8b5cf6) adds just enough
+personality to avoid looking generic. This is the safest palette for corporate/education.
 
 ### 4. Vibrant (Creative, Marketing, Design)
 ```
@@ -102,6 +112,10 @@ Border:       #e7e5e4  (stone border)
 - **Body:** DM Sans (400, 500) -- clean, readable, modern
 - **Letter-spacing:** -0.03em headings, 0 body
 - **Best for:** Tech, SaaS, innovation courses
+
+**WHY this pairing works:** Clash Display's sharp geometry signals "cutting edge" while
+DM Sans provides comfortable reading. The contrast between display and body weights
+creates strong visual hierarchy — learners instantly see headings vs content.
 
 ### 2. Professional Trust
 - **Display:** Gilroy (700) -- rounded geometric, approachable authority

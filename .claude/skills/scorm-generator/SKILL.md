@@ -20,7 +20,19 @@ Conduct a structured interview to understand the learning transformation.
 
 → Read: `modules/course-design.md` (transformation-first methodology, SMART objectives)
 → Read: `references/interview-guide.md` (7-phase interview questions + output template)
+→ Read: `references/motivation-design.md` — **"The Five Questions Protocol"** section (understand learner motivation before designing)
 → **Output:** `specs/[course-slug]_spec.md`
+
+---
+
+### Phase 1.5: Motivation Design — Plan the Engagement Strategy
+
+Before structuring content, define the emotional journey and motivation approach.
+
+→ Read: `references/motivation-design.md` (MDA aesthetics, SDT needs, RAMP balance, Motivation Arc)
+→ **Answer:** The Five Questions (target aesthetics, learner level, intrinsic motivators, RAMP balance, learner phase)
+→ **Plan:** Motivation Arc per module (Hook → Ignite → Struggle → Triumph → Launch)
+→ **Output:** Include motivation strategy in `specs/[course-slug]_spec.md`
 
 ---
 
@@ -30,6 +42,7 @@ Transform the specification into detailed module/lesson architecture with Bloom'
 
 → Read: `modules/course-design.md` (Bloom's taxonomy, Gagne's Nine Events, SCO naming, durations)
 → Read: `references/curriculum-design.md` (extended pedagogical patterns)
+→ **Verify:** Each module follows the Motivation Arc and difficulty curve from Phase 1.5
 → **Output:** `specs/[course-slug]_structure.md`
 
 ---
@@ -49,8 +62,9 @@ Create a unique visual theme using the "Learn and Create" methodology.
 
 Generate course images. Always prefer SVG/CSS over raster when possible.
 
-→ Read: `modules/visual-generation.md` (SVG/CSS-first decision tree, style presets, prompts)
-→ Script: `scripts/generate_image.py --prompt "..." --style professional --output path.png`
+→ Read: `modules/visual-generation.md` (SVG/CSS-first decision tree, Gemini prompt patterns, batch mode)
+→ Script (PRIMARY): `scripts/generate_svg.py --prompt "..." --style line-icon --output icon.svg` (Gemini 3.1 Pro)
+→ Script (RASTER): `scripts/generate_image.py --prompt "..." --style professional --output path.png`
 → **Output:** `output/[course-slug]/shared/assets/images/`
 
 ---
@@ -146,6 +160,8 @@ Every course must meet these standards:
 - **Arabic/RTL:** `dir="rtl"`, `lang="ar"`, 18px+ body text, Arabic fonts bundled
 - **Fixed slides layout:** Like Storyline 360, not scrollable pages
 
+→ Architecture: See `SYSTEM.md` for how all pieces connect (HTML contract, CSS sandwich, engine dependencies)
+
 ---
 
 ## Output Structure
@@ -175,6 +191,7 @@ output/[course-slug]/
 | `modules/art-direction.md` | 5-dimension design framework, theme methodology, style guide template | Phase 3 |
 | `modules/visual-generation.md` | SVG/CSS decision tree, image prompts, style presets | Phase 4 |
 | **References** | | |
+| `references/motivation-design.md` | MDA aesthetics, SDT needs, RAMP balance, Motivation Arc, Five Questions, engagement checklist | Phase 1-1.5, All |
 | `references/interview-guide.md` | 7-phase interview questions, output spec template | Phase 1 |
 | `references/assessment-guide.md` | Question bank JSON formats, Bloom's alignment, behavioral data | Phase 6 |
 | `references/curriculum-design.md` | Extended pedagogical patterns and templates | Phase 2 |
@@ -190,7 +207,10 @@ output/[course-slug]/
 | `resources/engine/` | 16 JS engine files (slide, quiz, state, trigger, etc.) | Phase 7 |
 | `resources/components/` | 42 interactive HTML component snippets | Phase 7 |
 | `resources/icons/` | 8 SVG icons with currentColor | Phase 7 |
+| **Architecture** | | |
+| `SYSTEM.md` | System architecture, HTML contract, CSS sandwich, engine deps | All phases |
 | **Scripts** | | |
+| `scripts/generate_svg.py` | AI SVG generation via Gemini (primary visual tool) | Phase 4 |
 | `scripts/generate_image.py` | AI image generation with style presets | Phase 4 |
 | **Templates** | | |
 | `templates/scorm-1.2/schemas/` | XSD schema files for SCORM 1.2 | Phase 8 |

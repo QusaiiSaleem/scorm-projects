@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جودة البيانات | عقلية البيانات</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/player-shell.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+  <a href="#main-content" class="sr-only" style="position:absolute;right:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">تخطي إلى المحتوى الرئيسي</a>
+  <div class="sco-container">
+
+    <!-- SLIDE 1: Section Divider -->
+    <div class="slide" data-slide="0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--section-gradient);color:var(--color-section-text);text-align:center;padding:48px;position:relative;">
+      <div class="has-grain" style="position:absolute;inset:0;pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <h1 style="font-size:2.5rem;font-weight:var(--font-weight-extrabold);margin-bottom:16px;text-shadow:0 2px 8px rgba(0,0,0,0.2);" class="stagger-item">جودة البيانات</h1>
+        <p style="font-size:var(--text-h3);font-weight:var(--font-weight-medium);opacity:0.85;" class="stagger-item">البيانات الخاطئة تقود إلى قرارات خاطئة</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Content — لماذا جودة البيانات مهمة؟ -->
+    <div class="slide" data-slide="1" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span></div>
+      <div style="flex:1;display:flex;align-items:center;padding:32px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;gap:40px;">
+        <div style="flex:1;">
+          <h2 style="font-size:var(--text-h1);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:24px;" class="stagger-item">لماذا جودة البيانات مهمة؟</h2>
+          <ul class="bullet-list">
+            <li class="stagger-item">البيانات الخاطئة تؤدي إلى قرارات خاطئة</li>
+            <li class="stagger-item">غياب درجات بعض الطلاب يعني نتائج غير عادلة</li>
+            <li class="stagger-item">الجودة تقاس بأربعة أبعاد رئيسية</li>
+            <li class="stagger-item">ضمان الجودة مسؤولية مشتركة</li>
+          </ul>
+        </div>
+        <!-- SVG: Quality gauge -->
+        <div class="stagger-item" style="flex:0 0 380px;height:260px;border-radius:var(--card-radius);background:var(--color-surface);border:1px solid var(--color-border-light);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);">
+          <svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="جودة البيانات">
+            <!-- Gauge background -->
+            <path d="M60 150 A90 90 0 0 1 240 150" stroke="var(--color-border)" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <!-- Gauge fill (75% quality) -->
+            <path d="M60 150 A90 90 0 0 1 213 80" stroke="var(--color-success)" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <!-- Red zone -->
+            <path d="M60 150 A90 90 0 0 1 87 80" stroke="var(--color-error)" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.3"/>
+            <!-- Center text -->
+            <text x="150" y="130" text-anchor="middle" font-size="28" fill="var(--color-primary)" font-weight="800" font-family="var(--font-body)">75%</text>
+            <text x="150" y="155" text-anchor="middle" font-size="11" fill="var(--color-text-muted)" font-family="var(--font-body)">مؤشر جودة البيانات</text>
+            <!-- Labels -->
+            <text x="50" y="170" font-size="9" fill="var(--color-error)" font-family="var(--font-body)">ضعيف</text>
+            <text x="240" y="170" font-size="9" fill="var(--color-success)" font-family="var(--font-body)">ممتاز</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Click-to-Reveal (4 tabs) — أبعاد جودة البيانات -->
+    <div class="slide" data-slide="2" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h1);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:6px;" class="stagger-item">أبعاد جودة البيانات</h2>
+        <p style="font-size:var(--text-caption);color:var(--color-text-muted);margin-bottom:24px;" class="stagger-item">انقر على كل بعد لمعرفة تفاصيله</p>
+        <div style="display:flex;gap:12px;margin-bottom:20px;" role="tablist">
+          <button class="reveal-tab elastic-click stagger-item" role="tab" id="qt-1" aria-selected="false" onclick="showQualityPanel(1)" style="flex:1;text-align:center;">الدقة</button>
+          <button class="reveal-tab elastic-click stagger-item" role="tab" id="qt-2" aria-selected="false" onclick="showQualityPanel(2)" style="flex:1;text-align:center;">الاكتمال</button>
+          <button class="reveal-tab elastic-click stagger-item" role="tab" id="qt-3" aria-selected="false" onclick="showQualityPanel(3)" style="flex:1;text-align:center;">الاتساق</button>
+          <button class="reveal-tab elastic-click stagger-item" role="tab" id="qt-4" aria-selected="false" onclick="showQualityPanel(4)" style="flex:1;text-align:center;">التوقيت</button>
+        </div>
+        <div id="quality-panels" style="min-height:140px;">
+          <div id="qp-empty" style="background:var(--color-surface-alt);border-radius:var(--card-radius);padding:36px;text-align:center;border:2px dashed var(--color-border);">
+            <p style="color:var(--color-text-muted);">👆 انقر على أحد الأبعاد لمعرفة المزيد</p>
+          </div>
+          <div id="qp-1" style="display:none;background:var(--color-surface);border-radius:var(--card-radius);padding:28px;border:var(--card-border);box-shadow:var(--shadow-md);">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:var(--color-primary);margin-bottom:8px;">الدقة (Accuracy)</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">هل البيانات صحيحة؟ تسجيل 95 بدلاً من 59 يغير النتيجة كلياً. الدقة تعني أن كل قيمة مسجلة تطابق الواقع الفعلي.</p>
+          </div>
+          <div id="qp-2" style="display:none;background:var(--color-surface);border-radius:var(--card-radius);padding:28px;border:var(--card-border);box-shadow:var(--shadow-md);">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:var(--color-primary);margin-bottom:8px;">الاكتمال (Completeness)</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">هل جميع القيم مُدخلة؟ سجل حضور ناقص يعطي صورة غير دقيقة. الاكتمال يعني عدم وجود حقول فارغة أو قيم مفقودة.</p>
+          </div>
+          <div id="qp-3" style="display:none;background:var(--color-surface);border-radius:var(--card-radius);padding:28px;border:var(--card-border);box-shadow:var(--shadow-md);">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:var(--color-primary);margin-bottom:8px;">الاتساق (Consistency)</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">هل التنسيق موحد؟ كتابة التاريخ بصيغ مختلفة يسبب أخطاء في التحليل. الاتساق يعني تطبيق نفس القواعد على جميع البيانات.</p>
+          </div>
+          <div id="qp-4" style="display:none;background:var(--color-surface);border-radius:var(--card-radius);padding:28px;border:var(--card-border);box-shadow:var(--shadow-md);">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:var(--color-primary);margin-bottom:8px;">التوقيت (Timeliness)</h3>
+            <p style="font-size:var(--text-body);color:var(--color-text);line-height:var(--lh-body);">هل البيانات محدّثة؟ بيانات العام الماضي للتخطيط الحالي قد تكون مضللة. التوقيت يعني أن البيانات متاحة عند الحاجة.</p>
+          </div>
+        </div>
+        <p id="quality-tracker" style="font-size:var(--text-small);color:var(--color-text-muted);margin-top:12px;text-align:center;display:none;">تم استكشاف <span id="q-explored">0</span> من 4 أبعاد</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Two-Column Comparison -->
+    <div class="slide" data-slide="3" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h1);font-weight:var(--font-weight-extrabold);color:var(--color-primary);margin-bottom:24px;text-align:center;" class="stagger-item">مقارنة: بيانات عالية مقابل منخفضة الجودة</h2>
+        <div style="display:flex;gap:24px;">
+          <!-- High Quality (right in RTL) -->
+          <div class="comparison-col positive stagger-item" style="flex:1;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#065F46;margin-bottom:16px;text-align:center;">✓ بيانات عالية الجودة</h3>
+            <ul style="list-style:none;padding:0;">
+              <li style="padding:8px 0;border-bottom:1px solid rgba(16,185,129,0.2);font-size:var(--text-caption);">● درجات دقيقة ومطابقة للواقع</li>
+              <li style="padding:8px 0;border-bottom:1px solid rgba(16,185,129,0.2);font-size:var(--text-caption);">● جميع السجلات مكتملة</li>
+              <li style="padding:8px 0;border-bottom:1px solid rgba(16,185,129,0.2);font-size:var(--text-caption);">● تنسيق موحد في جميع الحقول</li>
+              <li style="padding:8px 0;font-size:var(--text-caption);">● بيانات محدثة بشكل دوري</li>
+            </ul>
+          </div>
+          <!-- Low Quality -->
+          <div class="comparison-col negative stagger-item" style="flex:1;">
+            <h3 style="font-size:var(--text-h3);font-weight:var(--font-weight-bold);color:#991B1B;margin-bottom:16px;text-align:center;">✗ بيانات منخفضة الجودة</h3>
+            <ul style="list-style:none;padding:0;">
+              <li style="padding:8px 0;border-bottom:1px solid rgba(239,68,68,0.2);font-size:var(--text-caption);">● أخطاء في إدخال الأرقام</li>
+              <li style="padding:8px 0;border-bottom:1px solid rgba(239,68,68,0.2);font-size:var(--text-caption);">● حقول فارغة وقيم مفقودة</li>
+              <li style="padding:8px 0;border-bottom:1px solid rgba(239,68,68,0.2);font-size:var(--text-caption);">● تواريخ بصيغ مختلفة ومتناقضة</li>
+              <li style="padding:8px 0;font-size:var(--text-caption);">● بيانات قديمة لم تُحدَّث</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Quiz MCQ — أي بعد جودة يتأثر؟ -->
+    <div class="slide" data-slide="4" style="display:none;flex-direction:column;background:var(--color-bg);">
+      <div class="slide-header-banner"><span>المحاضرة التفاعلية: عقلية البيانات</span><span style="font-size:var(--text-small);opacity:0.7;">نشاط تفاعلي</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 48px;max-width:var(--content-max-width);margin:0 auto;width:100%;">
+        <h2 style="font-size:var(--text-h2);font-weight:var(--font-weight-extrabold);color:var(--color-text);margin-bottom:8px;line-height:var(--lh-subheading);" class="stagger-item">شركة تستخدم بيانات مبيعات العام الماضي لتخطيط حملة جديدة. أي بعد جودة يتأثر؟</h2>
+        <p style="font-size:var(--text-small);color:var(--color-text-muted);margin-bottom:20px;" class="stagger-item">نشاط تفاعلي: اختيار من متعدد</p>
+        <div id="quiz2-options" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+          <button class="quiz-option elastic-click stagger-item" data-option="a" onclick="selectOption2(this)" role="radio" aria-checked="false"><span class="option-letter">أ</span><span style="font-size:var(--text-body);">الدقة</span></button>
+          <button class="quiz-option elastic-click stagger-item" data-option="b" onclick="selectOption2(this)" role="radio" aria-checked="false"><span class="option-letter">ب</span><span style="font-size:var(--text-body);">الاكتمال</span></button>
+          <button class="quiz-option elastic-click stagger-item" data-option="c" onclick="selectOption2(this)" role="radio" aria-checked="false"><span class="option-letter">ج</span><span style="font-size:var(--text-body);">الاتساق</span></button>
+          <button class="quiz-option elastic-click stagger-item" data-option="d" onclick="selectOption2(this)" role="radio" aria-checked="false"><span class="option-letter">د</span><span style="font-size:var(--text-body);">التوقيت</span></button>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <button id="checkBtn2" class="btn-check elastic-click" onclick="checkAnswer2()" disabled style="opacity:0.5;">تحقق من الإجابة</button>
+          <div id="quiz2-feedback" style="display:none;" role="alert"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="slide-nav" aria-label="تنقل الشرائح" id="main-content">
+      <button class="btn-secondary elastic-click" id="prevBtn" disabled style="padding:10px 24px;border-radius:var(--btn-radius);font-family:var(--font-body);font-weight:var(--font-weight-bold);font-size:var(--text-caption);cursor:pointer;">السابق</button>
+      <div class="progress-bar" style="flex:1;margin:0 20px;height:var(--progress-height);background:var(--progress-track);border-radius:var(--progress-radius);overflow:hidden;">
+        <div class="progress-fill" style="height:100%;background:var(--progress-fill);border-radius:var(--progress-radius);transition:width 400ms ease;"></div>
+      </div>
+      <span class="page-indicator" id="pageIndicator" style="font-size:var(--text-small);color:var(--color-text-muted);min-width:50px;text-align:center;" aria-live="polite">1 / 5</span>
+      <button class="btn-primary elastic-click" id="nextBtn" data-next-text="التالي" data-complete-text="إكمال" style="padding:10px 24px;border-radius:var(--btn-radius);font-family:var(--font-body);font-weight:var(--font-weight-bold);font-size:var(--text-caption);cursor:pointer;">التالي</button>
+    </nav>
+  </div>
+
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="../shared/engine/confetti.js"></script>
+  <script src="content.js"></script>
+</body>
+</html>

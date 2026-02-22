@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مقدمة عن عقلية البيانات | عقلية البيانات</title>
+
+  <!-- Layered CSS -->
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/player-shell.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+</head>
+<body>
+
+  <!-- Skip Navigation -->
+  <a href="#main-content" class="sr-only"
+     style="position:absolute;right:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+    تخطي إلى المحتوى الرئيسي
+  </a>
+
+  <div class="sco-container">
+
+    <!-- ============================================================
+         SLIDE 1: Section Divider — مقدمة عن عقلية البيانات
+         ============================================================ -->
+    <div class="slide" data-slide="0"
+         style="display:flex; flex-direction:column; align-items:center; justify-content:center;
+                background: var(--section-gradient); color: var(--color-section-text);
+                text-align:center; padding: 48px; position:relative;">
+
+      <div class="has-grain" style="position:absolute;inset:0;pointer-events:none;"></div>
+
+      <div style="position:relative; z-index:1;">
+        <h1 style="font-size: 2.5rem; font-weight: var(--font-weight-extrabold);
+                   margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);"
+            class="stagger-item">
+          مقدمة عن عقلية البيانات
+        </h1>
+        <p style="font-size: var(--text-h3); font-weight: var(--font-weight-medium);
+                  opacity: 0.85;"
+           class="stagger-item">
+          كيف نفكر ونتعلم ونتواصل باستخدام البيانات
+        </p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 2: Content — نحن نعيش في عالم البيانات
+         Two-column: bullets on right (RTL), image placeholder on left
+         ============================================================ -->
+    <div class="slide" data-slide="1"
+         style="display:none; flex-direction:column; background: var(--color-bg);">
+
+      <!-- Header Banner -->
+      <div class="slide-header-banner">
+        <span>المحاضرة التفاعلية: عقلية البيانات</span>
+        <div class="points-badge" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+          <span id="points-value">0</span>
+        </div>
+      </div>
+
+      <!-- Content Area: two columns -->
+      <div style="flex:1; display:flex; align-items:center; padding: 32px 48px;
+                  max-width: var(--content-max-width); margin: 0 auto; width:100%; gap: 40px;">
+
+        <!-- Text Column (right side in RTL) -->
+        <div style="flex:1;">
+          <h2 style="font-size: var(--text-h1); font-weight: var(--font-weight-extrabold);
+                     color: var(--color-primary); margin-bottom: 24px;"
+              class="stagger-item">
+            نحن نعيش في عالم البيانات
+          </h2>
+
+          <ul class="bullet-list">
+            <li class="stagger-item">كل ثانية تُنتَج كميات هائلة من البيانات</li>
+            <li class="stagger-item">التغريدات والصور والتسوق الإلكتروني</li>
+            <li class="stagger-item">البيانات أصبحت جزءًا من حياتنا اليومية</li>
+            <li class="stagger-item">من يفهم البيانات يتخذ قرارات أفضل</li>
+          </ul>
+        </div>
+
+        <!-- SVG Illustration: Data World (devices, connections, data streams) -->
+        <div class="stagger-item" style="flex:0 0 380px; height: 260px; border-radius: var(--card-radius);
+                    background: var(--color-surface); border: 1px solid var(--color-border-light);
+                    display:flex; align-items:center; justify-content:center; overflow:hidden;
+                    box-shadow: var(--shadow-sm);">
+          <svg width="340" height="230" viewBox="0 0 340 230" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="عالم البيانات">
+            <!-- Background gradient circle -->
+            <circle cx="170" cy="115" r="90" fill="var(--color-info-light)" opacity="0.4"/>
+            <!-- Central globe/network -->
+            <circle cx="170" cy="105" r="50" stroke="var(--color-primary)" stroke-width="1.5" fill="none" opacity="0.3"/>
+            <ellipse cx="170" cy="105" rx="50" ry="20" stroke="var(--color-primary)" stroke-width="1" fill="none" opacity="0.2"/>
+            <ellipse cx="170" cy="105" rx="20" ry="50" stroke="var(--color-primary)" stroke-width="1" fill="none" opacity="0.2"/>
+            <!-- Data nodes -->
+            <circle cx="170" cy="55" r="8" fill="var(--color-primary)"/>
+            <circle cx="220" cy="105" r="8" fill="var(--color-secondary)"/>
+            <circle cx="170" cy="155" r="8" fill="var(--color-primary)"/>
+            <circle cx="120" cy="105" r="8" fill="var(--color-secondary)"/>
+            <circle cx="205" cy="72" r="6" fill="var(--color-accent)"/>
+            <circle cx="135" cy="138" r="6" fill="var(--color-accent)"/>
+            <!-- Connection lines -->
+            <line x1="170" y1="63" x2="205" y2="72" stroke="var(--color-primary)" stroke-width="1" opacity="0.4"/>
+            <line x1="205" y1="78" x2="220" y2="97" stroke="var(--color-primary)" stroke-width="1" opacity="0.4"/>
+            <line x1="170" y1="147" x2="135" y2="138" stroke="var(--color-primary)" stroke-width="1" opacity="0.4"/>
+            <line x1="135" y1="132" x2="120" y2="113" stroke="var(--color-primary)" stroke-width="1" opacity="0.4"/>
+            <!-- Orbiting device icons -->
+            <!-- Phone -->
+            <rect x="68" y="60" width="24" height="38" rx="4" stroke="var(--color-primary)" stroke-width="1.5" fill="var(--color-surface)"/>
+            <line x1="74" y1="90" x2="86" y2="90" stroke="var(--color-primary)" stroke-width="1"/>
+            <!-- Laptop -->
+            <rect x="248" y="68" width="36" height="24" rx="2" stroke="var(--color-primary)" stroke-width="1.5" fill="var(--color-surface)"/>
+            <path d="M244 92 L288 92" stroke="var(--color-primary)" stroke-width="1.5"/>
+            <!-- Database -->
+            <ellipse cx="270" cy="148" rx="16" ry="6" stroke="var(--color-secondary)" stroke-width="1.5" fill="var(--color-surface)"/>
+            <path d="M254 148 V164" stroke="var(--color-secondary)" stroke-width="1.5"/>
+            <path d="M286 148 V164" stroke="var(--color-secondary)" stroke-width="1.5"/>
+            <ellipse cx="270" cy="164" rx="16" ry="6" stroke="var(--color-secondary)" stroke-width="1.5" fill="none"/>
+            <!-- Cloud -->
+            <path d="M60 160 A12 12 0 0 1 72 148 A16 16 0 0 1 100 148 A12 12 0 0 1 108 164 Z"
+                  stroke="var(--color-primary)" stroke-width="1.5" fill="var(--color-surface)"/>
+            <!-- Small flying data particles -->
+            <circle cx="100" cy="80" r="3" fill="var(--color-accent)" opacity="0.6">
+              <animate attributeName="cy" values="80;75;80" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="240" cy="130" r="3" fill="var(--color-accent)" opacity="0.6">
+              <animate attributeName="cy" values="130;125;130" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="150" cy="180" r="2" fill="var(--color-secondary)" opacity="0.5">
+              <animate attributeName="cx" values="150;155;150" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Label -->
+            <text x="170" y="210" text-anchor="middle" font-size="11" fill="var(--color-text-muted)"
+                  font-family="var(--font-body)">عالم مترابط بالبيانات</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 3: Interactive — ما هي عقلية البيانات؟ (Click-to-Reveal)
+         3 tab buttons, clicking each shows its description below
+         ============================================================ -->
+    <div class="slide" data-slide="2"
+         style="display:none; flex-direction:column; background: var(--color-bg);">
+
+      <!-- Header Banner -->
+      <div class="slide-header-banner">
+        <span>المحاضرة التفاعلية: عقلية البيانات</span>
+      </div>
+
+      <!-- Content Area -->
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center;
+                  padding: 32px 48px; max-width: var(--content-max-width); margin: 0 auto; width:100%;">
+
+        <!-- Title -->
+        <h2 style="font-size: var(--text-h1); font-weight: var(--font-weight-extrabold);
+                   color: var(--color-primary); margin-bottom: 8px;"
+            class="stagger-item">
+          ما هي عقلية البيانات؟
+        </h2>
+
+        <!-- Instruction -->
+        <p style="font-size: var(--text-caption); color: var(--color-text-muted);
+                  margin-bottom: 28px;"
+           class="stagger-item">
+          انقر على كل عنصر لاكتشاف مكونات عقلية البيانات
+        </p>
+
+        <!-- 3 Tab Buttons -->
+        <div style="display:flex; gap: 16px; margin-bottom: 24px;" role="tablist">
+
+          <button class="reveal-tab elastic-click stagger-item" role="tab"
+                  id="tab-1" aria-selected="false" aria-controls="panel-1"
+                  onclick="showRevealPanel(1)" style="flex:1; text-align:center; font-size: var(--text-body);">
+            التعرف على البيانات
+          </button>
+
+          <button class="reveal-tab elastic-click stagger-item" role="tab"
+                  id="tab-2" aria-selected="false" aria-controls="panel-2"
+                  onclick="showRevealPanel(2)" style="flex:1; text-align:center; font-size: var(--text-body);">
+            التعلم من البيانات
+          </button>
+
+          <button class="reveal-tab elastic-click stagger-item" role="tab"
+                  id="tab-3" aria-selected="false" aria-controls="panel-3"
+                  onclick="showRevealPanel(3)" style="flex:1; text-align:center; font-size: var(--text-body);">
+            التواصل بالبيانات
+          </button>
+        </div>
+
+        <!-- Panel Content (hidden until clicked) -->
+        <div id="reveal-panels" style="min-height: 160px;">
+
+          <!-- Empty state: instruction -->
+          <div id="panel-empty"
+               style="background: var(--color-surface-alt); border-radius: var(--card-radius);
+                      padding: 40px; text-align:center; border: 2px dashed var(--color-border);">
+            <p style="color: var(--color-text-muted); font-size: var(--text-body);">
+              👆 انقر على أحد العناصر أعلاه لمعرفة المزيد
+            </p>
+          </div>
+
+          <!-- Panel 1: التعرف على البيانات -->
+          <div id="panel-1" role="tabpanel" aria-labelledby="tab-1"
+               style="display:none; background: var(--color-surface); border-radius: var(--card-radius);
+                      padding: 32px; border: var(--card-border); box-shadow: var(--shadow-md);">
+            <div style="display:flex; align-items:flex-start; gap: 20px;">
+              <div style="width:56px;height:56px;border-radius:12px;background:var(--color-info-light);
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                     stroke-width="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </div>
+              <div>
+                <h3 style="font-size: var(--text-h3); font-weight: var(--font-weight-bold);
+                           color: var(--color-primary); margin-bottom: 8px;">
+                  التعرف على البيانات
+                </h3>
+                <p style="font-size: var(--text-body); color: var(--color-text); line-height: var(--lh-body);">
+                  رؤية البيانات في كل مكان والتعرف على مصادرها المتعددة.
+                  من حولنا، تُنتج الأجهزة والتطبيقات والأنظمة بيانات باستمرار —
+                  عقلية البيانات تبدأ بالوعي بهذا الواقع.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 2: التعلم من البيانات -->
+          <div id="panel-2" role="tabpanel" aria-labelledby="tab-2"
+               style="display:none; background: var(--color-surface); border-radius: var(--card-radius);
+                      padding: 32px; border: var(--card-border); box-shadow: var(--shadow-md);">
+            <div style="display:flex; align-items:flex-start; gap: 20px;">
+              <div style="width:56px;height:56px;border-radius:12px;background:var(--color-warning-light);
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)"
+                     stroke-width="2" aria-hidden="true">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 style="font-size: var(--text-h3); font-weight: var(--font-weight-bold);
+                           color: var(--color-primary); margin-bottom: 8px;">
+                  التعلم من البيانات
+                </h3>
+                <p style="font-size: var(--text-body); color: var(--color-text); line-height: var(--lh-body);">
+                  استخدام البيانات لتحسين القرارات وحل المشكلات.
+                  بدلاً من الاعتماد على الحدس فقط، نتعلم كيف نقرأ البيانات
+                  ونستخلص منها رؤى تساعدنا في اتخاذ قرارات مبنية على أدلة.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 3: التواصل بالبيانات -->
+          <div id="panel-3" role="tabpanel" aria-labelledby="tab-3"
+               style="display:none; background: var(--color-surface); border-radius: var(--card-radius);
+                      padding: 32px; border: var(--card-border); box-shadow: var(--shadow-md);">
+            <div style="display:flex; align-items:flex-start; gap: 20px;">
+              <div style="width:56px;height:56px;border-radius:12px;background:var(--color-success-light);
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)"
+                     stroke-width="2" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 style="font-size: var(--text-h3); font-weight: var(--font-weight-bold);
+                           color: var(--color-primary); margin-bottom: 8px;">
+                  التواصل بالبيانات
+                </h3>
+                <p style="font-size: var(--text-body); color: var(--color-text); line-height: var(--lh-body);">
+                  مشاركة النتائج والرؤى بوضوح وفعالية مع الآخرين.
+                  المخططات والرسوم البيانية والإنفوجرافيك هي أدوات قوية
+                  لتحويل الأرقام إلى قصص مفهومة يستطيع الجميع استيعابها.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion tracker: shows how many tabs were explored -->
+        <p id="explore-tracker"
+           style="font-size: var(--text-small); color: var(--color-text-muted);
+                  margin-top: 16px; text-align:center; display:none;">
+          تم استكشاف <span id="explored-count">0</span> من 3 عناصر
+        </p>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         NAVIGATION BAR
+         ============================================================ -->
+    <nav class="slide-nav" aria-label="تنقل الشرائح" id="main-content">
+      <button class="btn-secondary elastic-click" id="prevBtn"
+              disabled aria-label="الشريحة السابقة"
+              style="padding:10px 24px; border-radius:var(--btn-radius);
+                     font-family:var(--font-body); font-weight:var(--font-weight-bold);
+                     font-size:var(--text-caption); cursor:pointer;">
+        السابق
+      </button>
+
+      <div class="progress-bar" style="flex:1; margin:0 20px; height:var(--progress-height);
+           background:var(--progress-track); border-radius:var(--progress-radius); overflow:hidden;">
+        <div class="progress-fill" style="height:100%; background:var(--progress-fill);
+             border-radius:var(--progress-radius); transition:width 400ms ease;"></div>
+      </div>
+
+      <span class="page-indicator" id="pageIndicator"
+            style="font-size:var(--text-small); color:var(--color-text-muted); min-width:50px; text-align:center;"
+            aria-live="polite">
+        1 / 3
+      </span>
+
+      <button class="btn-primary elastic-click" id="nextBtn"
+              aria-label="الشريحة التالية"
+              data-next-text="التالي" data-complete-text="إكمال"
+              style="padding:10px 24px; border-radius:var(--btn-radius);
+                     font-family:var(--font-body); font-weight:var(--font-weight-bold);
+                     font-size:var(--text-caption); cursor:pointer;">
+        التالي
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="../shared/scorm-api.js"></script>
+  <script src="../shared/behavior-tracker.js"></script>
+  <script src="../shared/gamification.js"></script>
+  <script src="../shared/engine/slide-controller.js"></script>
+  <script src="../shared/engine/sound-effects.js"></script>
+  <script src="content.js"></script>
+
+</body>
+</html>

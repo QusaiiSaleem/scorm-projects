@@ -27,11 +27,6 @@
  *   </div>
  */
 
-/* PRINCIPLE: rendering-guide.md > "The Non-Negotiable Slide Structure"
-   This controller expects the exact DOM structure documented in rendering-guide.md:
-   .sco-container > main.sco-content > .slide[data-slide="N"] + nav.sco-nav
-   If generated HTML doesn't follow this structure, navigation will break. */
-
 (function() {
   'use strict';
 

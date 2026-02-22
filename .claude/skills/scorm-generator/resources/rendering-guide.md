@@ -27,13 +27,95 @@ Read from:
 - `art-direction/[course-name]_style.md` - Visual style guide
 - `art-direction/[course-name]_theme.css` - Theme CSS (COPY to shared/)
 - `art-direction/[course-name]_decorations.css` - Decorations (COPY if exists)
-- `themes/_base/base.css` - Foundation CSS (COPY to shared/)
+- `.claude/skills/scorm-generator/resources/css/base.css` - Foundation CSS (COPY to shared/)
+- `.claude/skills/scorm-generator/resources/css/player-shell.css` - Player chrome CSS (COPY to shared/)
 - `.claude/skills/scorm-generator/resources/components/` - All 42 reusable HTML component snippets
 - `.claude/skills/scorm-generator/resources/icons/` - SVG icons (COPY to shared/assets/)
 - `.claude/skills/scorm-generator/resources/engine/` - JS engine files (COPY needed ones to shared/engine/)
-- `.claude/skills/scorm-generator/resources/css/player-shell.css` - Player chrome CSS (COPY to shared/)
 - `output/[course-name]/content/questions.json` - Assessment questions
 - `output/[course-name]/shared/assets/` - Generated visuals
+
+---
+
+## The Non-Negotiable Slide Structure
+
+Every SCO page MUST follow this exact DOM structure. This is the **contract** between
+the HTML you generate and the CSS/JS engine that makes it work.
+
+```
+WHY THIS WORKS: The flexbox column layout gives .sco-content ALL remaining
+space between the header and nav. Slides use position:absolute to stack on
+top of each other. Only the .active slide is visible. The nav is flex-shrink:0
+so it NEVER gets pushed off-screen.
+
+┌─────────────────────────────────────────────────┐
+│  .sco-container  (height:100vh, flex-col)       │
+│  ┌─────────────────────────────────────────────┐ │
+│  │  header.nav-bar  (flex-shrink:0, 56px)      │ │
+│  │  Logo │ Title │ Points Badge                │ │
+│  └─────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────┐ │
+│  │  main.sco-content  (flex:1, overflow:hidden)│ │
+│  │  ┌─────────────────────────────────────┐    │ │
+│  │  │  .slide  (position:absolute, inset:0)│   │ │
+│  │  │  ┌───────────────────────────────┐  │    │ │
+│  │  │  │  .slide-inner (max-width:900px)│ │    │ │
+│  │  │  │  ┌───────────────────────┐    │  │    │ │
+│  │  │  │  │  Actual slide content │    │  │    │ │
+│  │  │  │  └───────────────────────┘    │  │    │ │
+│  │  │  └───────────────────────────────┘  │    │ │
+│  │  └─────────────────────────────────────┘    │ │
+│  └─────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────┐ │
+│  │  nav.sco-nav  (flex-shrink:0, 56px)         │ │
+│  │  ◀ Prev  │  1 / 5  │  Next ▶               │ │
+│  └─────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────┘
+```
+
+**The `<main class="sco-content">` wrapper is MANDATORY.** Without it, slides
+compete with the nav bar for space, causing content overflow.
+
+---
+
+## BANNED: Inline Styles on Slides
+
+These patterns were found in the NJR01 course and MUST NEVER be used again.
+They override base.css and break the fixed viewport layout.
+
+### NEVER do this:
+```html
+<!-- WRONG: Inline styles override base.css layout -->
+<div class="slide" style="display:flex; padding:48px; flex-direction:column;">
+  ...
+</div>
+
+<!-- WRONG: Missing <main class="sco-content"> wrapper -->
+<div class="sco-container">
+  <div class="slide active">...</div>
+  <div class="slide">...</div>
+  <nav class="slide-nav">...</nav>  <!-- slides push nav off viewport -->
+</div>
+
+<!-- WRONG: Custom class names that don't match base.css -->
+<nav class="lesson-navigation">...</nav>  <!-- base.css won't style this -->
+```
+
+### ALWAYS do this:
+```html
+<!-- CORRECT: Let base.css handle all layout via class names -->
+<div class="sco-container">
+  <header class="nav-bar">...</header>
+  <main class="sco-content">                    <!-- MANDATORY wrapper -->
+    <div class="slide active" data-slide="0">   <!-- NO inline styles -->
+      <div class="slide-inner">                  <!-- Centers content -->
+        <!-- Your content here -->
+      </div>
+    </div>
+  </main>
+  <nav class="sco-nav">...</nav>                <!-- OR .slide-nav (alias) -->
+</div>
+```
 
 ---
 
@@ -43,7 +125,7 @@ Read from:
 
 **After (new way):** Copy layered CSS files:
 ```
-shared/base.css           <- COPY from themes/_base/base.css (never modify)
+shared/base.css           <- COPY from .claude/skills/scorm-generator/resources/css/base.css (never modify)
 shared/player-shell.css   <- COPY from .claude/skills/scorm-generator/resources/css/player-shell.css
 shared/theme.css          <- COPY from art-direction/[course]_theme.css
 shared/decorations.css    <- COPY from art-direction/[course]_decorations.css (optional)
@@ -600,110 +682,6 @@ function renderQuiz(container, quiz) {
 
 ---
 
-## CSS Framework
-
-```css
-/* shared/styles.css - Base styles for all SCOs */
-
-:root {
-  --primary: #[from-style-guide];
-  --secondary: #[from-style-guide];
-  --accent: #[from-style-guide];
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --background: #ffffff;
-  --surface: #f5f5f5;
-  --success: #22c55e;
-  --error: #ef4444;
-  --warning: #f59e0b;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Inter', -apple-system, sans-serif;
-  line-height: 1.6;
-  color: var(--text-primary);
-  background: var(--background);
-}
-
-.sco-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Progress bar */
-.progress-bar {
-  height: 4px;
-  background: var(--surface);
-  border-radius: 2px;
-  margin-bottom: 20px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-/* Content area */
-.sco-content {
-  flex: 1;
-  padding: 20px 0;
-}
-
-/* Navigation */
-.sco-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-  border-top: 1px solid var(--surface);
-}
-
-.btn-prev, .btn-next {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.btn-next {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-prev {
-  background: var(--surface);
-  color: var(--text-primary);
-}
-
-.btn-prev:disabled, .btn-next:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .sco-container {
-    padding: 15px;
-  }
-}
-```
-
----
-
 ## Output Location
 
 Generate files to:
@@ -712,7 +690,7 @@ output/[course-name]/
 ├── shared/
 │   ├── scorm-api.js
 │   ├── behavior-tracker.js
-│   ├── base.css            <- COPIED from themes/_base/base.css (or skill resources/css/)
+│   ├── base.css            <- COPIED from .claude/skills/scorm-generator/resources/css/base.css
 │   ├── theme.css           <- COPIED from art-direction/[course]_theme.css
 │   ├── decorations.css     <- COPIED from art-direction/ (optional)
 │   ├── brand.css           <- COPIED from themes/brands/ (optional)

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المقدمة والأهداف | عقلية البيانات</title>
+
+  <!-- Layered CSS: base → theme → player shell → course custom -->
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/player-shell.css">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/course-custom.css">
+
+  <!-- Preload SCORM API -->
+  <link rel="preload" href="../shared/scorm-api.js" as="script">
+</head>
+<body>
+
+  <!-- Skip Navigation (WCAG 2.1 AA) -->
+  <a href="#main-content" class="sr-only"
+     style="position:absolute;right:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+    تخطي إلى المحتوى الرئيسي
+  </a>
+
+  <div class="sco-container">
+
+    <!-- ============================================================
+         SLIDE 1: Title / Cover
+         Full gradient background, centered course title
+         ============================================================ -->
+    <div class="slide" data-slide="0"
+         style="display:flex; flex-direction:column; align-items:center; justify-content:center;
+                background: var(--section-gradient); color: var(--color-section-text);
+                text-align:center; padding: 48px; position:relative;">
+
+      <!-- Subtle grain texture overlay -->
+      <div class="has-grain" style="position:absolute;inset:0;pointer-events:none;"></div>
+
+      <div style="position:relative; z-index:1; max-width:800px;">
+        <!-- University name -->
+        <p style="font-size: var(--text-caption); font-weight: var(--font-weight-medium);
+                  opacity: 0.8; margin-bottom: 8px; letter-spacing: 0.02em;"
+           class="stagger-item">
+          كلية علوم الحاسب ونظم المعلومات
+        </p>
+
+        <!-- Label -->
+        <p style="font-size: var(--text-body); font-weight: var(--font-weight-medium);
+                  opacity: 0.7; margin-bottom: 24px;"
+           class="stagger-item">
+          المحاضرة التفاعلية
+        </p>
+
+        <!-- Course Title -->
+        <h1 style="font-size: 2.75rem; font-weight: var(--font-weight-extrabold);
+                   line-height: 1.25; margin-bottom: 16px;
+                   text-shadow: 0 2px 12px rgba(0,0,0,0.2);"
+            class="stagger-item">
+          عقلية البيانات
+        </h1>
+
+        <!-- Subtitle -->
+        <p style="font-size: var(--text-h3); font-weight: var(--font-weight-medium);
+                  opacity: 0.85; margin-bottom: 40px; line-height: 1.5;"
+           class="stagger-item">
+          التعلم والتواصل باستخدام البيانات
+        </p>
+
+        <!-- Start Button -->
+        <button id="startBtn"
+                class="elastic-click stagger-item"
+                style="background: var(--color-accent); color: var(--color-text-on-accent);
+                       border: none; border-radius: var(--btn-radius);
+                       padding: 16px 48px; font-family: var(--font-body);
+                       font-size: var(--text-body); font-weight: var(--font-weight-bold);
+                       cursor: pointer; transition: all var(--hover-duration) ease;
+                       box-shadow: 0 4px 16px rgba(232, 168, 23, 0.3);"
+                aria-label="ابدأ المحاضرة">
+          ابدأ المحاضرة
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDE 2: Learning Objectives
+         Dark header banner + 5 objective rows with stagger animation
+         ============================================================ -->
+    <div class="slide" data-slide="1"
+         style="display:none; flex-direction:column; background: var(--color-bg);">
+
+      <!-- Header Banner (dark strip) -->
+      <div class="slide-header-banner">
+        <span>المحاضرة التفاعلية: عقلية البيانات</span>
+        <div id="points-display" class="points-badge" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+          <span id="points-value">0</span>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center;
+                  padding: 32px 48px; max-width: var(--content-max-width); margin: 0 auto; width:100%;">
+
+        <!-- Title -->
+        <h2 style="font-size: var(--text-h1); font-weight: var(--font-weight-extrabold);
+                   color: var(--color-primary); margin-bottom: 8px;"
+            class="stagger-item">
+          الأهداف التعليمية
+        </h2>
+
+        <!-- Subtitle -->
+        <p style="font-size: var(--text-body); color: var(--color-text-secondary);
+                  margin-bottom: 28px;"
+           class="stagger-item">
+          يتوقع منك في نهاية هذه المحاضرة أن تكون قادرًا على:
+        </p>
+
+        <!-- Objective 1 -->
+        <div class="objective-row hover-lift stagger-item" role="listitem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-info-light);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p style="font-size:var(--text-body);color:var(--color-text);margin:0;">
+            أن يُعرّف المتعلم مفهوم عقلية البيانات وأهميتها
+          </p>
+        </div>
+
+        <!-- Objective 2 -->
+        <div class="objective-row hover-lift stagger-item" role="listitem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-info-light);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p style="font-size:var(--text-body);color:var(--color-text);margin:0;">
+            أن يُحدد المتعلم خصائص البيانات الضخمة (الحجم والسرعة والتنوع)
+          </p>
+        </div>
+
+        <!-- Objective 3 -->
+        <div class="objective-row hover-lift stagger-item" role="listitem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-info-light);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p style="font-size:var(--text-body);color:var(--color-text);margin:0;">
+            أن يُحلل المتعلم أبعاد جودة البيانات (الدقة والاكتمال والاتساق والتوقيت)
+          </p>
+        </div>
+
+        <!-- Objective 4 -->
+        <div class="objective-row hover-lift stagger-item" role="listitem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-info-light);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p style="font-size:var(--text-body);color:var(--color-text);margin:0;">
+            أن يُقيّم المتعلم أساليب التواصل الفعال باستخدام البيانات
+          </p>
+        </div>
+
+        <!-- Objective 5 -->
+        <div class="objective-row hover-lift stagger-item" role="listitem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-info-light);
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p style="font-size:var(--text-body);color:var(--color-text);margin:0;">
+            أن يناقش المتعلم قضايا الخصوصية والأخلاقيات المتعلقة بالبيانات
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         NAVIGATION BAR (bottom)
+         ============================================================ -->
+    <nav class="slide-nav" aria-label="تنقل الشرائح" id="main-content">
+      <button class="btn-secondary elastic-click" id="prevBtn"
+              disabled aria-label="الشريحة السابقة"
+              data-next-text="التالي" data-complete-text="إكمال"
+              style="padding:10px 24px; border-radius:var(--btn-radius);
+                     font-family:var(--font-body); font-weight:var(--font-weight-bold);
+                     font-size:var(--text-caption); cursor:pointer;">
+        السابق
+      </button>
+
+      <div class="progress-bar" style="flex:1; margin:0 20px; height:var(--progress-height);
+           background:var(--progress-track); border-radius:var(--progress-radius); overflow:hidden;">
+        <div class="progress-fill" style="height:100%; background:var(--progress-fill);
+             border-radius:var(--progress-radius); transition:width 400ms ease; width:50%;"></div>
+      </div>
+
+      <span class="page-indicator" id="pageIndicator"
+            style="font-size:var(--text-small); color:var(--color-text-muted); min-width:50px; text-align:center;"
+            aria-live="polite">
+        1 / 2
+      </span>
+
+      <button class="btn-primary elastic-click" id="nextBtn"
+              aria-label="الشريحة التالية"
+              data-next-text="التالي" data-complete-text="إكمال"
+              style="padding:10px 24px; border-radius:var(--btn-radius);
+                     font-family:var(--font-body); font-weight:var(--font-weight-bold);
+                     font-size:var(--text-caption); cursor:pointer;">
+        التالي
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <!-- SCORM API (talks to LMS) -->
+  <script src="../shared/scorm-api.js"></script>
+  <!-- Behavioral tracking (learning analytics) -->
+  <script src="../shared/behavior-tracker.js"></script>
+  <!-- Gamification (points, progress) -->
+  <script src="../shared/gamification.js"></script>
+  <!-- Slide navigation controller -->
+  <script src="../shared/engine/slide-controller.js"></script>
+  <!-- Sound effects (synthesized, no audio files) -->
+  <script src="../shared/engine/sound-effects.js"></script>
+  <!-- SCO logic -->
+  <script src="content.js"></script>
+
+</body>
+</html>
