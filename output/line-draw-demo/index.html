@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Continuous Line Draw — Background Demo</title>
+<style>
+  :root {
+    --color-primary: #6C5CE7;
+    --color-primary-dark: #5A4BD1;
+    --color-accent: #F97316;
+    --color-bg: #0f1226;
+    --color-surface: rgba(255,255,255,0.04);
+    --color-text: #EAECFF;
+    --color-text-secondary: #A7ADD8;
+    --font-heading: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #23285a 0%, transparent 60%),
+      var(--color-bg);
+  }
+
+  /* ---- SCO layout contract (matches the studio's structure) ---- */
+  .sco-container { height: 100vh; display: flex; flex-direction: column; }
+
+  .nav-bar {
+    flex-shrink: 0; height: 56px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.15);
+  }
+  .nav-bar .dot { width: 12px; height: 12px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); }
+  .nav-bar .title { font-weight: 600; letter-spacing: .2px; }
+  .nav-bar .hint { margin-left: auto; color: var(--color-text-secondary); font-size: 13px; }
+
+  /* MANDATORY wrapper — gives the background + slides their shared canvas */
+  .sco-content { flex: 1; position: relative; overflow: hidden; }
+
+  /* ---- The continuous line background (behind everything) ---- */
+  .line-draw-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none; overflow: visible;
+  }
+  .line-draw-bg .line-path {
+    fill: none;
+    stroke: url(#lineGrad);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.55;
+  }
+  .line-draw-bg .pen { fill: var(--color-accent); opacity: 0;
+    transition: opacity 200ms ease;
+    filter: drop-shadow(0 0 8px var(--color-accent)); }
+
+  /* ---- Slides stack above the background ---- */
+  .slide {
+    position: absolute; inset: 0; z-index: 1;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  .slide.active { display: flex; }
+  .slide.animate-in .slide-inner { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  .slide-inner {
+    max-width: 720px; text-align: center;
+    background: linear-gradient(180deg, rgba(20,24,54,0.72), rgba(20,24,54,0.55));
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 20px;
+    padding: 40px 44px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  }
+  .kicker { text-transform: uppercase; letter-spacing: 3px; font-size: 12px;
+    color: var(--color-accent); font-weight: 700; margin-bottom: 10px; }
+  .slide-inner h2 { margin: 0 0 14px; font-family: var(--font-heading);
+    font-size: 34px; line-height: 1.15; }
+  .slide-inner p { margin: 0; color: var(--color-text-secondary);
+    font-size: 17px; line-height: 1.7; }
+
+  /* ---- Nav ---- */
+  .sco-nav {
+    flex-shrink: 0; height: 60px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.15);
+  }
+  .sco-nav button {
+    font: inherit; font-weight: 600; color: var(--color-text);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 10px 22px; border-radius: 999px; cursor: pointer;
+    transition: transform .12s ease, background .2s ease;
+  }
+  .sco-nav button:hover:not(:disabled) { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+  .sco-nav button:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-next { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+    border-color: transparent !important; }
+  .page-indicator { min-width: 54px; text-align: center; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line-draw-bg .pen { display: none; }
+    .slide.animate-in .slide-inner { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sco-container">
+
+  <header class="nav-bar">
+    <span class="dot"></span>
+    <span class="title">One-Line Background — Draws Across Slides</span>
+    <span class="hint">Use ← → arrows or the buttons</span>
+  </header>
+
+  <main class="sco-content">
+
+    <!-- ===== The single continuous line (background layer) ===== -->
+    <svg id="line-bg" class="line-draw-bg" viewBox="0 0 1280 720"
+         preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#A29BFE"/>
+          <stop offset="60%" stop-color="#6C5CE7"/>
+          <stop offset="100%" stop-color="#F97316"/>
+        </linearGradient>
+      </defs>
+      <!-- ONE continuous path: hills -> two peaks -> loops into a sun -> trails off -->
+      <path class="line-path" d="
+        M -30 560
+        C 140 520, 240 600, 380 545
+        C 470 510, 520 470, 600 470
+        L 700 320 L 800 500 L 920 240 L 1040 500
+        C 1080 500, 1085 230, 1150 220
+        C 1189 220, 1220 189, 1220 150
+        C 1220 111, 1189 80, 1150 80
+        C 1111 80, 1080 111, 1080 150
+        C 1080 189, 1111 220, 1150 220
+        C 1200 240, 1260 300, 1330 300
+      "/>
+      <circle class="pen" r="7"></circle>
+    </svg>
+
+    <!-- ===== Slides — each one advances the SAME line ===== -->
+    <section class="slide" data-slide="0">
+      <div class="slide-inner">
+        <div class="kicker">Slide 1 of 5</div>
+        <h2>One line. Five slides.</h2>
+        <p>The line behind this card is a single continuous stroke. It does not
+           reset per slide — as you move forward it keeps drawing itself from
+           exactly where it left off. Press <b>Next</b> to continue the line.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="1">
+      <div class="slide-inner">
+        <div class="kicker">Slide 2 of 5</div>
+        <h2>It continues, it doesn't restart.</h2>
+        <p>Watch the pen resume from the last point and draw the next segment.
+           Go <b>Back</b> and the line retracts — the drawing is one shared
+           object, not five separate clips.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="2">
+      <div class="slide-inner">
+        <div class="kicker">Slide 3 of 5</div>
+        <h2>Ambient, not the subject.</h2>
+        <p>It sits at low opacity behind your content and ignores clicks, so it
+           reads as texture — part of the background elements — never competing
+           with the lesson.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="3">
+      <div class="slide-inner">
+        <div class="kicker">Slide 4 of 5</div>
+        <h2>Themeable by code.</h2>
+        <p>The stroke uses your theme colors (here a gradient). Swap the path
+           for a bird, a wave, or your own one-line illustration — same engine.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="4">
+      <div class="slide-inner">
+        <div class="kicker">Slide 5 of 5</div>
+        <h2>The drawing is complete.</h2>
+        <p>By the final slide the whole illustration is revealed — the sun loop
+           closes the composition. Across separate SCO pages, a shared
+           <code>persistKey</code> keeps it going as one unbroken line.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="sco-nav">
+    <button class="btn-prev" id="prevBtn">Back</button>
+    <span class="page-indicator" id="pageIndicator">1 / 5</span>
+    <button class="btn-next" id="nextBtn" data-complete-text="Restart">Next</button>
+  </nav>
+
+</div>
+
+<script src="shared/engine/slide-controller.js"></script>
+<script src="shared/engine/line-draw.js"></script>
+<script>
+  // 1) Build the continuous-line background over ALL slides.
+  var line = new LineDrawBackground({
+    paths: '#line-bg .line-path',
+    pen: '#line-bg .pen',
+    segments: document.querySelectorAll('.slide').length, // 5 -> one part per slide
+    duration: 950
+  });
+
+  // 2) Slide navigation — on every change, continue (or retract) the line.
+  var controller = new SlideController({
+    onSlideChange: function (index) { line.drawTo(index); },
+    onComplete: function () { controller.goTo(0); } // "Restart" loops the demo
+  });
+
+  window.__lineBackground = line;
+  window.__slideController = controller;
+</script>
+</body>
+</html>

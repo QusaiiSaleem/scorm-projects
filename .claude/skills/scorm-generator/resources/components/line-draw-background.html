@@ -1,0 +1,180 @@
+<!-- Line Draw Background Component (Continuous One-Line Illustration)
+     ==================================================================
+     A SINGLE continuous line drawing that sits BEHIND slide content as an
+     ambient background element — not a foreground image. As the learner moves
+     through the slides, the line keeps drawing itself: each slide draws the
+     NEXT part of the SAME line. Going back retracts it.
+
+     Inspired by continuous "one-line" wildlife/landscape illustration art
+     (the pen never lifts).
+
+     REQUIRES:
+       - base.css (foundation + theme tokens)
+       - engine/line-draw.js  (the LineDrawBackground driver)
+       - engine/slide-controller.js (to sync drawing with slide navigation)
+
+     HOW TO USE:
+       1. Drop ONE <svg class="line-draw-bg"> block below into your SCO,
+          as the FIRST child of the .sco-content (so it sits behind slides).
+          Pick a preset path (landscape / bird / waves) or supply your own.
+       2. Include engine/line-draw.js after slide-controller.js.
+       3. Wire it up (see the <script> at the bottom): create a
+          LineDrawBackground and .attachTo(controller). Done — it advances a
+          segment every time the learner changes slide.
+
+     AUTHORING YOUR OWN LINE:
+       - It must be ONE continuous path (a single `d` with one `M`, then only
+         line/curve commands — never lift the pen with a second `M`).
+       - You MAY pass several <path>s; the module chains them into one virtual
+         line, drawn head-to-tail. Use this for a shape + a small detail.
+       - Design on the 1280x720 viewBox so it matches 16:9 slides.
+-->
+
+<style>
+  /* === The background canvas ===
+     Fills the whole content area, sits behind slides, ignores clicks. */
+  .line-draw-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;              /* behind .slide content (which should be z-index:1+) */
+    pointer-events: none;    /* never intercept clicks on real content */
+    overflow: visible;
+  }
+
+  /* The line itself: inherits theme color, drawn as a stroke, no fill.
+     Low opacity so it reads as texture, not as the subject of the slide. */
+  .line-draw-bg .line-path {
+    fill: none;
+    stroke: var(--color-primary, #6C5CE7);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.18;           /* ambient — bump to ~0.35 for a bolder look */
+  }
+
+  /* Optional "pen" dot that rides the tip while the line is actively drawing.
+     line-draw.js fades it in during a draw and hides it at rest. */
+  .line-draw-bg .pen {
+    fill: var(--color-accent, #F97316);
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  /* Make sure slide content stacks ABOVE the background line. */
+  .sco-content > .slide { position: relative; z-index: 1; }
+
+  /* Respect reduced motion: the JS already jumps instead of animating and
+     hides the pen; nothing else to do, but keep the line calm. */
+  @media (prefers-reduced-motion: reduce) {
+    .line-draw-bg .pen { display: none; }
+  }
+</style>
+
+<!-- ============================================================
+     PRESET A — LANDSCAPE + SUN  (default, calm & universal)
+     One continuous line: rolling hills → two mountain peaks →
+     rises and loops into a sun → trails off.
+     ============================================================ -->
+<svg id="line-bg" class="line-draw-bg" viewBox="0 0 1280 720"
+     preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <path class="line-path" d="
+    M -30 560
+    C 140 520, 240 600, 380 545
+    C 470 510, 520 470, 600 470
+    L 700 320 L 800 500 L 920 240 L 1040 500
+    C 1080 500, 1085 230, 1150 220
+    C 1189 220, 1220 189, 1220 150
+    C 1220 111, 1189 80, 1150 80
+    C 1111 80, 1080 111, 1080 150
+    C 1080 189, 1111 220, 1150 220
+    C 1200 240, 1260 300, 1330 300
+  "/>
+  <circle class="pen" r="7"></circle>
+</svg>
+
+<!-- ============================================================
+     PRESET B — SOARING BIRD  (wildlife, on-theme with one-line art)
+     Swap the <path> above for this one to use it.
+     ============================================================
+<path class="line-path" d="
+  M 180 360
+  C 320 300, 440 320, 560 350
+  C 600 356, 620 356, 640 360
+  C 680 356, 720 356, 760 350
+  C 880 320, 1000 300, 1140 360
+  C 1010 380, 900 372, 770 372
+  C 700 372, 700 400, 680 440
+  C 668 410, 660 385, 640 380
+  C 620 385, 612 410, 600 440
+  C 580 400, 580 375, 560 372
+  C 430 372, 320 380, 180 360
+"/>
+-->
+
+<!-- ============================================================
+     PRESET C — FLOWING WAVES  (serpentine ribbon fills the frame)
+     One line that waves right, turns, and waves back — good for
+     water / air / data / motion themes.
+     ============================================================
+<path class="line-path" d="
+  M -40 160
+  C 140 80, 300 80, 460 160 C 620 240, 780 240, 940 160
+  C 1100 80, 1220 100, 1340 160
+  C 1360 240, 1360 320, 1300 360
+  C 1140 440, 980 440, 820 360 C 660 280, 500 280, 340 360
+  C 180 440, 60 420, -40 470
+  C -40 540, 40 600, 200 560 C 360 520, 520 520, 680 560
+  C 840 600, 1000 600, 1160 560 C 1260 535, 1320 560, 1360 600
+"/>
+-->
+
+<!-- ============================================================
+     WIRING — create the background and sync it to slides.
+     Put this ONCE per SCO, after slide-controller.js + line-draw.js load.
+     ============================================================ -->
+<script>
+(function () {
+  function initLineBackground() {
+    if (typeof LineDrawBackground === 'undefined') return;
+
+    var svg = document.getElementById('line-bg');
+    if (!svg) return;
+
+    // Segments usually === number of slides so each slide draws one part.
+    var slideCount = document.querySelectorAll('.slide').length || 5;
+
+    var line = new LineDrawBackground({
+      paths: '#line-bg .line-path',   // chained into one continuous virtual line
+      pen: '#line-bg .pen',           // dot that rides the drawing tip
+      segments: slideCount,
+      duration: 900                   // ms per segment
+    });
+
+    // Preferred: hook into SlideController so the line advances/retracts with
+    // navigation. attachTo preserves any existing onSlideChange callback.
+    if (window.__slideController) {
+      line.attachTo(window.__slideController);
+    }
+
+    // Expose for debugging / manual control (e.g. line.drawTo(3)).
+    window.__lineBackground = line;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLineBackground);
+  } else {
+    initLineBackground();
+  }
+})();
+</script>
+
+<!-- NOTE ON SlideController wiring:
+     line-draw.js's attachTo() expects the controller instance. If you build
+     the controller in your page script, either:
+       (a) assign it to window.__slideController BEFORE this component's script
+           runs, or
+       (b) skip the auto-wire here and call line.attachTo(controller) yourself,
+           or pass onSlideChange: (i) => window.__lineBackground.drawTo(i).
+-->
