@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One-Line Wildlife — standalone example</title>
+<style>
+  :root{
+    --ink:#141821; --paper:#f6f4ef; --accent:#2e7d5b;
+    --muted:#6b7280; --line:#141821;
+    --font:"Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--font);color:var(--ink);
+    background:radial-gradient(120% 100% at 50% 0%, #fffdf8 0%, var(--paper) 70%);}
+
+  .sco-container{height:100vh;display:flex;flex-direction:column}
+
+  .nav-bar{flex-shrink:0;height:56px;display:flex;align-items:center;gap:12px;
+    padding:0 22px;border-bottom:1px solid rgba(0,0,0,.08)}
+  .nav-bar .dot{width:11px;height:11px;border-radius:50%;background:var(--accent)}
+  .nav-bar .title{font-weight:700;letter-spacing:.2px}
+  .nav-bar .hint{margin-left:auto;color:var(--muted);font-size:13px}
+
+  /* Shared canvas for the background line + slides */
+  .sco-content{flex:1;position:relative;overflow:hidden}
+
+  /* The ONE continuous line — the visual for every slide */
+  .line-art-bg{position:absolute;inset:0;width:100%;height:100%;
+    z-index:0;pointer-events:none;overflow:visible}
+  .line-art-bg .line-path{fill:none;stroke:var(--line);stroke-width:2.6;
+    stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+  .line-art-bg .pen{fill:var(--accent);opacity:0;transition:opacity .2s ease}
+
+  /* Slide text sits to one side so the drawing is clearly visible */
+  .slide{position:absolute;inset:0;z-index:1;display:none;
+    align-items:center;padding:0 8%}
+  .slide.active{display:flex}
+  .slide.animate-in .slide-inner{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .slide-inner{max-width:420px}
+  .kicker{text-transform:uppercase;letter-spacing:3px;font-size:12px;
+    color:var(--accent);font-weight:800;margin-bottom:10px}
+  .slide-inner h2{margin:0 0 12px;font-size:40px;line-height:1.08;font-weight:800}
+  .slide-inner p{margin:0;color:#374151;font-size:17px;line-height:1.7}
+
+  .sco-nav{flex-shrink:0;height:60px;display:flex;align-items:center;
+    justify-content:center;gap:16px;border-top:1px solid rgba(0,0,0,.08)}
+  .sco-nav button{font:inherit;font-weight:700;color:var(--ink);
+    background:#fff;border:1.5px solid rgba(0,0,0,.15);
+    padding:9px 22px;border-radius:999px;cursor:pointer;transition:.15s}
+  .sco-nav button:hover:not(:disabled){transform:translateY(-1px);border-color:var(--ink)}
+  .sco-nav button:disabled{opacity:.4;cursor:not-allowed}
+  .btn-next{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+  .page-indicator{min-width:54px;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+  @media (prefers-reduced-motion: reduce){.line-art-bg .pen{display:none}
+    .slide.animate-in .slide-inner{animation:none}}
+</style>
+</head>
+<body>
+<div class="sco-container">
+
+  <header class="nav-bar">
+    <span class="dot"></span>
+    <span class="title">One-Line Wildlife</span>
+    <span class="hint">Next: the line becomes the next animal</span>
+  </header>
+
+  <main class="sco-content">
+
+    <!-- The single continuous line. Its shape changes per slide. -->
+    <svg id="line-bg" class="line-art-bg" viewBox="0 0 1280 720"
+         preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+      <path class="line-path" d="M -40 600 L 1320 600"></path>
+      <circle class="pen" r="6"></circle>
+    </svg>
+
+    <section class="slide" data-slide="0"><div class="slide-inner">
+      <div class="kicker">Chapter 1 of 5</div>
+      <h2>The cat</h2>
+      <p>The line draws itself into the first animal. Every slide, this same
+         unbroken line reshapes into a new creature — one continuous stroke,
+         no cuts, the drawing itself is the visual.</p>
+    </div></section>
+
+    <section class="slide" data-slide="1"><div class="slide-inner">
+      <div class="kicker">Chapter 2 of 5</div>
+      <h2>The swan</h2>
+      <p>Press Next and watch the cat flow into a swan on the water. The tail
+         glides off both edges of the frame, so the line feels like it runs
+         through the whole scene.</p>
+    </div></section>
+
+    <section class="slide" data-slide="2"><div class="slide-inner">
+      <div class="kicker">Chapter 3 of 5</div>
+      <h2>The fish</h2>
+      <p>The same stroke dives underwater and becomes a fish. Going back
+         re-morphs to the previous animal, so the line always matches the
+         current slide's content.</p>
+    </div></section>
+
+    <section class="slide" data-slide="3"><div class="slide-inner">
+      <div class="kicker">Chapter 4 of 5</div>
+      <h2>The bird</h2>
+      <p>Up out of the water, the line spreads two wings and takes flight —
+         the transition itself carries the meaning from one subject to the next.</p>
+    </div></section>
+
+    <section class="slide" data-slide="4"><div class="slide-inner">
+      <div class="kicker">Chapter 5 of 5</div>
+      <h2>The whale</h2>
+      <p>Finally the line surfaces as a whale. Swap any animal by dropping a new
+         single-line path into the shapes array — the engine draws and morphs
+         it automatically.</p>
+    </div></section>
+
+  </main>
+
+  <nav class="sco-nav">
+    <button class="btn-prev" id="prevBtn">Back</button>
+    <span class="page-indicator" id="pageIndicator">1 / 5</span>
+    <button class="btn-next" id="nextBtn" data-complete-text="Restart">Next</button>
+  </nav>
+</div>
+
+<!-- sr-only caption announces each slide's drawing to screen readers -->
+<div class="sr-only" id="lineCaption" aria-live="polite"></div>
+
+<script>
+/**
+ * SCORM Content Studio — Slide Controller
+ * =========================================
+ * Manages fixed-slide navigation (Storyline-like behavior).
+ * Each .slide element inside .sco-content is one "screen".
+ * Only the .active slide is visible. Prev/Next buttons navigate between slides.
+ *
+ * Usage:
+ *   const controller = new SlideController({
+ *     onSlideChange: function(index, total) { ... },
+ *     onComplete: function() { ... }
+ *   });
+ *
+ * HTML structure expected:
+ *   <div class="sco-container">
+ *     <header class="nav-bar">...</header>
+ *     <main class="sco-content">
+ *       <div class="slide" data-slide="0">...</div>
+ *       <div class="slide" data-slide="1">...</div>
+ *       <div class="slide" data-slide="2">...</div>
+ *     </main>
+ *     <nav class="sco-nav">
+ *       <button class="btn-prev" id="prevBtn">Previous</button>
+ *       <span class="page-indicator" id="pageIndicator">1 / 3</span>
+ *       <button class="btn-next" id="nextBtn">Next</button>
+ *     </nav>
+ *   </div>
+ */
+
+/* PRINCIPLE: rendering-guide.md > "The Non-Negotiable Slide Structure"
+   This controller expects the exact DOM structure documented in rendering-guide.md:
+   .sco-container > main.sco-content > .slide[data-slide="N"] + nav.sco-nav
+   If generated HTML doesn't follow this structure, navigation will break. */
+
+(function() {
+  'use strict';
+
+  function SlideController(options) {
+    options = options || {};
+
+    this.slides = document.querySelectorAll('.slide');
+    this.currentIndex = 0;
+    this.totalSlides = this.slides.length;
+    this.prevBtn = document.getElementById('prevBtn');
+    this.nextBtn = document.getElementById('nextBtn');
+    this.pageIndicator = document.getElementById('pageIndicator');
+    this.progressFill = document.querySelector('.progress-fill');
+    this.onSlideChange = options.onSlideChange || null;
+    this.onComplete = options.onComplete || null;
+    this.animating = false;
+
+    // Initialize
+    if (this.totalSlides > 0) {
+      this._showSlide(this.currentIndex, false);
+      this._bindEvents();
+      this._updateUI();
+    }
+  }
+
+  SlideController.prototype._showSlide = function(index, animate) {
+    var self = this;
+
+    // Hide all slides
+    for (var i = 0; i < this.slides.length; i++) {
+      if (i !== index) {
+        this.slides[i].classList.remove('active', 'animate-in');
+        this.slides[i].style.display = 'none';
+      }
+    }
+
+    // Show target slide
+    var targetSlide = this.slides[index];
+    targetSlide.style.display = 'flex';
+    targetSlide.classList.add('active');
+
+    if (animate) {
+      targetSlide.classList.add('animate-in');
+      // Remove animation class after it completes
+      setTimeout(function() {
+        targetSlide.classList.remove('animate-in');
+      }, 400);
+    }
+
+    // Scroll to top within the slide (in case it has internal scroll)
+    targetSlide.scrollTop = 0;
+
+    // Auto-detect if content needs top alignment
+    var inner = targetSlide.querySelector('.slide-inner');
+    if (inner) {
+      // If content is taller than ~70% of viewport, align top
+      if (inner.scrollHeight > targetSlide.clientHeight * 0.7) {
+        inner.classList.add('align-top');
+      } else {
+        inner.classList.remove('align-top');
+      }
+    }
+  };
+
+  SlideController.prototype._updateUI = function() {
+    // Update page indicator
+    if (this.pageIndicator) {
+      this.pageIndicator.textContent =
+        (this.currentIndex + 1) + ' / ' + this.totalSlides;
+    }
+
+    // Update progress bar
+    if (this.progressFill) {
+      var progress = ((this.currentIndex + 1) / this.totalSlides) * 100;
+      this.progressFill.style.width = progress + '%';
+    }
+
+    // Update prev button
+    if (this.prevBtn) {
+      this.prevBtn.disabled = this.currentIndex === 0;
+    }
+
+    // Update next button text on last slide
+    if (this.nextBtn) {
+      if (this.currentIndex === this.totalSlides - 1) {
+        // Check if there's a data attribute for complete text
+        this.nextBtn.textContent =
+          this.nextBtn.getAttribute('data-complete-text') || 'Complete';
+      } else {
+        this.nextBtn.textContent =
+          this.nextBtn.getAttribute('data-next-text') || 'Next';
+      }
+      this.nextBtn.disabled = false;
+    }
+
+    // Callback
+    if (this.onSlideChange) {
+      this.onSlideChange(this.currentIndex, this.totalSlides);
+    }
+  };
+
+  SlideController.prototype.next = function() {
+    if (this.animating) return;
+
+    if (this.currentIndex < this.totalSlides - 1) {
+      this.currentIndex++;
+      this._showSlide(this.currentIndex, true);
+      this._updateUI();
+    } else {
+      // Last slide — trigger completion
+      if (this.onComplete) {
+        this.onComplete();
+      }
+    }
+  };
+
+  SlideController.prototype.prev = function() {
+    if (this.animating) return;
+
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+      this._showSlide(this.currentIndex, true);
+      this._updateUI();
+    }
+  };
+
+  SlideController.prototype.goTo = function(index) {
+    if (index >= 0 && index < this.totalSlides && index !== this.currentIndex) {
+      this.currentIndex = index;
+      this._showSlide(this.currentIndex, true);
+      this._updateUI();
+    }
+  };
+
+  SlideController.prototype._bindEvents = function() {
+    var self = this;
+
+    // Button clicks
+    if (this.prevBtn) {
+      this.prevBtn.addEventListener('click', function() { self.prev(); });
+    }
+    if (this.nextBtn) {
+      this.nextBtn.addEventListener('click', function() { self.next(); });
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        self.next();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        self.prev();
+      }
+    });
+
+    // Swipe support (touch)
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var contentArea = document.querySelector('.sco-content');
+
+    if (contentArea) {
+      contentArea.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      contentArea.addEventListener('touchend', function(e) {
+        var deltaX = e.changedTouches[0].clientX - touchStartX;
+        var deltaY = e.changedTouches[0].clientY - touchStartY;
+
+        // Only detect horizontal swipes (not vertical scroll within slide)
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+          var isRTL = document.documentElement.dir === 'rtl';
+
+          if (deltaX < 0) {
+            // Swipe left
+            isRTL ? self.prev() : self.next();
+          } else {
+            // Swipe right
+            isRTL ? self.next() : self.prev();
+          }
+        }
+      }, { passive: true });
+    }
+  };
+
+  // Resume support: go to a specific slide (from bookmark)
+  SlideController.prototype.resumeFrom = function(index) {
+    if (index >= 0 && index < this.totalSlides) {
+      this.currentIndex = index;
+      this._showSlide(this.currentIndex, false);
+      this._updateUI();
+    }
+  };
+
+  // Expose globally
+  window.SlideController = SlideController;
+
+})();
+
+</script>
+<script>
+/**
+ * SCORM Content Studio — Slide Line Art (draw-in + morph)
+ * =======================================================
+ * A single continuous "one-line" drawing that acts as the VISUAL for each
+ * slide. Every slide owns its own line illustration (related to that slide's
+ * content). As the learner navigates, the SAME line RESHAPES — it morphs from
+ * the current slide's drawing into the next slide's drawing — so it reads like
+ * one living line that keeps turning into different pictures.
+ *
+ * This is the "Loooop-style" continuous-line effect: the pen never lifts, and
+ * the line flows from one subject into another.
+ *
+ *   - Slide shown for the first time in the session  -> the line DRAWS ITSELF
+ *     in (classic stroke-dash reveal, with a pen dot riding the tip).
+ *   - Every navigation after that                    -> the line MORPHS from
+ *     the current shape into the target slide's shape.
+ *
+ * It lives BEHIND the content as an ambient background element (theme colored,
+ * low opacity, pointer-events:none) — the drawing, not a photo.
+ *
+ * ---------------------------------------------------------------------------
+ * USAGE:
+ *
+ *   const art = new SlideLineArt({
+ *     path:  '#line-bg .line-path',   // the ONE visible line
+ *     pen:   '#line-bg .pen',         // optional dot for the draw-in
+ *     shapes: [                       // ONE entry per slide, in slide order
+ *       { d: 'M ...idea...',    label: 'A lightbulb' },
+ *       { d: 'M ...book...',    label: 'An open book' },
+ *       { d: 'M ...target...',  label: 'A target' }
+ *     ]
+ *   });
+ *
+ *   const controller = new SlideController();
+ *   art.attachTo(controller);         // morphs the line on every slide change
+ *
+ * Each `d` is ONE continuous path drawn on the 1280x720 viewBox. Shapes do NOT
+ * need matching point counts — the morph resamples both by arc length, so any
+ * two paths interpolate smoothly. Give each a `label` for the sr-only caption.
+ *
+ * See components/slide-line-art.html for ready-made single-line shape presets.
+ */
+
+(function () {
+  'use strict';
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var prefersReduced =
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resolveOne(sel) {
+    if (!sel) return null;
+    if (typeof sel === 'string') return document.querySelector(sel);
+    return sel.nodeType ? sel : null;
+  }
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  function SlideLineArt(options) {
+    options = options || {};
+    this.path = resolveOne(options.path);
+    this.shapes = options.shapes || [];
+
+    if (!this.path || !this.shapes.length) {
+      this._empty = true; // fail quietly — a missing visual never breaks a SCO
+      return;
+    }
+
+    this.pen = resolveOne(options.pen);
+    this.caption = resolveOne(options.caption); // optional sr-only <element>
+    this.samples = options.samples || 240;      // points used for morphing
+    this.drawInDuration = options.drawInDuration != null ? options.drawInDuration : 1100;
+    this.morphDuration = options.morphDuration != null ? options.morphDuration : 900;
+    this.easing = typeof options.easing === 'function' ? options.easing : easeInOut;
+
+    this.current = null;   // index of the shape currently displayed
+    this._raf = null;
+
+    // Hidden helper path used to measure/sample arbitrary `d` strings without
+    // disturbing the visible line.
+    this._probe = document.createElementNS(SVGNS, 'path');
+    this._probe.setAttribute('d', 'M0 0');
+    this._probe.style.visibility = 'hidden';
+    this._probe.style.pointerEvents = 'none';
+    this.path.parentNode.appendChild(this._probe);
+
+    if (this.pen) this.pen.style.opacity = '0';
+  }
+
+  /** Sample `n` evenly arc-spaced points from a path element. */
+  SlideLineArt.prototype._sample = function (el, n) {
+    var len = el.getTotalLength();
+    var pts = [];
+    if (len === 0) { for (var k = 0; k < n; k++) pts.push([0, 0]); return pts; }
+    for (var i = 0; i < n; i++) {
+      var p = el.getPointAtLength((len * i) / (n - 1));
+      pts.push([p.x, p.y]);
+    }
+    return pts;
+  };
+
+  function ptsToPath(pts) {
+    var s = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+    for (var i = 1; i < pts.length; i++) {
+      s += ' L' + pts[i][0].toFixed(1) + ' ' + pts[i][1].toFixed(1);
+    }
+    return s;
+  }
+
+  /**
+   * Reorder `to` (rotation + optional reversal) to best line up with `from`,
+   * so the morph flows instead of twisting itself inside out.
+   */
+  SlideLineArt.prototype._align = function (from, to) {
+    var n = to.length;
+    var probes = 24;
+    var step = Math.max(1, Math.floor(n / 60));
+
+    function cost(cand) {
+      var c = 0;
+      for (var m = 0; m < probes; m++) {
+        var idx = Math.floor((m / probes) * n);
+        var dx = from[idx][0] - cand[idx][0];
+        var dy = from[idx][1] - cand[idx][1];
+        c += dx * dx + dy * dy;
+      }
+      return c;
+    }
+    function rotate(arr, off) {
+      return arr.slice(off).concat(arr.slice(0, off));
+    }
+
+    var best = to, bestCost = cost(to);
+    var reversed = to.slice().reverse();
+    var dirs = [to, reversed];
+    for (var d = 0; d < dirs.length; d++) {
+      for (var off = 0; off < n; off += step) {
+        var cand = rotate(dirs[d], off);
+        var c = cost(cand);
+        if (c < bestCost) { bestCost = c; best = cand; }
+      }
+    }
+    return best;
+  };
+
+  SlideLineArt.prototype._setCaption = function (index) {
+    if (this.caption && this.shapes[index] && this.shapes[index].label) {
+      this.caption.textContent = this.shapes[index].label;
+    }
+  };
+
+  SlideLineArt.prototype._cancel = function () {
+    if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
+  };
+
+  /** Show slide `index`: draw it in the first time, morph into it thereafter. */
+  SlideLineArt.prototype.show = function (index, animate) {
+    if (this._empty) return;
+    index = Math.max(0, Math.min(this.shapes.length - 1, index));
+    if (animate === undefined) animate = true;
+    this._cancel();
+    this._setCaption(index);
+
+    var shape = this.shapes[index];
+
+    if (!animate || prefersReduced) {
+      this.path.style.strokeDasharray = 'none';
+      this.path.style.strokeDashoffset = '0';
+      this.path.setAttribute('d', shape.d); // crisp curves, no animation
+      if (this.pen) this.pen.style.opacity = '0';
+      this.current = index;
+      return;
+    }
+
+    if (this.current === null) {
+      this._drawIn(shape, index);
+    } else {
+      this._morph(this.current, index);
+    }
+  };
+
+  /** Classic stroke-dash reveal — the line draws itself onto the slide. */
+  SlideLineArt.prototype._drawIn = function (shape, index) {
+    var self = this;
+    this.path.setAttribute('d', shape.d);
+    var len = this.path.getTotalLength();
+    this.path.style.strokeDasharray = len + ' ' + len;
+    this.path.style.strokeDashoffset = len;
+
+    var startTime = null;
+    function frame(now) {
+      if (startTime === null) startTime = now;
+      var t = Math.min(1, (now - startTime) / self.drawInDuration);
+      var e = self.easing(t);
+      var shown = len * e;
+      self.path.style.strokeDashoffset = (len - shown);
+      if (self.pen) {
+        var pt = self.path.getPointAtLength(shown);
+        self.pen.setAttribute('cx', pt.x);
+        self.pen.setAttribute('cy', pt.y);
+        self.pen.style.opacity = t < 1 ? '1' : '0';
+      }
+      if (t < 1) { self._raf = requestAnimationFrame(frame); }
+      else { self._raf = null; self.path.style.strokeDasharray = 'none'; }
+    }
+    this.current = index;
+    this._raf = requestAnimationFrame(frame);
+  };
+
+  /** Morph the visible line from shape[fromIdx] into shape[toIdx]. */
+  SlideLineArt.prototype._morph = function (fromIdx, toIdx) {
+    var self = this;
+    var n = this.samples;
+
+    // Sample the CURRENT rendered line (whatever it is) as the "from".
+    this.path.style.strokeDasharray = 'none';
+    this.path.style.strokeDashoffset = '0';
+    var from = this._sample(this.path, n);
+
+    // Sample the target `d` via the hidden probe.
+    this._probe.setAttribute('d', this.shapes[toIdx].d);
+    var to = this._align(from, this._sample(this._probe, n));
+
+    if (this.pen) this.pen.style.opacity = '0';
+
+    var startTime = null;
+    var cur = new Array(n);
+    function frame(now) {
+      if (startTime === null) startTime = now;
+      var t = Math.min(1, (now - startTime) / self.morphDuration);
+      var e = self.easing(t);
+      for (var i = 0; i < n; i++) {
+        cur[i] = [
+          from[i][0] + (to[i][0] - from[i][0]) * e,
+          from[i][1] + (to[i][1] - from[i][1]) * e
+        ];
+      }
+      self.path.setAttribute('d', ptsToPath(cur));
+      if (t < 1) {
+        self._raf = requestAnimationFrame(frame);
+      } else {
+        self._raf = null;
+        // Snap to the crisp curved target so the resting shape is clean.
+        self.path.setAttribute('d', self.shapes[toIdx].d);
+      }
+    }
+    this.current = toIdx;
+    this._raf = requestAnimationFrame(frame);
+  };
+
+  /** Wire to a SlideController: morph the line on every slide change. */
+  SlideLineArt.prototype.attachTo = function (controller) {
+    if (!controller || this._empty) return this;
+    var self = this;
+    var prev = controller.onSlideChange;
+    controller.onSlideChange = function (index, total) {
+      if (prev) prev(index, total);
+      self.show(index);
+    };
+    this.show(controller.currentIndex || 0);
+    return this;
+  };
+
+  window.SlideLineArt = SlideLineArt;
+})();
+
+</script>
+<script>
+// Continuous one-line WILDLIFE drawings on a 1280x720 viewBox.
+// Signature: a line enters flat from the left, becomes the animal, exits right.
+// One unbroken stroke per figure (Loooop-style). Order = slide order.
+window.WILDLIFE_SHAPES = [
+
+  { label: 'A sitting cat', d:
+    'M -40 600 L 360 600 '                 // ground enters left, to front paws
+    + 'C 384 600 402 560 404 520 '         // front leg up
+    + 'C 408 470 420 428 452 404 '         // chest up toward the chin
+    + 'C 470 392 486 388 502 386 '         // muzzle
+    + 'C 520 384 514 356 512 336 '         // up the face to the front ear
+    + 'L 496 288 L 544 330 '               // front ear (triangle)
+    + 'C 560 322 576 322 592 330 '         // head crown between the ears
+    + 'L 612 286 L 596 336 '               // back ear (triangle)
+    + 'C 612 356 622 380 622 410 '         // down the back of the head/neck
+    + 'C 648 442 706 452 754 474 '         // along the back to the hindquarters
+    + 'C 812 498 830 548 804 566 '         // rump down toward the tail base
+    + 'C 860 560 902 520 900 476 '         // tail sweeps up and to the right
+    + 'C 898 442 866 436 856 466 '         // tail tip curl
+    + 'C 850 500 852 540 810 566 '         // tail back down to the body
+    + 'C 700 590 520 600 360 600 '         // belly/base back to the ground
+    + 'L 1320 600' },
+
+  { label: 'A swan on the water', d:
+    'M -40 470 L 340 470 '                 // water enters left
+    + 'C 400 470 440 458 462 420 '         // breast rises (front of body)
+    + 'C 476 380 464 330 456 286 '         // up the long neck (S-curve)
+    + 'C 450 248 460 212 488 200 '         // neck to head
+    + 'C 510 190 532 202 530 226 '         // top of the head
+    + 'L 470 236 '                         // beak points down-left
+    + 'L 528 246 '                         // beak underside
+    + 'C 516 270 520 302 540 332 '         // front of neck curves back down
+    + 'C 566 372 600 392 652 400 '         // into the body (base of neck)
+    + 'C 730 388 806 392 846 424 '         // over the rounded back to the tail
+    + 'C 880 448 878 472 840 470 '         // tail settles onto the water (right)
+    + 'C 940 470 1050 470 1150 470 '       // water resumes and exits right
+    + 'L 1320 470' },
+
+  { label: 'A fish', d:
+    'M -40 380 L 300 380 '                 // water/flow enters left
+    + 'C 260 380 236 356 236 330 '         // tail fin (upper fluke) at the left
+    + 'C 236 356 260 372 300 380 '         // back to the body root (upper tail)
+    + 'C 236 380 236 404 236 430 '         // lower tail fluke
+    + 'C 260 404 300 388 340 384 '         // tail root into the body underside
+    + 'C 460 360 560 300 660 300 '         // belly curve up to the head (right)
+    + 'C 740 300 800 340 812 380 '         // round nose of the fish (far right)
+    + 'C 800 420 740 460 660 460 '         // top of the head back over the body
+    + 'C 560 460 460 400 360 384 '         // dorsal back toward the tail
+    + 'C 420 384 480 384 520 384 '         // belly line resumes flowing
+    + 'C 700 384 900 380 1000 380 '        // flow exits right
+    + 'L 1320 380' },
+
+  { label: 'A bird in flight', d:
+    'M -40 400 L 300 400 '                 // flowing line enters left
+    + 'C 360 400 420 396 470 372 '         // rise to the left wing
+    + 'C 380 300 300 250 250 226 '         // LEFT wing sweeps up to the tip
+    + 'C 330 276 430 330 520 372 '         // wing trailing edge back to the body
+    + 'C 545 384 560 386 578 384 '         // body top
+    + 'C 600 382 706 330 800 250 '         // RIGHT wing sweeps up to the tip
+    + 'C 740 330 660 384 596 400 '         // right wing trailing edge to the body
+    + 'C 640 410 660 470 660 470 '         // little forked tail down
+    + 'C 640 430 610 402 596 400 '         // tail back up to the body
+    + 'C 700 404 900 400 1000 400 '        // flow resumes and exits right
+    + 'L 1320 400' },
+
+  { label: 'A whale', d:
+    'M -40 440 L 330 440 '                 // water enters left
+    + 'C 388 440 428 402 460 380 '         // blunt head rises (nose left)
+    + 'C 528 334 598 326 668 340 '         // high rounded back
+    + 'C 726 352 766 372 798 402 '         // back toward the tail root (right)
+    + 'C 820 378 850 342 866 308 '         // tail fluke sweeps up
+    + 'C 850 346 822 376 812 404 '         // fluke back down
+    + 'C 812 424 806 440 782 440 '         // down onto the water (right)
+    + 'C 870 440 970 440 1070 440 '        // water resumes and exits right
+    + 'L 1320 440' }
+];
+
+</script>
+<script>
+  // One line-art visual per slide; draws in on slide 1, morphs on every move.
+  var art = new SlideLineArt({
+    path: '#line-bg .line-path',
+    pen: '#line-bg .pen',
+    caption: '#lineCaption',
+    shapes: window.WILDLIFE_SHAPES,   // one entry per slide, in order
+    drawInDuration: 1300,
+    morphDuration: 900
+  });
+
+  var controller = new SlideController({
+    onComplete: function(){ controller.goTo(0); }  // "Restart"
+  });
+  art.attachTo(controller);          // morphs the line on every slide change
+
+  window.__art = art; window.__controller = controller;
+</script>
+</body>
+</html>
