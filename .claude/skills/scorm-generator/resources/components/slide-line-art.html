@@ -31,12 +31,12 @@
      WHERE THE FIGURES COME FROM (choose one):
        A. GENERATE with the studio's SVG pipeline (best, matches reference art):
             python3 .claude/skills/scorm-generator/scripts/generate_svg.py \
-              --prompt "single continuous one-line drawing of a person doing a
-                        deep squat, side view, one unbroken stroke that enters
-                        flat from the left edge and exits flat to the right,
-                        no fills, 2px stroke, minimalist, 1280x720" \
-              --style line-icon --no-animated --output squat.svg
-          Then copy the <path d="..."> out of squat.svg into the shapes array.
+              --prompt "single continuous one-line drawing of a swan on water,
+                        side view, one unbroken stroke that enters flat from the
+                        left edge and exits flat to the right, no fills, 2px
+                        stroke, minimalist Loooop style, 1280x720" \
+              --style line-icon --no-animated --output swan.svg
+          Then copy the <path d="..."> out of swan.svg into the shapes array.
           (Requires GEMINI_API_KEY; without it the script writes a placeholder.)
        B. DROP IN a designer's continuous-line SVG the same way — paste its
           single <path> `d` string into the array.
@@ -87,48 +87,41 @@
 <script src="../shared/engine/line-art.js"></script>
 <script>
 /* One continuous-line drawing per slide, IN SLIDE ORDER.
-   Each `d` is a single unbroken path on the 1280x720 viewBox with flat
-   entry/exit tails. Replace these presets with your generated/authored figures.
-   (These five are stylized exercise examples — swap freely.) */
-window.EXERCISE_SHAPES = window.EXERCISE_SHAPES || [
+   Each `d` is a single unbroken path on the 1280x720 viewBox with a flat
+   entry/exit tail. Replace these presets with your generated/authored figures.
+   (These five are hand-authored one-line wildlife examples — swap freely.) */
+window.WILDLIFE_SHAPES = window.WILDLIFE_SHAPES || [
 
-  { label: 'Jumping jack', d:
-    'M -40 590 L 360 590 C 400 590 430 586 448 566 C 500 500 540 460 566 430 '
-    + 'C 560 380 558 340 560 300 C 520 250 470 220 430 196 C 470 224 520 268 560 296 '
-    + 'C 600 260 604 176 640 176 C 690 176 690 260 648 296 C 690 268 740 224 810 196 '
-    + 'C 760 224 700 260 660 300 C 682 340 690 390 700 430 C 726 460 766 500 818 566 '
-    + 'C 836 586 866 590 906 590 L 1320 590' },
+  { label: 'A sitting cat', d:
+    'M -40 600 L 360 600 C 384 600 402 560 404 520 C 408 470 420 428 452 404 '
+    + 'C 470 392 486 388 502 386 C 520 384 514 356 512 336 L 496 288 L 544 330 '
+    + 'C 560 322 576 322 592 330 L 612 286 L 596 336 C 612 356 622 380 622 410 '
+    + 'C 648 442 706 452 754 474 C 812 498 830 548 804 566 C 860 560 902 520 900 476 '
+    + 'C 898 442 866 436 856 466 C 850 500 852 540 810 566 '
+    + 'C 700 590 520 600 360 600 L 1320 600' },
 
-  { label: 'Runner mid-stride', d:
-    'M -40 560 L 360 560 C 380 560 398 554 404 548 C 448 500 486 456 512 428 '
-    + 'C 552 392 586 366 606 344 C 596 296 588 250 606 212 C 610 176 626 138 660 130 '
-    + 'C 610 112 610 66 660 62 C 706 58 714 122 668 140 C 656 168 650 196 646 216 '
-    + 'C 694 236 748 250 786 236 C 748 216 700 214 668 232 C 636 200 582 214 540 244 '
-    + 'C 566 262 588 300 626 330 C 676 350 722 372 730 404 C 756 452 774 512 780 552 '
-    + 'C 800 560 826 560 866 560 L 1320 560' },
+  { label: 'A swan on the water', d:
+    'M -40 470 L 340 470 C 400 470 440 458 462 420 C 476 380 464 330 456 286 '
+    + 'C 450 248 460 212 488 200 C 510 190 532 202 530 226 L 470 236 L 528 246 '
+    + 'C 516 270 520 302 540 332 C 566 372 600 392 652 400 C 730 388 806 392 846 424 '
+    + 'C 880 448 878 472 840 470 C 940 470 1050 470 1150 470 L 1320 470' },
 
-  { label: 'Deep squat', d:
-    'M -40 590 L 380 590 C 410 590 440 586 470 560 C 520 546 556 552 566 470 '
-    + 'C 574 420 578 360 592 322 C 588 286 600 244 634 236 C 584 218 584 172 634 168 '
-    + 'C 682 164 690 228 646 246 C 634 268 622 300 606 320 C 560 356 512 470 486 500 '
-    + 'C 472 514 456 512 440 500 C 520 470 620 356 700 340 C 690 384 686 430 700 470 '
-    + 'C 726 510 748 552 772 566 C 792 584 820 590 860 590 L 1320 590' },
+  { label: 'A fish', d:
+    'M -40 380 L 300 380 C 260 380 236 356 236 330 C 236 356 260 372 300 380 '
+    + 'C 236 380 236 404 236 430 C 260 404 300 388 340 384 C 460 360 560 300 660 300 '
+    + 'C 740 300 800 340 812 380 C 800 420 740 460 660 460 C 560 460 460 400 360 384 '
+    + 'C 420 384 480 384 520 384 C 700 384 900 380 1000 380 L 1320 380' },
 
-  { label: 'Standing toe touch', d:
-    'M -40 590 L 380 590 C 420 590 470 588 520 566 C 560 556 596 552 606 470 '
-    + 'C 618 420 628 372 612 336 C 588 300 556 276 556 276 C 588 250 616 224 636 214 '
-    + 'C 604 196 606 156 646 158 C 686 160 682 212 646 226 C 620 244 596 270 580 292 '
-    + 'C 552 330 520 400 500 470 C 494 500 496 540 500 566 C 540 552 596 552 606 470 '
-    + 'M 606 470 C 660 540 720 566 780 566 C 800 580 826 590 866 590 L 1320 590' },
+  { label: 'A bird in flight', d:
+    'M -40 400 L 300 400 C 360 400 420 396 470 372 C 380 300 300 250 250 226 '
+    + 'C 330 276 430 330 520 372 C 545 384 560 386 578 384 C 600 382 706 330 800 250 '
+    + 'C 740 330 660 384 596 400 C 640 410 660 470 660 470 C 640 430 610 402 596 400 '
+    + 'C 700 404 900 400 1000 400 L 1320 400' },
 
-  { label: 'High-knee march', d:
-    'M -40 590 L 420 590 C 450 590 478 584 490 558 C 512 512 528 460 540 430 '
-    + 'C 534 384 530 300 546 264 C 542 228 554 190 588 182 C 538 164 538 118 588 114 '
-    + 'C 636 110 644 174 600 192 C 588 214 578 244 566 262 C 610 282 652 298 646 328 '
-    + 'C 642 352 656 372 682 366 C 650 344 604 300 540 312 C 520 320 516 344 530 360 '
-    + 'C 566 340 610 320 640 360 C 668 396 676 430 660 456 C 640 476 616 480 600 466 '
-    + 'C 560 440 545 435 540 432 M 540 430 C 620 470 700 520 740 560 '
-    + 'C 764 580 792 590 832 590 L 1320 590' }
+  { label: 'A whale', d:
+    'M -40 440 L 330 440 C 388 440 428 402 460 380 C 528 334 598 326 668 340 '
+    + 'C 726 352 766 372 798 402 C 820 378 850 342 866 308 C 850 346 822 376 812 404 '
+    + 'C 812 424 806 440 782 440 C 870 440 970 440 1070 440 L 1320 440' }
 ];
 
 (function(){
@@ -138,7 +131,7 @@ window.EXERCISE_SHAPES = window.EXERCISE_SHAPES || [
       path: '#line-bg .line-path',
       pen: '#line-bg .pen',
       caption: '#lineCaption',
-      shapes: window.EXERCISE_SHAPES,   // ONE per slide, in order
+      shapes: window.WILDLIFE_SHAPES,   // ONE per slide, in order
       drawInDuration: 1200,             // ms for the first slide to draw in
       morphDuration: 850                // ms for each slide-to-slide morph
     });

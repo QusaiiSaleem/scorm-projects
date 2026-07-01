@@ -3,18 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Line Art Slides — one line that becomes each slide's visual</title>
+<title>One-Line Wildlife — the line becomes each slide's visual</title>
 <style>
   :root{
-    --ink:#141821; --paper:#f6f4ef; --accent:#e4572e;
+    --ink:#141821; --paper:#f6f4ef; --accent:#2e7d5b;
     --muted:#6b7280; --line:#141821;
     --font:"Segoe UI", system-ui, -apple-system, sans-serif;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
   body{font-family:var(--font);color:var(--ink);
-    background:
-      radial-gradient(120% 100% at 50% 0%, #fffdf8 0%, var(--paper) 70%);}
+    background:radial-gradient(120% 100% at 50% 0%, #fffdf8 0%, var(--paper) 70%);}
 
   .sco-container{height:100vh;display:flex;flex-direction:column}
 
@@ -66,8 +65,8 @@
 
   <header class="nav-bar">
     <span class="dot"></span>
-    <span class="title">Move Well — Daily Mobility</span>
-    <span class="hint">Next: the line becomes the next move</span>
+    <span class="title">One-Line Wildlife</span>
+    <span class="hint">Next: the line becomes the next animal</span>
   </header>
 
   <main class="sco-content">
@@ -75,43 +74,47 @@
     <!-- The single continuous line. Its shape changes per slide. -->
     <svg id="line-bg" class="line-art-bg" viewBox="0 0 1280 720"
          preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-      <path class="line-path" d="M -40 590 L 1320 590"></path>
+      <path class="line-path" d="M -40 600 L 1320 600"></path>
       <circle class="pen" r="6"></circle>
     </svg>
 
     <section class="slide" data-slide="0"><div class="slide-inner">
-      <div class="kicker">Warm-up · 1 of 5</div>
-      <h2>Jumping jacks</h2>
-      <p>The line draws itself into your first move. Every slide, this same line
-         reshapes into the next exercise — one continuous stroke, no cuts.</p>
+      <div class="kicker">Chapter 1 of 5</div>
+      <h2>The cat</h2>
+      <p>The line draws itself into the first animal. Every slide, this same
+         unbroken line reshapes into a new creature — one continuous stroke,
+         no cuts, the drawing itself is the visual.</p>
     </div></section>
 
     <section class="slide" data-slide="1"><div class="slide-inner">
-      <div class="kicker">Cardio · 2 of 5</div>
-      <h2>Run in place</h2>
-      <p>Press Next and watch the line flow from the jumping jack into a runner.
-         The drawing is the visual for the content — not a photo behind it.</p>
+      <div class="kicker">Chapter 2 of 5</div>
+      <h2>The swan</h2>
+      <p>Press Next and watch the cat flow into a swan on the water. The tail
+         glides off both edges of the frame, so the line feels like it runs
+         through the whole scene.</p>
     </div></section>
 
     <section class="slide" data-slide="2"><div class="slide-inner">
-      <div class="kicker">Strength · 3 of 5</div>
-      <h2>Deep squat</h2>
-      <p>Drop the hips, chest up. The line morphs again — the same stroke,
-         a new pose, tied to what this slide teaches.</p>
+      <div class="kicker">Chapter 3 of 5</div>
+      <h2>The fish</h2>
+      <p>The same stroke dives underwater and becomes a fish. Going back
+         re-morphs to the previous animal, so the line always matches the
+         current slide's content.</p>
     </div></section>
 
     <section class="slide" data-slide="3"><div class="slide-inner">
-      <div class="kicker">Flexibility · 4 of 5</div>
-      <h2>Standing toe touch</h2>
-      <p>Hinge at the hips and reach. Going back re-morphs to the previous move,
-         so the line always matches the current slide.</p>
+      <div class="kicker">Chapter 4 of 5</div>
+      <h2>The bird</h2>
+      <p>Up out of the water, the line spreads two wings and takes flight —
+         the transition itself carries the meaning from one subject to the next.</p>
     </div></section>
 
     <section class="slide" data-slide="4"><div class="slide-inner">
-      <div class="kicker">Finisher · 5 of 5</div>
-      <h2>High-knee march</h2>
-      <p>Drive the knees. Swap any pose by dropping a new single-line path into
-         the shapes array — the engine draws and morphs it automatically.</p>
+      <div class="kicker">Chapter 5 of 5</div>
+      <h2>The whale</h2>
+      <p>Finally the line surfaces as a whale. Swap any animal by dropping a new
+         single-line path into the shapes array — the engine draws and morphs
+         it automatically.</p>
     </div></section>
 
   </main>
@@ -128,16 +131,16 @@
 
 <script src="shared/engine/slide-controller.js"></script>
 <script src="shared/engine/line-art.js"></script>
-<script src="shared/engine/exercise-shapes.js"></script>
+<script src="shared/engine/wildlife-shapes.js"></script>
 <script>
   // One line-art visual per slide; draws in on slide 1, morphs on every move.
   var art = new SlideLineArt({
     path: '#line-bg .line-path',
     pen: '#line-bg .pen',
     caption: '#lineCaption',
-    shapes: window.EXERCISE_SHAPES,   // one entry per slide, in order
-    drawInDuration: 1200,
-    morphDuration: 850
+    shapes: window.WILDLIFE_SHAPES,   // one entry per slide, in order
+    drawInDuration: 1300,
+    morphDuration: 900
   });
 
   var controller = new SlideController({
