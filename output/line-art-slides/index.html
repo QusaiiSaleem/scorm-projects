@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Art Slides — one line that becomes each slide's visual</title>
+<style>
+  :root{
+    --ink:#141821; --paper:#f6f4ef; --accent:#e4572e;
+    --muted:#6b7280; --line:#141821;
+    --font:"Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--font);color:var(--ink);
+    background:
+      radial-gradient(120% 100% at 50% 0%, #fffdf8 0%, var(--paper) 70%);}
+
+  .sco-container{height:100vh;display:flex;flex-direction:column}
+
+  .nav-bar{flex-shrink:0;height:56px;display:flex;align-items:center;gap:12px;
+    padding:0 22px;border-bottom:1px solid rgba(0,0,0,.08)}
+  .nav-bar .dot{width:11px;height:11px;border-radius:50%;background:var(--accent)}
+  .nav-bar .title{font-weight:700;letter-spacing:.2px}
+  .nav-bar .hint{margin-left:auto;color:var(--muted);font-size:13px}
+
+  /* Shared canvas for the background line + slides */
+  .sco-content{flex:1;position:relative;overflow:hidden}
+
+  /* The ONE continuous line — the visual for every slide */
+  .line-art-bg{position:absolute;inset:0;width:100%;height:100%;
+    z-index:0;pointer-events:none;overflow:visible}
+  .line-art-bg .line-path{fill:none;stroke:var(--line);stroke-width:2.6;
+    stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+  .line-art-bg .pen{fill:var(--accent);opacity:0;transition:opacity .2s ease}
+
+  /* Slide text sits to one side so the drawing is clearly visible */
+  .slide{position:absolute;inset:0;z-index:1;display:none;
+    align-items:center;padding:0 8%}
+  .slide.active{display:flex}
+  .slide.animate-in .slide-inner{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .slide-inner{max-width:420px}
+  .kicker{text-transform:uppercase;letter-spacing:3px;font-size:12px;
+    color:var(--accent);font-weight:800;margin-bottom:10px}
+  .slide-inner h2{margin:0 0 12px;font-size:40px;line-height:1.08;font-weight:800}
+  .slide-inner p{margin:0;color:#374151;font-size:17px;line-height:1.7}
+
+  .sco-nav{flex-shrink:0;height:60px;display:flex;align-items:center;
+    justify-content:center;gap:16px;border-top:1px solid rgba(0,0,0,.08)}
+  .sco-nav button{font:inherit;font-weight:700;color:var(--ink);
+    background:#fff;border:1.5px solid rgba(0,0,0,.15);
+    padding:9px 22px;border-radius:999px;cursor:pointer;transition:.15s}
+  .sco-nav button:hover:not(:disabled){transform:translateY(-1px);border-color:var(--ink)}
+  .sco-nav button:disabled{opacity:.4;cursor:not-allowed}
+  .btn-next{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+  .page-indicator{min-width:54px;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+  @media (prefers-reduced-motion: reduce){.line-art-bg .pen{display:none}
+    .slide.animate-in .slide-inner{animation:none}}
+</style>
+</head>
+<body>
+<div class="sco-container">
+
+  <header class="nav-bar">
+    <span class="dot"></span>
+    <span class="title">Move Well — Daily Mobility</span>
+    <span class="hint">Next: the line becomes the next move</span>
+  </header>
+
+  <main class="sco-content">
+
+    <!-- The single continuous line. Its shape changes per slide. -->
+    <svg id="line-bg" class="line-art-bg" viewBox="0 0 1280 720"
+         preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+      <path class="line-path" d="M -40 590 L 1320 590"></path>
+      <circle class="pen" r="6"></circle>
+    </svg>
+
+    <section class="slide" data-slide="0"><div class="slide-inner">
+      <div class="kicker">Warm-up · 1 of 5</div>
+      <h2>Jumping jacks</h2>
+      <p>The line draws itself into your first move. Every slide, this same line
+         reshapes into the next exercise — one continuous stroke, no cuts.</p>
+    </div></section>
+
+    <section class="slide" data-slide="1"><div class="slide-inner">
+      <div class="kicker">Cardio · 2 of 5</div>
+      <h2>Run in place</h2>
+      <p>Press Next and watch the line flow from the jumping jack into a runner.
+         The drawing is the visual for the content — not a photo behind it.</p>
+    </div></section>
+
+    <section class="slide" data-slide="2"><div class="slide-inner">
+      <div class="kicker">Strength · 3 of 5</div>
+      <h2>Deep squat</h2>
+      <p>Drop the hips, chest up. The line morphs again — the same stroke,
+         a new pose, tied to what this slide teaches.</p>
+    </div></section>
+
+    <section class="slide" data-slide="3"><div class="slide-inner">
+      <div class="kicker">Flexibility · 4 of 5</div>
+      <h2>Standing toe touch</h2>
+      <p>Hinge at the hips and reach. Going back re-morphs to the previous move,
+         so the line always matches the current slide.</p>
+    </div></section>
+
+    <section class="slide" data-slide="4"><div class="slide-inner">
+      <div class="kicker">Finisher · 5 of 5</div>
+      <h2>High-knee march</h2>
+      <p>Drive the knees. Swap any pose by dropping a new single-line path into
+         the shapes array — the engine draws and morphs it automatically.</p>
+    </div></section>
+
+  </main>
+
+  <nav class="sco-nav">
+    <button class="btn-prev" id="prevBtn">Back</button>
+    <span class="page-indicator" id="pageIndicator">1 / 5</span>
+    <button class="btn-next" id="nextBtn" data-complete-text="Restart">Next</button>
+  </nav>
+</div>
+
+<!-- sr-only caption announces each slide's drawing to screen readers -->
+<div class="sr-only" id="lineCaption" aria-live="polite"></div>
+
+<script src="shared/engine/slide-controller.js"></script>
+<script src="shared/engine/line-art.js"></script>
+<script src="shared/engine/exercise-shapes.js"></script>
+<script>
+  // One line-art visual per slide; draws in on slide 1, morphs on every move.
+  var art = new SlideLineArt({
+    path: '#line-bg .line-path',
+    pen: '#line-bg .pen',
+    caption: '#lineCaption',
+    shapes: window.EXERCISE_SHAPES,   // one entry per slide, in order
+    drawInDuration: 1200,
+    morphDuration: 850
+  });
+
+  var controller = new SlideController({
+    onComplete: function(){ controller.goTo(0); }  // "Restart"
+  });
+  art.attachTo(controller);          // morphs the line on every slide change
+
+  window.__art = art; window.__controller = controller;
+</script>
+</body>
+</html>
