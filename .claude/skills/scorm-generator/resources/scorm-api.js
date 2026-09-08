@@ -350,12 +350,21 @@
     this.setValue(prefix + '.id', data.id || 'interaction_' + index);
     this.setValue(prefix + '.type', data.type || 'choice');
 
+    // `correct_responses` is optional in both data models (SCORM 1.2 RTE
+    // 3.4.2; 2004 4th ed. RTE 4.2.9). A decision in a simulation has no
+    // correct pattern, and `LMSSetValue(key, undefined)` wrote the string
+    // "undefined" into every such interaction. Written only when given.
+    var hasCorrect = data.correct !== undefined && data.correct !== null;
     if (this.version === '2004') {
       this.setValue(prefix + '.learner_response', data.response);
-      this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
+      if (hasCorrect) {
+        this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
+      }
     } else {
       this.setValue(prefix + '.student_response', data.response);
-      this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
+      if (hasCorrect) {
+        this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
+      }
     }
 
     this.setValue(prefix + '.result', data.result);
