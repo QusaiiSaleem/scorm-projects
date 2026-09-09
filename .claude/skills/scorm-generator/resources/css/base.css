@@ -834,6 +834,11 @@ hr, .divider {
 }
 
 .accordion-header:hover { background: var(--color-surface); }
+/* The item clips overflow for its rounded corners, and that clipped the
+   :focus-visible ring the global rule draws OUTSIDE the header -- a keyboard
+   user saw nothing move (measured 2026-09-09 by Scitter's release gate:
+   "focusing BUTTON changes nothing on screen"). The ring is drawn inside. */
+.accordion-header:focus-visible { outline-offset: -3px; }
 
 .accordion-header .chevron {
   transition: transform 0.3s ease;
