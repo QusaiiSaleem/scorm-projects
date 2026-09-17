@@ -105,15 +105,19 @@
       return r.json();
     });
   };
+  Cmi5Wire.prototype._putNow = function (id, doc) {
+    return this.fetchImpl(this._stateUrl(id), { method: 'PUT', headers: this._headers(true), body: JSON.stringify(doc) }).catch(function () {});
+  };
   Cmi5Wire.prototype._putState = function (id, doc) {
     var self = this;
-    this.queue = this.queue.then(function () {
-      return self.fetchImpl(self._stateUrl(id), { method: 'PUT', headers: self._headers(true), body: JSON.stringify(doc) });
-    }).catch(function () {});
+    this.queue = this.queue.then(function () { return self._putNow(id, doc); }).catch(function () {});
     return this.queue;
   };
-  /** POST one statement, in order. Resolves true only on HTTP 200 with an array (xAPI Communication §2.1.2). */
-  Cmi5Wire.prototype._send = function (statement, keepalive) {
+  /** POST one statement, in order. Resolves true only on HTTP 200 with an
+   *  array (xAPI Communication §2.1.2). `after(stored)` runs INSIDE the queue,
+   *  before anything queued later -- so an outcome's State write always lands
+   *  ahead of `terminated`, which may close the token (cmi5 §8.2.1). */
+  Cmi5Wire.prototype._send = function (statement, keepalive, after) {
     var self = this;
     var init = { method: 'POST', headers: this._headers(true), body: JSON.stringify(statement) };
     if (keepalive) { init.keepalive = true; }
@@ -123,8 +127,9 @@
         return r.json().then(function (ids) { if (!Array.isArray(ids)) { throw new Error('LRS did not return statement ids'); } return true; });
       })
       .catch(function (e) { if (global.console) { console.warn('[cmi5] statement not stored: ' + e); } return false; });
-    this.queue = attempt.then(function () {});
-    return attempt;
+    var settled = attempt.then(function (stored) { return after ? after(stored) : undefined; }).catch(function () {});
+    this.queue = settled;
+    return settled.then(function () { return attempt; });
   };
   Cmi5Wire.prototype._statement = function (verb, object, result, kind) {
     var context = clone(this.launchData.contextTemplate || {});
@@ -209,9 +214,10 @@
     var mastery = lmsMastery !== null ? lmsMastery : (this.packageMastery === null ? null : this.packageMastery / 100);
     if (!this.outcome.completed) {
       this.outcome.completed = true;                    // claimed BEFORE the send: never twice (§9.3)
-      this._send(this._statement(VERB.completed, this._au(), { completion: true, duration: elapsed }, 'outcome'))
-        .then(function (stored) {
-          if (stored) { self._putState(OUTCOME, self.outcome); } else { self.outcome.completed = false; }
+      this._send(this._statement(VERB.completed, this._au(), { completion: true, duration: elapsed }, 'outcome'), false,
+        function (stored) {
+          if (stored) { return self._putNow(OUTCOME, self.outcome); }
+          self.outcome.completed = false;
         });
     }
     if (mastery !== null && outcome.graded > 0 && !this.outcome.passed && !this.assessed) {
@@ -222,9 +228,10 @@
       var s = this._statement(passed ? VERB.passed : VERB.failed, this._au(), result, 'outcome');
       if (lmsMastery !== null) { s.context.extensions = s.context.extensions || {}; s.context.extensions[EXT_MASTERY] = lmsMastery; }   // §9.6.3.2
       if (passed) { this.outcome.passed = true; }
-      this._send(s).then(function (stored) {
-        if (stored) { if (passed) { self._putState(OUTCOME, self.outcome); } }
-        else { self.assessed = false; if (passed) { self.outcome.passed = false; } }
+      this._send(s, false, function (stored) {
+        if (stored) { if (passed) { return self._putNow(OUTCOME, self.outcome); } return undefined; }
+        self.assessed = false;
+        if (passed) { self.outcome.passed = false; }
       });
     }
   };
