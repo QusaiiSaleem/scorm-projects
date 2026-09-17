@@ -713,7 +713,8 @@
           : '';
 
       default:
-        return String(question.correctAnswer || '');
+        // false and 0 are answers (true-false, numeric); only nothing is nothing.
+        return question.correctAnswer === undefined || question.correctAnswer === null ? '' : String(question.correctAnswer);
     }
   };
 

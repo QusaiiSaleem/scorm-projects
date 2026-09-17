@@ -74,7 +74,7 @@
     if (!api) {
       console.warn('SCORM API not found. Running in standalone mode.');
       this.initialized = true; // Allow content to work without LMS
-      return true;
+      return false;            // ...and tell the caller there is no session (RTE 3.1.6)
     }
 
     var result;
@@ -89,7 +89,8 @@
     if (this.initialized) {
       // Set initial status if not already set
       var status = this.getLessonStatus();
-      if (!status || status === 'not attempted') {
+      // SCORM 2004 RTE 4.2.4: a fresh attempt reads "unknown", not "not attempted".
+      if (!status || status === 'not attempted' || status === 'unknown') {
         this.setLessonStatus('incomplete');
         this.commit();
       }
@@ -317,6 +318,33 @@
     return this.setValue('cmi.suspend_data', data);
   };
 
+  /** Exit mode (SCORM 1.2 RTE 3.4 cmi.core.exit; 2004 RTE 4.2.8 cmi.exit): "" when completed, "suspend" otherwise. */
+  SCORMWrapper.prototype.setExit = function(completed) {
+    return this.setValue(this.version === '2004' ? 'cmi.exit' : 'cmi.core.exit', completed ? '' : 'suspend');
+  };
+  /** The bookmark (1.2 cmi.core.lesson_location; 2004 RTE 4.2.14 cmi.location). */
+  SCORMWrapper.prototype.setLocation = function(location) {
+    return this.setValue(this.version === '2004' ? 'cmi.location' : 'cmi.core.lesson_location', location);
+  };
+  SCORMWrapper.prototype.getLocation = function() {
+    return this.getValue(this.version === '2004' ? 'cmi.location' : 'cmi.core.lesson_location');
+  };
+  /** Has this attempt been finished? 2004 RTE 4.2.4: completion_status alone says so
+   *  (success is a separate answer); 1.2: lesson_status completed or passed. */
+  SCORMWrapper.prototype.isFinished = function() {
+    if (this.version === '2004') { return this.getValue('cmi.completion_status') === 'completed'; }
+    var s = this.getValue('cmi.core.lesson_status');
+    return s === 'completed' || s === 'passed';
+  };
+  /** 2004 RTE 4.2.18 cmi.progress_measure, 0..1. SCORM 1.2 has no such element. */
+  SCORMWrapper.prototype.setProgress = function(fraction) {
+    if (this.version !== '2004') { return true; }
+    var f = Math.max(0, Math.min(1, Number(fraction) || 0));
+    return this.setValue('cmi.progress_measure', String(Math.round(f * 10000) / 10000));
+  };
+  /** The language a 2004 description is tagged with (RTE 4.1.1.7 localized_string_type: "{lang=xx}" prefix). */
+  SCORMWrapper.prototype.language = 'en';
+
   /**
    * Get learner name
    */
@@ -346,38 +374,76 @@
    */
   SCORMWrapper.prototype.recordInteraction = function(index, data) {
     var prefix = 'cmi.interactions.' + index;
-
     this.setValue(prefix + '.id', data.id || 'interaction_' + index);
     this.setValue(prefix + '.type', data.type || 'choice');
-
-    // `correct_responses` is optional in both data models (SCORM 1.2 RTE
-    // 3.4.2; 2004 4th ed. RTE 4.2.9). A decision in a simulation has no
-    // correct pattern, and `LMSSetValue(key, undefined)` wrote the string
-    // "undefined" into every such interaction. Written only when given.
     var hasCorrect = data.correct !== undefined && data.correct !== null;
     if (this.version === '2004') {
-      this.setValue(prefix + '.learner_response', data.response);
+      // SCORM 2004 RTE 4.2.9: the engine formats values for 1.2 (RTE 3.4:
+      // comma-joined choices, a.x pairs, min:max ranges, HH:MM:SS latency,
+      // "wrong"); here the same facts are re-spelled -- [,] [.] [:]
+      // delimiters, "incorrect", a timeinterval latency, one pattern per
+      // fill-in alternative, a numeric pattern always as a range (equal
+      // endpoints for one value), and the description with its language.
+      var t = data.type || 'choice';
+      this.setValue(prefix + '.learner_response', SCORMWrapper.to2004Response(t, data.response, 'scorm2004'));
       if (hasCorrect) {
-        this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
+        var patterns = SCORMWrapper.to2004Patterns(t, data.correct, 'scorm2004');
+        for (var p = 0; p < patterns.length; p++) {
+          this.setValue(prefix + '.correct_responses.' + p + '.pattern', patterns[p]);
+        }
       }
+      if (data.description) {
+        this.setValue(prefix + '.description', '{lang=' + this.language + '}' + String(data.description).slice(0, 250));
+      }
+      this.setValue(prefix + '.result', data.result === 'wrong' ? 'incorrect' : data.result);
+      if (data.latency) { this.setValue(prefix + '.latency', SCORMWrapper.toTimeinterval(data.latency)); }
     } else {
       this.setValue(prefix + '.student_response', data.response);
       if (hasCorrect) {
         this.setValue(prefix + '.correct_responses.0.pattern', data.correct);
       }
+      this.setValue(prefix + '.result', data.result);
+      if (data.latency) {
+        this.setValue(prefix + '.latency', data.latency);
+      }
     }
-
-    this.setValue(prefix + '.result', data.result);
-
-    if (data.latency) {
-      this.setValue(prefix + '.latency', data.latency);
-    }
-
     if (data.weighting) {
       this.setValue(prefix + '.weighting', data.weighting);
     }
-
     return true;
+  };
+
+  /**
+   * 1.2 -> 2004 / xAPI response spelling (SCORM 2004 RTE 4.2.9; xAPI Data
+   * 2.4.4.1 uses the same bracketed delimiters). `flavor` is 'scorm2004' or
+   * 'xapi'; they differ in one place: a single numeric value is a range with
+   * equal endpoints on 2004 and may be bare on xAPI. Shared with cmi5-wire.js.
+   */
+  SCORMWrapper.to2004Response = function(type, value, flavor) {
+    var s = value === undefined || value === null ? '' : String(value);
+    if (type === 'choice' || type === 'sequencing') { return s.split(',').filter(Boolean).join('[,]'); }
+    if (type === 'matching') { return s.split(',').filter(Boolean).map(function (pair) { return pair.replace('.', '[.]'); }).join('[,]'); }
+    return s;
+  };
+  SCORMWrapper.to2004Patterns = function(type, value, flavor) {
+    var s = value === undefined || value === null ? '' : String(value);
+    if (type === 'fill-in') { return s.split(',').filter(Boolean); }
+    if (type === 'numeric') {
+      if (s.indexOf(':') > -1) { return [s.replace(':', '[:]')]; }
+      return [flavor === 'xapi' || s === '' ? s : s + '[:]' + s];
+    }
+    return [SCORMWrapper.to2004Response(type, s, flavor)];
+  };
+  /** HH:MM:SS(.ff) -> PT#H#M#S (2004 RTE timeinterval, second); already ISO? returned as is. */
+  SCORMWrapper.toTimeinterval = function(value) {
+    var s = String(value);
+    if (s.charAt(0) === 'P') { return s; }
+    var m = /^(\d+):(\d+):(\d+(?:\.\d+)?)$/.exec(s);
+    if (!m) { return 'PT0S'; }
+    var h = Number(m[1]), mi = Number(m[2]), se = Number(m[3]);
+    var out = 'PT' + (h ? h + 'H' : '') + (mi ? mi + 'M' : '');
+    if (se || (!h && !mi)) { out += String(se) + 'S'; }
+    return out;
   };
 
   // ============================================
