@@ -8,8 +8,15 @@
  * Usage:
  *   const controller = new SlideController({
  *     onSlideChange: function(index, total) { ... },
- *     onComplete: function() { ... }
+ *     onComplete: function() { ... },
+ *     canGoNext: function(index) { return true; }   // optional
  *   });
+ *
+ * canGoNext (optional): asked before every forward move -- the Next button,
+ * the arrow keys and a swipe all go through next(), so one answer governs all
+ * three. Return false and Next is disabled and does nothing (on the last
+ * slide that includes completion). Previous is never blocked. When the answer
+ * changes while the slide stays the same, call refreshNav() to redraw Next.
  *
  * HTML structure expected:
  *   <div class="sco-container">
@@ -47,6 +54,7 @@
     this.progressFill = document.querySelector('.progress-fill');
     this.onSlideChange = options.onSlideChange || null;
     this.onComplete = options.onComplete || null;
+    this.canGoNext = options.canGoNext || null;
     this.animating = false;
 
     // Initialize
@@ -124,7 +132,7 @@
         this.nextBtn.textContent =
           this.nextBtn.getAttribute('data-next-text') || 'Next';
       }
-      this.nextBtn.disabled = false;
+      this.nextBtn.disabled = !this._nextAllowed();
     }
 
     // Callback
@@ -133,8 +141,20 @@
     }
   };
 
+  SlideController.prototype._nextAllowed = function() {
+    return !this.canGoNext || this.canGoNext(this.currentIndex) !== false;
+  };
+
+  // Redraw Next after canGoNext's answer changed on the same slide.
+  SlideController.prototype.refreshNav = function() {
+    if (this.nextBtn) {
+      this.nextBtn.disabled = !this._nextAllowed();
+    }
+  };
+
   SlideController.prototype.next = function() {
     if (this.animating) return;
+    if (!this._nextAllowed()) return;
 
     if (this.currentIndex < this.totalSlides - 1) {
       this.currentIndex++;
