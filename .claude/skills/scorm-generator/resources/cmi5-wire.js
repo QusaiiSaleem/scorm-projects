@@ -14,7 +14,10 @@
  * Response and pattern spelling (xAPI Data §2.4.4.1) is SCORMWrapper's
  * `to2004Response` / `to2004Patterns` with flavor 'xapi', handed in by the
  * host as `options.toResponse` / `options.toPatterns`, so the two wires never
- * carry two copies of the delimiter table.
+ * carry two copies of the delimiter table. An answer's `latency` -- content
+ * spells it HHHH:MM:SS.SS for SCORM 1.2 -- becomes `result.duration` (xAPI
+ * Data §2.4.5, in ISO 8601 as §4.6 requires) through `options.toDuration`, the wrapper's
+ * `toTimeinterval`, the same converter the 2004 wire writes `latency` with.
  */
 (function (global) {
   'use strict';
@@ -61,6 +64,11 @@
     this.language = options.language || 'ar-SA';
     this.toResponse = options.toResponse || plain;
     this.toPatterns = options.toPatterns || function (t, v) { return [plain(t, v)]; };
+    // Without the host's converter only a value already in ISO 8601 passes;
+    // anything else is left off: an LRS MUST reject a statement carrying a
+    // value that does not follow its format (xAPI Data §2.2), and the answer
+    // would go with it.
+    this.toDuration = options.toDuration || function (v) { var s = String(v); return s.charAt(0) === 'P' ? s : null; };
     this.token = null;
     this.launchData = { launchMode: 'Normal', contextTemplate: {} };
     this.preferences = null;
@@ -202,6 +210,7 @@
     var object = { objectType: 'Activity', id: this.launch.activityId + '/interactions/' + encodeURIComponent(data.id || ('interaction_' + index)), definition: definition };
     var result = { response: this.toResponse(type, data.response, 'xapi') };
     if (data.result === 'correct' || data.result === 'wrong' || data.result === 'incorrect') { result.success = data.result === 'correct'; }
+    if (data.latency) { var took = this.toDuration(data.latency); if (took) { result.duration = took; } }
     var s = this._statement(VERB.answered, object, result, 'allowed');
     if (!s.context.contextActivities.parent) { s.context.contextActivities.parent = [this._au()]; }   // §10.2.1: add, never overwrite
     this._send(s);
