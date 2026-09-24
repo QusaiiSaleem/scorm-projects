@@ -56,10 +56,18 @@
  * `signal(name)`: what the host itself can see of the learner, sent as
  * allowed statements between initialized and terminated (§9.3) and never
  * outside that: `suspended` (the page hidden), `resumed` (back, with
- * awaySeconds), `abandoned` (closing a registration that never completed,
- * with progress). The last shares its IRI with the LMS's §9.3.6 statement and
- * is told apart by what §9.6.2.1 gives the LMS's and not ours: the cmi5
- * category. Whether each is sent at all is the host's switch, not this file's.
+ * awaySeconds), `exited` (closing a registration that never completed, with
+ * progress). Each verb is one ADL already defines -- `suspended` and `resumed`
+ * in the SCORM profile (https://w3id.org/xapi/scorm), `exited` in the ADL
+ * vocabulary (https://w3id.org/xapi/adl: "the actor intentionally departed")
+ * -- because a reader groups by the verb IRI and an IRI nobody defined groups
+ * with nothing. NOT `abandoned`: §9.3.6 gives it to the LMS ("AU Obligations:
+ * None") for a session that ended abnormally, and "the LMS MUST NOT allow any
+ * statements to be recorded for a session after recording an 'Abandoned'
+ * statement" -- so an LMS keying on the verb could refuse the `terminated`
+ * that follows ours, and every learner who closes to come back later would
+ * read as a crash. Whether each is sent at all is the host's switch, not this
+ * file's.
  */
 (function (global) {
   'use strict';
@@ -73,9 +81,9 @@
     failed: 'http://adlnet.gov/expapi/verbs/failed',
     terminated: 'http://adlnet.gov/expapi/verbs/terminated',
     scored: 'http://adlnet.gov/expapi/verbs/scored',
-    suspended: 'https://w3id.org/xapi/adl/verbs/suspended',
-    resumed: 'https://w3id.org/xapi/adl/verbs/resumed',
-    abandoned: 'https://w3id.org/xapi/adl/verbs/abandoned'
+    suspended: 'http://adlnet.gov/expapi/verbs/suspended',
+    resumed: 'http://adlnet.gov/expapi/verbs/resumed',
+    exited: 'http://adlnet.gov/expapi/verbs/exited'
   };
   var CAT_CMI5 = 'https://w3id.org/xapi/cmi5/context/categories/cmi5';
   var CAT_MOVEON = 'https://w3id.org/xapi/cmi5/context/categories/moveon';
@@ -136,7 +144,7 @@
     this.firstReports = {};         // interaction id -> its first report, for `scored`
     this.reportOrder = [];
     this.scoredSent = false;        // `scored` once per session
-    this.progress = 0;              // the last progress sent, 0-100, for `abandoned`
+    this.progress = 0;              // the last progress sent, 0-100, for `exited`
     this.awayAt = null;             // when the page was hidden, for `resumed`
     this.token = null;
     this.launchData = { launchMode: 'Normal', contextTemplate: {} };
@@ -350,7 +358,7 @@
       self._send(self._withParent(self._statement(VERB.scored, object, result, 'allowed')));
     });
   };
-  /** What the host sees of the learner (see the header): 'suspended', 'resumed' or 'abandoned'. Nothing outside a live session. */
+  /** What the host sees of the learner (see the header): 'suspended', 'resumed' or 'exited'. Nothing outside a live session. */
   Cmi5Wire.prototype.signal = function (name) {
     if (this.phase !== 'ready') { return; }
     var result = null;
@@ -362,8 +370,8 @@
       result = { extensions: {} };
       result.extensions[this._ext('awaySeconds')] = Math.max(0, Math.round((this.now() - this.awayAt) / 100) / 10);
       this.awayAt = null;
-    } else if (name === 'abandoned') {
-      if (this.outcome.completed) { return; }          // a registration already complete is left, not abandoned
+    } else if (name === 'exited') {
+      if (this.outcome.completed) { return; }          // leaving a completed registration is not leaving it unfinished
       result = { completion: false, duration: duration(this.now() - this.startedAt), extensions: {} };
       result.extensions[EXT_PROGRESS] = this.progress;
     } else {
