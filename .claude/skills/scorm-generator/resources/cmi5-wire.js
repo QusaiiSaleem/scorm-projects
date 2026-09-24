@@ -18,6 +18,48 @@
  * spells it HHHH:MM:SS.SS for SCORM 1.2 -- becomes `result.duration` (xAPI
  * Data §2.4.5, in ISO 8601 as §4.6 requires) through `options.toDuration`, the wrapper's
  * `toTimeinterval`, the same converter the 2004 wire writes `latency` with.
+ *
+ * WHAT AN ANSWER CARRIES BEYOND ITS RESPONSE (2026-09-24). Every IRI minted
+ * below hangs off ONE base, `options.activityBase`: the host hands in the
+ * lecture's course IRI from cmi5.xml (Scitter: `package.course_iri`, frozen
+ * independent of the hostname), because the launch line's activityId is the LMS's RUNTIME id
+ * (§8.1.5), per registration, and a key minted from it would change with every
+ * learner. Without the option the runtime id is the base -- deterministic
+ * within one registration, and said here so nobody mistakes it for stable.
+ *   <base>/ext/<key>          result.extensions: an answer's `extensions`
+ *                             short keys, `severity` and `choiceGrade`; also
+ *                             `awaySeconds` and `phase` below. A key that is
+ *                             already an IRI passes unchanged. The short name
+ *                             is always the last path segment.
+ *   <base>/objectives/<code>  an objective code the host could not resolve.
+ *                             A known code is the `uri` of its CASE item,
+ *                             handed in as `options.objectiveIris`
+ *                             {code: iri}; either way the activity rides in
+ *                             `context.contextActivities.parent` after the
+ *                             template's own parent (or the AU when there is
+ *                             none), never replacing it (§10.2.1), typed as an
+ *                             xAPI objective.
+ *   <base>/phases/<phase>     the object of a per-phase `scored` summary.
+ * An answer's grade: content's `extensions.choiceGrade` when it gave one
+ * (and then `result.success` is `choiceGrade === 'correct'`); else `severity`
+ * (caution -> hesitant, danger -> wrong); else a `neutral` result is
+ * `hesitant` with `success: false`. `severity` itself goes through too. Which
+ * answers the HOST scores is the host's business and unchanged by any of this.
+ *
+ * `scored` (allowed, §7.1.3: sessionid from the template, no cmi5 category):
+ * at finish, once per session, one per objective and one per `phase` -- raw =
+ * right answers, max = graded answers, over the FIRST report of each
+ * interaction id, counted only if that report is graded (result correct/wrong
+ * and `extensions.graded !== false`). A retry is not a second attempt at the
+ * objective, and a first report that was not graded keeps the id out.
+ *
+ * `signal(name)`: what the host itself can see of the learner, sent as
+ * allowed statements between initialized and terminated (§9.3) and never
+ * outside that: `suspended` (the page hidden), `resumed` (back, with
+ * awaySeconds), `abandoned` (closing a registration that never completed,
+ * with progress). The last shares its IRI with the LMS's §9.3.6 statement and
+ * is told apart by what §9.6.2.1 gives the LMS's and not ours: the cmi5
+ * category. Whether each is sent at all is the host's switch, not this file's.
  */
 (function (global) {
   'use strict';
@@ -29,13 +71,20 @@
     completed: 'http://adlnet.gov/expapi/verbs/completed',
     passed: 'http://adlnet.gov/expapi/verbs/passed',
     failed: 'http://adlnet.gov/expapi/verbs/failed',
-    terminated: 'http://adlnet.gov/expapi/verbs/terminated'
+    terminated: 'http://adlnet.gov/expapi/verbs/terminated',
+    scored: 'http://adlnet.gov/expapi/verbs/scored',
+    suspended: 'https://w3id.org/xapi/adl/verbs/suspended',
+    resumed: 'https://w3id.org/xapi/adl/verbs/resumed',
+    abandoned: 'https://w3id.org/xapi/adl/verbs/abandoned'
   };
   var CAT_CMI5 = 'https://w3id.org/xapi/cmi5/context/categories/cmi5';
   var CAT_MOVEON = 'https://w3id.org/xapi/cmi5/context/categories/moveon';
   var EXT_MASTERY = 'https://w3id.org/xapi/cmi5/context/extensions/masteryscore';
   var EXT_PROGRESS = 'https://w3id.org/xapi/cmi5/result/extensions/progress';
   var INTERACTION = 'http://adlnet.gov/expapi/activities/cmi.interaction';
+  var OBJECTIVE = 'http://adlnet.gov/expapi/activities/objective';
+  var ASSESSMENT = 'http://adlnet.gov/expapi/activities/assessment';
+  var SEVERITY_GRADE = { caution: 'hesitant', danger: 'wrong' };
   var OUTCOME = 'scitter.outcome';
   var BOOKMARK = 'scitter.bookmark';
   var XAPI_TYPE = { 'choice': 'choice', 'true-false': 'true-false', 'fill-in': 'fill-in', 'long-fill-in': 'long-fill-in',
@@ -52,6 +101,19 @@
   function duration(ms) { return 'PT' + (Math.max(0, ms) / 1000).toFixed(2).replace(/\.?0+$/, '') + 'S'; }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function plain(t, v) { return v === undefined || v === null ? '' : String(v); }
+  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+  function isIri(key) { return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(key); }
+  /** `'hq1 hq3'`, `'hq1,hq3'` or `['hq1', 'hq3']` -> ['hq1', 'hq3'], each once. */
+  function codesOf(value) {
+    var list = Array.isArray(value) ? value : plain(null, value).split(/[\s,]+/);
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var code = plain(null, list[i]).trim();
+      if (code && out.indexOf(code) < 0) { out.push(code); }
+    }
+    return out;
+  }
+  function score(right, count) { return { scaled: Math.round((right / count) * 10000) / 10000, raw: right, min: 0, max: count }; }
 
   function Cmi5Wire(launch, options) {
     options = options || {};
@@ -69,6 +131,13 @@
     // value that does not follow its format (xAPI Data §2.2), and the answer
     // would go with it.
     this.toDuration = options.toDuration || function (v) { var s = String(v); return s.charAt(0) === 'P' ? s : null; };
+    this.base = String(options.activityBase || launch.activityId).replace(/\/$/, '');
+    this.objectiveIris = options.objectiveIris || {};
+    this.firstReports = {};         // interaction id -> its first report, for `scored`
+    this.reportOrder = [];
+    this.scoredSent = false;        // `scored` once per session
+    this.progress = 0;              // the last progress sent, 0-100, for `abandoned`
+    this.awayAt = null;             // when the page was hidden, for `resumed`
     this.token = null;
     this.launchData = { launchMode: 'Normal', contextTemplate: {} };
     this.preferences = null;
@@ -199,21 +268,109 @@
     if (this.phase !== 'ready' || this.outcome.completed) { return; }   // §9.5.5.1: no progress after completion
     var result = { extensions: {} };
     result.extensions[EXT_PROGRESS] = Math.max(0, Math.min(100, Math.round(Number(fraction) * 100) || 0));
+    this.progress = result.extensions[EXT_PROGRESS];
     this._send(this._statement(VERB.progressed, this._au(), result, 'allowed'));
+  };
+  Cmi5Wire.prototype._ext = function (key) { return isIri(key) ? key : this.base + '/ext/' + encodeURIComponent(key); };
+  /** An objective's activity: its CASE item's uri when the host knows the code, else under the base. */
+  Cmi5Wire.prototype._objective = function (code) {
+    var known = has(this.objectiveIris, code) ? this.objectiveIris[code] : '';
+    return { objectType: 'Activity', id: known || (this.base + '/objectives/' + encodeURIComponent(code)), definition: { type: OBJECTIVE } };
+  };
+  /** The template's parent, or the AU when it has none, with `extra` appended -- added, never overwritten (§10.2.1). */
+  Cmi5Wire.prototype._withParent = function (s, extra) {
+    var parent = (s.context.contextActivities.parent || [this._au()]).slice();
+    var ids = parent.map(function (a) { return a.id; });
+    (extra || []).forEach(function (a) { if (ids.indexOf(a.id) < 0) { parent.push(a); ids.push(a.id); } });
+    s.context.contextActivities.parent = parent;
+    return s;
   };
   Cmi5Wire.prototype.recordInteraction = function (index, data) {
     if (this.phase !== 'ready') { return; }
+    var self = this;
     var type = data.type || 'choice';
     var definition = { type: INTERACTION, interactionType: XAPI_TYPE[type] || 'other' };
     if (data.description) { definition.name = {}; definition.name[this.language] = String(data.description); }
     if (data.correct !== undefined && data.correct !== null) { definition.correctResponsesPattern = this.toPatterns(type, data.correct, 'xapi'); }
     var object = { objectType: 'Activity', id: this.launch.activityId + '/interactions/' + encodeURIComponent(data.id || ('interaction_' + index)), definition: definition };
     var result = { response: this.toResponse(type, data.response, 'xapi') };
-    if (data.result === 'correct' || data.result === 'wrong' || data.result === 'incorrect') { result.success = data.result === 'correct'; }
+    var graded = data.result === 'correct' || data.result === 'wrong' || data.result === 'incorrect';
+    if (graded) { result.success = data.result === 'correct'; }
     if (data.latency) { var took = this.toDuration(data.latency); if (took) { result.duration = took; } }
+    var given = data.extensions && typeof data.extensions === 'object' ? data.extensions : {};
+    var extensions = {}, any = false;
+    for (var key in given) {
+      if (has(given, key) && given[key] !== undefined) { extensions[this._ext(key)] = given[key]; any = true; }
+    }
+    var grade = given.choiceGrade;
+    if (grade !== undefined && grade !== null && grade !== '') {
+      result.success = grade === 'correct';
+    } else {
+      grade = (data.severity && SEVERITY_GRADE[data.severity]) || (data.result === 'neutral' ? 'hesitant' : null);
+      if (grade) {
+        extensions[this._ext('choiceGrade')] = grade; any = true;
+        if (!graded) { result.success = false; }
+      }
+    }
+    if (data.severity) { extensions[this._ext('severity')] = String(data.severity); any = true; }
+    if (any) { result.extensions = extensions; }
+    var codes = codesOf(data.objectives);
+    var id = String(data.id || ('interaction_' + index));
+    if (!has(this.firstReports, id)) {
+      this.firstReports[id] = { codes: codes, phase: given.phase, graded: graded && given.graded !== false, right: data.result === 'correct' };
+      this.reportOrder.push(id);
+    }
     var s = this._statement(VERB.answered, object, result, 'allowed');
-    if (!s.context.contextActivities.parent) { s.context.contextActivities.parent = [this._au()]; }   // §10.2.1: add, never overwrite
-    this._send(s);
+    this._send(this._withParent(s, codes.map(function (c) { return self._objective(c); })));
+  };
+  /** One `scored` per objective and one per phase, from the first report of each interaction (see the header). */
+  Cmi5Wire.prototype._sendScored = function () {
+    if (this.scoredSent) { return; }
+    this.scoredSent = true;
+    var self = this, byCode = {}, codes = [], byPhase = {}, phases = [];
+    function tally(table, order, key, right) {
+      if (!has(table, key)) { table[key] = { right: 0, count: 0 }; order.push(key); }
+      table[key].count += 1;
+      if (right) { table[key].right += 1; }
+    }
+    this.reportOrder.forEach(function (id) {
+      var r = self.firstReports[id];
+      if (!r.graded) { return; }
+      r.codes.forEach(function (c) { tally(byCode, codes, c, r.right); });
+      if (r.phase !== undefined && r.phase !== null && r.phase !== '') { tally(byPhase, phases, String(r.phase), r.right); }
+    });
+    codes.forEach(function (c) {
+      self._send(self._withParent(self._statement(VERB.scored, self._objective(c), { score: score(byCode[c].right, byCode[c].count) }, 'allowed')));
+    });
+    phases.forEach(function (p) {
+      var name = {}; name[self.language] = p;
+      var object = { objectType: 'Activity', id: self.base + '/phases/' + encodeURIComponent(p), definition: { type: ASSESSMENT, name: name } };
+      var result = { score: score(byPhase[p].right, byPhase[p].count), extensions: {} };
+      result.extensions[self._ext('phase')] = p;
+      self._send(self._withParent(self._statement(VERB.scored, object, result, 'allowed')));
+    });
+  };
+  /** What the host sees of the learner (see the header): 'suspended', 'resumed' or 'abandoned'. Nothing outside a live session. */
+  Cmi5Wire.prototype.signal = function (name) {
+    if (this.phase !== 'ready') { return; }
+    var result = null;
+    if (name === 'suspended') {
+      if (this.awayAt !== null) { return; }
+      this.awayAt = this.now();
+    } else if (name === 'resumed') {
+      if (this.awayAt === null) { return; }
+      result = { extensions: {} };
+      result.extensions[this._ext('awaySeconds')] = Math.max(0, Math.round((this.now() - this.awayAt) / 100) / 10);
+      this.awayAt = null;
+    } else if (name === 'abandoned') {
+      if (this.outcome.completed) { return; }          // a registration already complete is left, not abandoned
+      result = { completion: false, duration: duration(this.now() - this.startedAt), extensions: {} };
+      result.extensions[EXT_PROGRESS] = this.progress;
+    } else {
+      return;
+    }
+    // keepalive on the two a closing page sends: the request must outlive it.
+    this._send(this._withParent(this._statement(VERB[name], this._au(), result, 'allowed')), name !== 'resumed');
   };
   Cmi5Wire.prototype.finish = function (outcome) {
     if (this.phase !== 'ready' || this.launchData.launchMode !== 'Normal') { return; }
@@ -221,6 +378,7 @@
     var elapsed = duration(this.now() - this.startedAt);
     var lmsMastery = typeof this.launchData.masteryScore === 'number' ? this.launchData.masteryScore : null;
     var mastery = lmsMastery !== null ? lmsMastery : (this.packageMastery === null ? null : this.packageMastery / 100);
+    this._sendScored();
     if (!this.outcome.completed) {
       this.outcome.completed = true;                    // claimed BEFORE the send: never twice (§9.3)
       this._send(this._statement(VERB.completed, this._au(), { completion: true, duration: elapsed }, 'outcome'), false,

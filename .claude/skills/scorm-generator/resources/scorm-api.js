@@ -376,6 +376,12 @@
     var prefix = 'cmi.interactions.' + index;
     this.setValue(prefix + '.id', data.id || 'interaction_' + index);
     this.setValue(prefix + '.type', data.type || 'choice');
+    // After id and type: 2004 refuses a sub-element of an interaction whose id
+    // is not set yet (RTE 4.2.9, error 408). Write-only on 1.2.
+    var objectives = SCORMWrapper.objectiveIds(data.objectives, this.version);
+    for (var o = 0; o < objectives.length; o++) {
+      this.setValue(prefix + '.objectives.' + o + '.id', objectives[o]);
+    }
     var hasCorrect = data.correct !== undefined && data.correct !== null;
     if (this.version === '2004') {
       // SCORM 2004 RTE 4.2.9: the engine formats values for 1.2 (RTE 3.4:
@@ -433,6 +439,26 @@
       return [flavor === 'xapi' || s === '' ? s : s + '[:]' + s];
     }
     return [SCORMWrapper.to2004Response(type, s, flavor)];
+  };
+  /**
+   * An answer's objective codes -- `'hq1 hq3'`, `'hq1,hq3'` or an array -- as
+   * the ids `cmi.interactions.n.objectives.m.id` accepts, each once (2004 RTE
+   * 4.2.9 refuses a duplicate within one interaction, error 351). 1.2 (RTE
+   * 3.4): a CMIIdentifier -- no white space or unprintable characters, at most
+   * 255 -- so anything outside [A-Za-z0-9._-] becomes `_`. 2004: a
+   * long_identifier_type -- a URI-shaped string, at most 4000 -- so a
+   * character a URI cannot hold is percent-encoded and nothing else changes.
+   */
+  SCORMWrapper.objectiveIds = function(value, version) {
+    var list = Array.isArray(value) ? value : String(value === undefined || value === null ? '' : value).split(/[\s,]+/);
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var code = String(list[i] === undefined || list[i] === null ? '' : list[i]).trim();
+      if (!code) { continue; }
+      code = version === '2004' ? encodeURI(code).slice(0, 4000) : code.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 255);
+      if (out.indexOf(code) < 0) { out.push(code); }
+    }
+    return out;
   };
   /** HH:MM:SS(.ff) -> PT#H#M#S (2004 RTE timeinterval, second); already ISO? returned as is. */
   SCORMWrapper.toTimeinterval = function(value) {
