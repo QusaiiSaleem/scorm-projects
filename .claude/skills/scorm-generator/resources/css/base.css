@@ -41,6 +41,7 @@
   --color-text: #1E293B;
   --color-text-secondary: #64748B;
   --color-text-on-dark: #F8FAFC;
+  --color-text-on-primary: #FFFFFF; /* a label on a --color-primary fill; a light brand sets it dark */
   --color-border: #E2E8F0;
   --color-border-subtle: #F1F5F9;
   --color-success: #10B981;
@@ -486,7 +487,9 @@ hr, .divider {
   min-height: 48px;
 }
 
-.nav-btn:hover {
+/* Not on a disabled button: a slide that holds Next dims it, and hovering a
+   dimmed button must not dress it as live. */
+.nav-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
@@ -509,15 +512,26 @@ hr, .divider {
   min-height: 48px;
 }
 
+/* The course's primary, flat. It was a gradient into --color-primary-dark,
+   which a course that sets only its primary never declares, so its Next
+   faded into this file's default purple; and a glow spelled as that purple,
+   the same on every brand. */
 .btn-next {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: white;
-  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
-.btn-next:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+/* Darker on hover and press by a filter, so any brand works from its one
+   colour. The label is restated because .nav-btn:hover recolours it to the
+   primary -- on a primary fill, which made the label vanish under the mouse.
+   Same specificity as that rule and later in the file, so this one wins. */
+.btn-next:hover:not(:disabled) {
+  color: var(--color-text-on-primary);
+  filter: brightness(0.92);
+}
+
+.btn-next:active:not(:disabled) {
+  filter: brightness(0.85);
 }
 
 .btn-prev {
@@ -526,7 +540,7 @@ hr, .divider {
   border: 2px solid var(--color-border);
 }
 
-.btn-prev:hover {
+.btn-prev:hover:not(:disabled) {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
@@ -534,8 +548,6 @@ hr, .divider {
 .btn-prev:disabled, .btn-next:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 
@@ -682,9 +694,11 @@ hr, .divider {
    9. BUTTONS
    ========================================================================== */
 
+/* Flat, from the course's own primary -- the same button as .btn-next, for
+   the same reasons (see there), so a deck never shows two button styles. */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
   border: none;
   border-radius: var(--radius-md);
   padding: 14px 28px;
@@ -693,7 +707,6 @@ hr, .divider {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
-  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -701,16 +714,17 @@ hr, .divider {
   min-height: 48px;
 }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn-primary:active:not(:disabled) {
+  filter: brightness(0.85);
 }
 
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .btn-secondary {
