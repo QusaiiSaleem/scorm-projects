@@ -534,15 +534,21 @@ hr, .divider {
   filter: brightness(0.85);
 }
 
+/* No fill of its own: the label sits on the nav bar it shares with the page
+   number, so one pair -- the bar's --color-surface-elevated and --color-text --
+   decides both. It was filled with --color-surface, which a course sets as its
+   SLIDES' background: one painted it near-black and left the text the default
+   navy, and Previous read at 1.3:1. A hover moves the border to the primary
+   and never the label, which on a light brand read at 2:1 under the mouse. */
 .btn-prev {
-  background: var(--color-surface);
+  background: transparent;
   color: var(--color-text);
   border: 2px solid var(--color-border);
 }
 
 .btn-prev:hover:not(:disabled) {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .btn-prev:disabled, .btn-next:disabled {
