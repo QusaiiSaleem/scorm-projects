@@ -55,7 +55,12 @@
   'use strict';
 
   // ---- Configuration ----
-  var container = document.querySelector('[data-question-id="fill-blank-q1"]');
+  // The question just before this script, so a slide can hold two copies:
+  // each pasted copy binds its own fieldset (a fixed id bound only the first).
+  var container = document.currentScript;
+  while (container && !(container.matches && container.matches('[data-question-id]'))) {
+    container = container.previousElementSibling;
+  }
   if (!container) return;
 
   // Array of acceptable answers (up to 10 variations)
