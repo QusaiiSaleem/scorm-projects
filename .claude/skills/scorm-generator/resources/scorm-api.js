@@ -308,6 +308,16 @@
   };
 
   /**
+   * How many interactions the LMS already holds for this attempt -- where the
+   * next one goes. `cmi.interactions._count` is readable on both versions
+   * (1.2 RTE 3.4, 2004 RTE 4.2.9) and an LMS rebuilds it on a resume; one that
+   * kept nothing, or answers "", gives 0.
+   */
+  SCORMWrapper.prototype.getInteractionCount = function() {
+    return parseInt(this.getValue('cmi.interactions._count'), 10) || 0;
+  };
+
+  /**
    * Get/Set bookmark (suspend_data)
    */
   SCORMWrapper.prototype.getBookmark = function() {
