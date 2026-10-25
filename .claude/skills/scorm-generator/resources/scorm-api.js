@@ -378,6 +378,8 @@
     this.setValue(prefix + '.type', data.type || 'choice');
     // After id and type: 2004 refuses a sub-element of an interaction whose id
     // is not set yet (RTE 4.2.9, error 408). Write-only on 1.2.
+    this.setValue(prefix + (this.version === '2004' ? '.timestamp' : '.time'),
+      SCORMWrapper.toInteractionTime(this.version, data.latency, Date.now()));
     var objectives = SCORMWrapper.objectiveIds(data.objectives, this.version);
     for (var o = 0; o < objectives.length; o++) {
       this.setValue(prefix + '.objectives.' + o + '.id', objectives[o]);
@@ -472,6 +474,28 @@
     return out;
   };
   /** HH:MM:SS(.ff) -> PT#H#M#S (2004 RTE timeinterval, second); already ISO? returned as is. */
+  /**
+   * When the question was made available to the learner -- the answer's
+   * moment minus its latency (1.2's `HHHH:MM:SS.SS`), or the answer's moment
+   * when there is no readable latency. 2004 `cmi.interactions.n.timestamp`:
+   * UTC with two fraction digits and Z, because Moodle's validator admits a
+   * zone only after a fraction. 1.2 `cmi.interactions.n.time` (CMITime): the
+   * learner's own clock, HH:MM:SS.
+   */
+  SCORMWrapper.toInteractionTime = function(version, latency, nowMs) {
+    var m = /^(\d+):(\d+):(\d+(?:\.\d+)?)$/.exec(String(latency || ''));
+    var took = m ? ((Number(m[1]) * 60 + Number(m[2])) * 60 + Number(m[3])) * 1000 : 0;
+    var at = new Date(Number(nowMs) - took);
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    if (version === '2004') {
+      var cs = Math.floor(at.getUTCMilliseconds() / 10);
+      return at.getUTCFullYear() + '-' + two(at.getUTCMonth() + 1) + '-' + two(at.getUTCDate()) +
+        'T' + two(at.getUTCHours()) + ':' + two(at.getUTCMinutes()) + ':' + two(at.getUTCSeconds()) +
+        '.' + two(cs) + 'Z';
+    }
+    return two(at.getHours()) + ':' + two(at.getMinutes()) + ':' + two(at.getSeconds());
+  };
+
   SCORMWrapper.toTimeinterval = function(value) {
     var s = String(value);
     if (s.charAt(0) === 'P') { return s; }
