@@ -413,8 +413,10 @@
         this.setValue(prefix + '.latency', data.latency);
       }
     }
-    if (data.weighting) {
-      this.setValue(prefix + '.weighting', data.weighting);
+    // A number, 0 included: weighting 0 is how a report tells a practice
+    // answer from a real one, and `if (data.weighting)` dropped exactly that.
+    if (typeof data.weighting === 'number' || (typeof data.weighting === 'string' && data.weighting !== '')) {
+      this.setValue(prefix + '.weighting', String(data.weighting));
     }
     return true;
   };
@@ -422,13 +424,22 @@
   /**
    * 1.2 -> 2004 / xAPI response spelling (SCORM 2004 RTE 4.2.9; xAPI Data
    * 2.4.4.1 uses the same bracketed delimiters). `flavor` is 'scorm2004' or
-   * 'xapi'; they differ in one place: a single numeric value is a range with
-   * equal endpoints on 2004 and may be bare on xAPI. Shared with cmi5-wire.js.
+   * 'xapi'; they differ in two places: a single numeric value is a range with
+   * equal endpoints on 2004 and may be bare on xAPI, and a performance answer
+   * gains its `[.]` on 2004 only. Shared with cmi5-wire.js.
+   *
+   * PERFORMANCE on 2004: every record is <step_name>[.]<step_answer>, the name
+   * optional, the answer a characterstring -- a record with no `[.]` is a type
+   * mismatch in ADL's own reference RTE (InteractionValidatorImpl). A 1.2
+   * performance answer is free text (CMIFeedback), so it becomes one record
+   * with no step name. xAPI keeps the answer as written: an empty step name
+   * would reach a trainer's report as ": answer".
    */
   SCORMWrapper.to2004Response = function(type, value, flavor) {
     var s = value === undefined || value === null ? '' : String(value);
     if (type === 'choice' || type === 'sequencing') { return s.split(',').filter(Boolean).join('[,]'); }
     if (type === 'matching') { return s.split(',').filter(Boolean).map(function (pair) { return pair.replace('.', '[.]'); }).join('[,]'); }
+    if (type === 'performance' && flavor !== 'xapi' && s !== '' && s.indexOf('[.]') < 0) { return '[.]' + s; }
     return s;
   };
   SCORMWrapper.to2004Patterns = function(type, value, flavor) {
