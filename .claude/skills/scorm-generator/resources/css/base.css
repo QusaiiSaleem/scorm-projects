@@ -402,6 +402,13 @@ hr, .divider {
   outline-offset: 2px;
 }
 
+/* A control hidden for the eye (.sr-only) still takes the keyboard's focus, so
+   its focus shows on what the eye does see: its label. */
+label:has(input.sr-only:focus-visible) {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
