@@ -112,8 +112,13 @@ export const SHAPE = {
 const DEFAULTS = {
   hearts: 3,
   heroSpeed: 6.5,
-  enemySpeed: 2.6,
-  enemySpeedGrowth: 0.05,
+  // Tuned for a learner who reads (2026-11-08): voxel's 2.6 growing 0.05/s,
+  // two chasers at the start and one per three cards lost 3 of 3 rounds for a
+  // learner who tapped only the right cards; 1.9 growing 0.025/s, one at the
+  // start, one per five cards, a 1.5 s stun after a hit and 2 s of blink won
+  // 4 of 4 at 10 of 10 with a heart lost each, and an idle learner lost 2 of 2.
+  enemySpeed: 1.9,
+  enemySpeedGrowth: 0.025,
   enemySpawnEvery: 5,
   maxEnemies: 6,
   heroSize: 1.9,
@@ -1040,7 +1045,7 @@ function boot() {
       // when `duration` squeezes the round, so the clock is the round's.
       maxCards: every > 0 ? Math.max(R.maxCards, Math.ceil(life / every) + 1) : list.length,
       // Voxel's pressure, scaled to the round so a short one is no trap.
-      maxEnemies: askedEnemies !== null ? askedEnemies : clamp(Math.ceil(list.length / 3), 1, R.maxEnemies),
+      maxEnemies: askedEnemies !== null ? askedEnemies : clamp(Math.ceil(list.length / 5), 1, R.maxEnemies),
       spawnTimer: 0, keys: Object.create(null), drag: null, path: null,
       running: false, endAt: null, won: null,
     };
@@ -1094,7 +1099,7 @@ function boot() {
       const { hero } = world;
       hero.x = 0; hero.z = 0; hero.vx = 0; hero.vz = 0; hero.y = world.groundAt(0, 0);
       world.compile();
-      for (let i = 0; i < Math.min(2, round.maxEnemies); i += 1) { spawnEnemy(); }
+      for (let i = 0; i < Math.min(1, round.maxEnemies); i += 1) { spawnEnemy(); }
     }
     round.running = true;
     round.last = 0;
@@ -1294,7 +1299,8 @@ function boot() {
     const tz = hero.z - e.z;
     const d = Math.hypot(tx, tz) || 1;
     r.hearts -= 1;
-    r.invuln = 1.4;
+    r.invuln = 2;
+    e.stun = 1.5; // the chaser that landed the hit pauses, as collector's knockback does
     r.shake = 0.35;
     // Pushed AWAY from the chaser. Voxel moved the hero by -(hero - chaser),
     // which is toward it, into a second touch the blink alone held off.
@@ -1379,10 +1385,11 @@ function boot() {
           const od = Math.hypot(ox, oz);
           if (od > 0 && od < 1.6) { ax += ox / od * 0.8; az += oz / od * 0.8; }
         }
+        if (e.stun > 0) { e.stun -= dt; continue; }
         let al = Math.hypot(ax, az) || 1;
         if (r.shield > 0 && dist < 3) { ax = -tx / dist; az = -tz / dist; al = 1; }
         world.moveOnIsland(e, ax / al * speed * dt, az / al * speed * dt, 0.3);
-        if (dist < (R.heroSize + R.enemySize) * 0.36) {
+        if (dist < (R.heroSize + R.enemySize) * 0.33) {
           if (r.shield > 0) {
             world.moveOnIsland(e, -tx / dist * 1.2, -tz / dist * 1.2, 0.3);
           } else if (r.invuln <= 0) {

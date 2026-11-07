@@ -79,14 +79,21 @@ export const SHAPE = {
 };
 
 /* 1. RULES -- collector's DEFAULTS, every gameplay value in one place, and
- *    the learning layer's beside them. A learner's slide has no settings;
+ *    the learning layer's beside them. TUNED FOR A LEARNER WHO READS
+ *    (2026-11-08): with collector's own chaser numbers (speed 120 growing 3/s,
+ *    one chaser per three cards, a 0.3 s stagger after a hit) a learner who
+ *    tapped only the right cards lost 6 of 6 rounds at 5-8 of 10, because
+ *    reading a card leaves no time to dodge. Now 80 growing 1/s, one per five
+ *    cards, the first after a third of the round, a 1.5 s stun on the chaser
+ *    that hit and 2 s of blink: the same learner won 5 of 6 at 10 of 10 and
+ *    still lost a heart or two; a learner who stands still lost 3 of 3. A learner's slide has no settings;
  *    render_slide may pass `duration`, `lives` and `enemies` (game.json
  *    declares their ranges; the platform checks them). */
 const DEFAULTS = {
   hearts: 3,
   heroSpeed: 320,
-  enemySpeed: 120,
-  enemySpeedGrowth: 3,
+  enemySpeed: 80,
+  enemySpeedGrowth: 1,
   enemySpawnEvery: 4,
   maxEnemies: 8,
   heroSize: 76,
@@ -276,8 +283,8 @@ function boot() {
       // when `duration` squeezes the round, so the clock is the round's.
       maxCards: every > 0 ? Math.max(R.maxCards, Math.ceil(life / every) + 1) : list.length,
       // Collector's pressure, scaled to the round so a short one is no trap.
-      maxEnemies: askedEnemies !== null ? askedEnemies : clamp(Math.ceil(list.length / 3), 1, R.maxEnemies),
-      spawnTimer: clamp(length / 4, 2, 8),
+      maxEnemies: askedEnemies !== null ? askedEnemies : clamp(Math.ceil(list.length / 5), 1, R.maxEnemies),
+      spawnTimer: clamp(length / 3, 4, 10),
       keys: Object.create(null), joystick: null,
       endAt: null, won: null,
     };
@@ -387,7 +394,7 @@ function boot() {
   function hurtHero() {
     if (round.invuln > 0 || round.shield > 0) { knockEnemies(); return; }
     round.hearts -= 1;
-    round.invuln = 1.2;
+    round.invuln = 2;
     round.shake = 0.35;
     sfx.hurt();
     knockEnemies();
@@ -404,7 +411,7 @@ function boot() {
         const d = Math.max(1, Math.hypot(dx, dy));
         e.x += (dx / d) * 90;
         e.y += (dy / d) * 90;
-        e.hurt = 0.3;
+        e.hurt = 1.5;
         e.vx = (dx / d) * 420;
         e.vy = (dy / d) * 420;
       }
@@ -482,7 +489,12 @@ function boot() {
       if (card.gone) { continue; }
       if (!card.outcome) {
         const reach = R.heroSize * 0.3;
-        if (Math.abs(card.x - hero.x) < card.w / 2 + reach && Math.abs(card.y - hero.y) < card.h / 2 + reach) {
+        // A tap walks to the card the learner chose and collects only that
+        // card: an automatic walk never catches a card it passes on the way.
+        // Steered by the keys or the joystick, whatever the hero walks over is
+        // the learner's choice and is caught.
+        const passing = hero.target && hero.target.card !== card;
+        if (!passing && Math.abs(card.x - hero.x) < card.w / 2 + reach && Math.abs(card.y - hero.y) < card.h / 2 + reach) {
           resolveCard(card, 'caught');
         } else if (r.t - card.born >= r.life) {
           resolveCard(card, 'passed');
@@ -525,7 +537,7 @@ function boot() {
       }
       e.x = clamp(e.x + e.vx * dt, -R.enemySize, WORLD.w + R.enemySize);
       e.y = clamp(e.y + e.vy * dt, -R.enemySize, WORLD.h + R.enemySize);
-      if (dist(e.x, e.y, hero.x, hero.y) < (R.enemySize + R.heroSize) * 0.44) {
+      if (dist(e.x, e.y, hero.x, hero.y) < (R.enemySize + R.heroSize) * 0.4) {
         if (r.shield > 0) { bounceEnemy(e); } else if (r.invuln <= 0) { hurtHero(); }
       }
     }
@@ -1010,7 +1022,7 @@ function boot() {
     if (target.dataset.card !== undefined) {
       // A card walks the character to it: catching is still walking there.
       const card = round && round.cards.find((c) => c.item.id === target.dataset.card && !c.outcome);
-      if (card && !state.paused) { round.hero.target = { x: card.x, y: card.y }; }
+      if (card && !state.paused) { round.hero.target = { x: card.x, y: card.y, card }; }
       return;
     }
     const act = target.dataset.act;

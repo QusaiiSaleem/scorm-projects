@@ -11,7 +11,11 @@ what the learner did, the rule, and «المصدر: …».
 **Audience.** Children and adults. It suits safety, online-safety, hygiene and
 procedure lectures where the outcome is "knows it when they see it". Arabic
 first (RTL), touch first: tap a card or a spot to walk there, drag on the
-ground for the joystick, or use the arrow keys (WASD too). Sound is off until
+ground for the joystick, or use the arrow keys (WASD too). A tap walks to the
+card the learner chose and catches only that card; steering with the keys or
+the joystick catches whatever the character walks over, because that path is
+chosen. The chasers are tuned for a learner who reads (see the RULES comment in
+game.js): playing right by taps wins most rounds and still costs a heart or two. Sound is off until
 the learner turns it on.
 
 ## Where it comes from
