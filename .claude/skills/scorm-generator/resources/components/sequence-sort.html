@@ -15,8 +15,13 @@
      - ARIA: role="listbox" with aria-roledescription="sortable list"
 
      SCORM REPORTING:
-     - cmi.interactions.n.type = "sequencing"
-     - learner_response = comma-separated item IDs in submitted order
+     - Does not report to an LMS: nothing in this component records an
+       interaction, a score or a completion (corrected 2026-11-07; the
+       header used to promise a "sequencing" row of comma-separated item ids, and no line of the
+       component wrote it).
+     - A reporting game template replaces it, built on the engine's games/
+       runtime: one row per decision on SCORM 1.2, SCORM 2004 and cmi5.
+       Paste this component only where nothing needs to reach the LMS.
 
      TOUCH SUPPORT:
      - HTML5 drag events for desktop

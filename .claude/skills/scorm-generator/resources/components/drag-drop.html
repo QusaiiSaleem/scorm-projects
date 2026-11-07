@@ -21,8 +21,13 @@
      - Focus management: focus moves logically through the workflow
 
      SCORM REPORTING:
-     - cmi.interactions.n.type = "matching"
-     - learner_response = "item1[.]slot1,item2[.]slot2,..."
+     - Does not report to an LMS: nothing in this component records an
+       interaction, a score or a completion (corrected 2026-11-07; the
+       header used to promise a "matching" row of item[.]slot pairs, and no line of the
+       component wrote it).
+     - A reporting game template replaces it, built on the engine's games/
+       runtime: one row per decision on SCORM 1.2, SCORM 2004 and cmi5.
+       Paste this component only where nothing needs to reach the LMS.
 -->
 
 <style>
