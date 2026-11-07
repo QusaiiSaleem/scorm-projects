@@ -1,0 +1,78 @@
+{
+  "description": "The catch game's words: short cards that fall one after another, each SAFE (the learner catches it) or a HAZARD (the learner lets it pass). One item is one reported decision; its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for every rule and source you were not given.",
+  "x-points": "items[]",
+  "type": "object",
+  "required": [
+    "title",
+    "items"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The game's title, on its first screen and its debrief."
+    },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "description": "The cards, in the order they fall. Mix safe and hazard; keep their labels about the same length, so the length never gives the answer away. Each card falls in one of three lanes and has one outcome: caught, or passed.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "rule",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The interaction id the LMS receives: ASCII, unique in the lecture, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What falls, read in a second while it moves: two to four words, a behaviour or a thing, never a verdict («آمن», «خطر») that tells the answer."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "safe",
+              "hazard"
+            ],
+            "description": "safe: catching it is right. hazard: letting it pass is right, and catching it costs a heart. The response the LMS receives is caught or passed, and the result says whether that fits the kind."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why, in one sentence: shown after a wrong act during play, and in the debrief."
+          },
+          "source": {
+            "type": "string",
+            "description": "The citation the learner reads under the rule («المصدر: …»). Ask the person; never invent it. Left empty, the release lists it as left for the person."
+          }
+        }
+      }
+    },
+    "slots": {
+      "type": "object",
+      "description": "Optional: the art hand's own pictures for the game's three picture slots (game.json names their sizes). Each value is a path under the lecture's assets, such as \"../assets/hero.png\"; a slot left out keeps the game's own placeholder.",
+      "properties": {
+        "hero": {
+          "type": "string",
+          "description": "The character the learner moves along the bottom, seen from the front; transparent around it."
+        },
+        "item": {
+          "type": "string",
+          "description": "The picture every falling card carries, the SAME for safe and hazard cards, so the picture never gives the answer away; transparent around it."
+        },
+        "background": {
+          "type": "string",
+          "description": "The playfield behind the cards, tiled; opaque."
+        }
+      }
+    }
+  }
+}
