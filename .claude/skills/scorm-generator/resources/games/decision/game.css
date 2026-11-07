@@ -1,0 +1,189 @@
+/*
+ * games/decision/game.css -- the decision game's stage (2026-11-06).
+ *
+ * Its look comes from components/decision-sim.html -- the scenario card, the
+ * full-width option buttons, the review list -- laid out for the 1280x720
+ * stage instead of a 700 px column: the game takes the stage's width
+ * (breaking out of the template's 900 px `.slide-inner`), the situation and
+ * the choices on the inline-start side, what happened on the other. Only
+ * base.css variables, logical properties, RTL first; the shared box, debrief
+ * and touch rule are the core's.
+ */
+@import url("../core/game-core.css");
+
+.dg {
+  /* The stage's width, centred, whatever column the page set around it. */
+  --dg-width: min(1200px, 100vw - 2 * var(--space-xl));
+  width: var(--dg-width);
+  margin-inline: calc((100% - var(--dg-width)) / 2);
+  min-height: 100vh;
+  padding-block: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dg-head { margin-block-end: var(--space-lg); }
+
+.dg-scene {
+  margin: 0 0 var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.dg-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.dg-title:focus { outline: none; }
+.dg-title:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
+
+.dg-intro,
+.dg-debrief {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-lg);
+}
+
+.dg-intro p { margin: 0; font-size: var(--font-size-body); }
+
+/* THE POINT: two columns on the stage, the choice and then what it did. */
+.dg-point {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.dg-main { display: flex; flex-direction: column; gap: var(--space-md); }
+
+.dg-choices { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.dg-choice {
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-md) var(--space-lg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.dg-choice:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-surface-elevated);
+}
+
+.dg-choice:disabled { cursor: default; opacity: 0.6; }
+
+.dg-choice[aria-pressed="true"] {
+  opacity: 1;
+  border-color: var(--color-primary);
+  background: var(--color-surface-elevated);
+  font-weight: 700;
+}
+
+.dg-skip { align-self: flex-start; }
+
+/* WHAT HAPPENED. The border says the result, and so do the words above it:
+   colour is never the only sign (WCAG 1.4.1). */
+.dg-feedback {
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.dg-feedback[data-result="correct"] { border-inline-start-color: var(--color-success); }
+.dg-feedback[data-result="wrong"] { border-inline-start-color: var(--color-error); }
+.dg-feedback[data-result="neutral"] { border-inline-start-color: var(--color-warning); }
+
+.dg-feedback p { margin: 0; line-height: 1.7; }
+.dg-result { font-weight: 700; }
+.dg-rule {
+  padding-block-start: var(--space-sm);
+  border-block-start: 1px solid var(--color-border);
+}
+.dg-rule p { margin: 0 0 var(--space-xs); }
+.dg-source { color: var(--color-text-secondary); font-size: var(--font-size-small); }
+
+.dg-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-block-start: var(--space-xs); }
+
+/* THE DEBRIEF AND THE COMMITMENT. */
+.dg-debrief .game-debrief { width: 100%; }
+
+.dg-commitment {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  font-weight: 600;
+}
+
+.dg-commitment textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  resize: vertical;
+}
+
+.dg-done { margin: 0; font-weight: 700; }
+
+/* THE FEEDBACK SHEET (moment=feedback-sheet): every choice of every point in
+   one view, for the person checking the words. */
+.dg-sheet {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.dg-sheet-point { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+.dg-sheet-point h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+}
+
+.dg-sheet-choice {
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-inline-start: 4px solid var(--color-border);
+  font-size: var(--font-size-small);
+  line-height: 1.45;
+}
+
+.dg-sheet-choice[data-result="correct"] { border-inline-start-color: var(--color-success); }
+.dg-sheet-choice[data-result="wrong"] { border-inline-start-color: var(--color-error); }
+.dg-sheet-choice[data-result="neutral"] { border-inline-start-color: var(--color-warning); }
+.dg-sheet-choice p { margin: 0; }
+
+/* A narrow window, if a slide is ever opened at device width: one column. */
+@media (max-width: 760px) {
+  .dg-point { grid-template-columns: minmax(0, 1fr); }
+}

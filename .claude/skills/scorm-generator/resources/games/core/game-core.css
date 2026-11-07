@@ -1,0 +1,89 @@
+/*
+ * games/core/game-core.css -- what every game's stage shares (2026-11-06,
+ * learning-games spec §4.1): the refusal box, the debrief, the touch rule.
+ *
+ * ONLY base.css VARIABLES: no colour and no font-size is spelled here, so a
+ * lecture's deck.css restyles every game the way it restyles its slides. RTL
+ * first: every side is a logical property (inline-start is the right in
+ * Arabic). A game's own game.css imports this file.
+ */
+
+/* `hidden` must win over a display a game sets (a grid, a flex row): the
+   browser's own [hidden] rule loses to any class that names a display. */
+.game-root [hidden] { display: none !important; }
+
+.game-root {
+  box-sizing: border-box;
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.game-root *,
+.game-root *::before,
+.game-root *::after { box-sizing: inherit; }
+
+/* TOUCH FIRST (WCAG 2.2 SC 2.5.8, and the plan's 44 px): on a coarse pointer
+   every control a learner presses is at least 44 px either way, whatever the
+   game drew it as. A size, not a colour, so a px is allowed here. */
+@media (pointer: coarse) {
+  .game-root button,
+  .game-root textarea,
+  .game-root [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* THE REFUSAL. Shown on the stage when the content is not what the game's
+   shape says, so the team sees why in preview instead of a blank slide. */
+.game-error {
+  margin: var(--space-xl) auto;
+  max-width: var(--max-content-width);
+  padding: var(--space-lg);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: var(--color-error-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+}
+
+.game-error p { margin: 0 0 var(--space-sm); }
+.game-error-title { font-weight: 700; }
+
+/* THE DEBRIEF: one row per point -- what the learner chose, the rule, and its
+   source -- in a grid that fills the stage's width before it grows down. */
+.game-debrief {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.game-debrief-row {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-inline-start: 4px solid var(--color-border);
+  font-size: var(--font-size-small);
+  line-height: 1.6;
+}
+
+.game-debrief-row[data-result="correct"] { border-inline-start-color: var(--color-success); }
+.game-debrief-row[data-result="wrong"],
+.game-debrief-row[data-result="none"] { border-inline-start-color: var(--color-error); }
+.game-debrief-row[data-result="neutral"] { border-inline-start-color: var(--color-warning); }
+
+.game-debrief-row p { margin: 0 0 var(--space-xs); }
+.game-debrief-situation { color: var(--color-text-secondary); }
+.game-debrief-chosen { font-weight: 700; }
+.game-debrief-source { color: var(--color-text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .game-root *, .game-root *::before, .game-root *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

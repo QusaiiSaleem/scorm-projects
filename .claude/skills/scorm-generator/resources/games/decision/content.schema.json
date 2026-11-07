@@ -1,0 +1,112 @@
+{
+  "description": "The decision game's words: stages of situations (points), each with the choices a learner can make. One point is one reported decision; its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for every rule and source you were not given.",
+  "x-points": "stages[].points[]",
+  "type": "object",
+  "required": ["title", "stages"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The game's title, on its first screen and its debrief."
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The game in order: a stage is a place or a moment, holding one or more points.",
+      "items": {
+        "type": "object",
+        "required": ["id", "scene", "points"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "ASCII, unique among the stages."
+          },
+          "scene": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Where and when the stage happens, one short line above each of its situations."
+          },
+          "points": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The decisions of this stage, in order.",
+            "items": {
+              "type": "object",
+              "required": ["id", "situation", "choices"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                  "description": "The interaction id the LMS receives: ASCII, unique in the lecture, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+                },
+                "situation": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "What the learner faces, before any choice: the behaviour the outcome is about, in a situation they would meet."
+                },
+                "choices": {
+                  "type": "array",
+                  "minItems": 2,
+                  "description": "What the learner can do here, at least two. The first correct one is what the platform plays as right, the first wrong one as wrong.",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "label", "result", "consequence", "rule", "source"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                        "description": "The response the LMS receives: ASCII (a, b, c, or a short word), unique within the point. Not none, which means no decision was made."
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The behaviour, as the learner would do it, in their words. The feedback repeats it, so it names an act, not a verdict."
+                      },
+                      "result": {
+                        "type": "string",
+                        "enum": ["correct", "wrong", "neutral"],
+                        "description": "How this choice is reported: correct and wrong are scored, neutral (a hesitant or partly right act) is recorded and not scored."
+                      },
+                      "severity": {
+                        "type": "string",
+                        "enum": ["high", "medium", "low"],
+                        "description": "How much is at stake in this choice; it travels with the answer. Optional."
+                      },
+                      "consequence": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "What happened because of the choice, shown BEFORE the rule. A consequence, not a judgement."
+                      },
+                      "rule": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The rule the situation tests, shown after the consequence and in the debrief."
+                      },
+                      "source": {
+                        "type": "string",
+                        "description": "The citation the learner reads under the rule («المصدر: …»). Ask the person; never invent it. Left empty, the release lists it as left for the person."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commitment": {
+      "type": "object",
+      "required": ["prompt"],
+      "description": "Optional: a closing question the learner answers in their own words, after the debrief. Their sentence is reported as a fill-in with id commitment.",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The question, about what they will do next time."
+        }
+      }
+    }
+  }
+}
