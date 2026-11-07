@@ -1,5 +1,5 @@
 {
-  "description": "The catch game's words: short cards that fall one after another, each SAFE (the learner catches it) or a HAZARD (the learner lets it pass). One item is one reported decision; its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for every rule and source you were not given.",
+  "description": "The catch game's words: cards that appear on the meadow one after another, each SAFE (the learner walks to it and catches it) or a HAZARD (the learner leaves it until it fades), while wordless chasers keep the learner moving. One card is one reported decision; its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for every rule and source you were not given.",
   "x-points": "items[]",
   "type": "object",
   "required": [
@@ -15,7 +15,7 @@
     "items": {
       "type": "array",
       "minItems": 2,
-      "description": "The cards, in the order they fall. Mix safe and hazard; keep their labels about the same length, so the length never gives the answer away. Each card falls in one of three lanes and has one outcome: caught, or passed.",
+      "description": "The cards, in the order they appear. Mix safe and hazard; keep their labels about the same length, so the length never gives the answer away. Each card stays a few seconds and has one outcome: caught (walked over) or passed (faded untouched).",
       "items": {
         "type": "object",
         "required": [
@@ -42,7 +42,7 @@
               "safe",
               "hazard"
             ],
-            "description": "safe: catching it is right. hazard: letting it pass is right, and catching it costs a heart. The response the LMS receives is caught or passed, and the result says whether that fits the kind."
+            "description": "safe: walking over it is right. hazard: letting it fade is right, and catching it costs a heart. The response the LMS receives is caught or passed, and the result says whether that fits the kind."
           },
           "rule": {
             "type": "string",
@@ -58,19 +58,23 @@
     },
     "slots": {
       "type": "object",
-      "description": "Optional: the art hand's own pictures for the game's three picture slots (game.json names their sizes). Each value is a path under the lecture's assets, such as \"../assets/hero.png\"; a slot left out keeps the game's own placeholder.",
+      "description": "Optional: the art hand's own pictures for the game's four picture slots (game.json names their sizes). Each value is a path under the lecture's assets, such as \"../assets/hero.png\"; a slot left out keeps the game's own placeholder.",
       "properties": {
         "hero": {
           "type": "string",
-          "description": "The character the learner moves along the bottom, seen from the front; transparent around it."
+          "description": "The character the learner moves, seen from above or the front; transparent around it."
+        },
+        "enemy": {
+          "type": "string",
+          "description": "What chases the learner. It carries no words and stands for no answer; transparent around it."
         },
         "item": {
           "type": "string",
-          "description": "The picture every falling card carries, the SAME for safe and hazard cards, so the picture never gives the answer away; transparent around it."
+          "description": "The picture every card carries, the SAME for safe and hazard cards, so the picture never gives the answer away; transparent around it."
         },
         "background": {
           "type": "string",
-          "description": "The playfield behind the cards, tiled; opaque."
+          "description": "The ground, tiled behind everything; opaque."
         }
       }
     }
