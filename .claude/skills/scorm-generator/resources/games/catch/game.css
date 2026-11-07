@@ -188,18 +188,23 @@
   to { transform: translate(calc(var(--ct-x) + var(--ct-dx)), calc(var(--ct-y) + var(--ct-dy))) scale(0.3); opacity: 0; }
 }
 
+/* A pill in the text colour, its border saying good or bad: the success
+   green as text reads at 2.54:1 on white, and worse on the grass. */
 .ct-float {
   position: absolute;
   transform: translateX(-50%);
-  color: var(--color-success);
-  font-size: var(--font-size-h3);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-elevated);
+  border: 3px solid var(--color-success);
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
   font-weight: 800;
   white-space: nowrap;
-  text-shadow: 0 2px 0 var(--color-surface);
   animation: ct-float 0.9s ease-out forwards;
 }
 
-.ct-float[data-tone="bad"] { color: var(--color-error); }
+.ct-float[data-tone="bad"] { border-color: var(--color-error); }
 
 @keyframes ct-float {
   from { transform: translate(-50%, 0); opacity: 1; }
@@ -274,7 +279,9 @@
 
 .ct-debrief { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
 .ct-debrief > .game-debrief { align-self: stretch; }
-.ct-done { margin: 0; font-weight: 700; color: var(--color-success); }
+/* In the text colour: the success green on white is 2.54:1 (measured on
+   production 2026-11-07), under AA's 4.5:1. */
+.ct-done { margin: 0; font-weight: 700; }
 
 /* THE FEEDBACK SHEET: every card, its kind, the right act, rule and source. */
 .ct-sheet-head { margin-block-end: var(--space-md); }
