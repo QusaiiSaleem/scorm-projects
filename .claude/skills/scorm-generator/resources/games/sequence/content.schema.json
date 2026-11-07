@@ -1,0 +1,82 @@
+{
+  "description": "The sequence game's words: a procedure whose steps ride a conveyor belt shuffled, with decoys among them, while the learner builds the chain one step at a time against a clock. One step is one reported decision: at its turn, the first card the learner picks is the answer. Its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for the steps, the decoys, the rule and the source you were not given.",
+  "x-points": "steps[]",
+  "type": "object",
+  "required": [
+    "title",
+    "rule",
+    "source",
+    "steps",
+    "decoys"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The procedure's name, on the first screen, the end screens and the debrief."
+    },
+    "rule": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The procedure as one rule, in one or two sentences. Shown only once the learner has played (the debrief and the feedback sheet), never before: the order is what the game asks for."
+    },
+    "source": {
+      "type": "string",
+      "description": "The citation the learner reads under the rule («المصدر: …»), one for the whole procedure. Ask the person; never invent it. Left empty, the release lists it as left for the person."
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 3,
+      "description": "The steps IN THE RIGHT ORDER, three to ten of them. The game shuffles them onto the belt itself. Keep their labels about the same length, so the length never gives the order away.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The interaction id the LMS receives: ASCII, unique in the lecture and among the decoys, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The step as an action, read in a second while it moves: three to six words, the verb first, no number and no word such as «أولًا» that tells its place."
+          }
+        }
+      }
+    },
+    "decoys": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Cards that are NOT steps of the procedure, one to four: a mistake people really make. They ride the belt beside the steps, so every turn, the last included, has a wrong card a learner can pick. A decoy picked costs a heart and shows its rule.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "rule"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "ASCII, and different from every step's id: when a learner picks this card first, the LMS receives this id as the answer."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Worded like a step, about as long as the steps, so only knowing the procedure tells it apart."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why it is not a step, in one sentence: shown when it is picked, and on the feedback sheet."
+          }
+        }
+      }
+    }
+  }
+}
