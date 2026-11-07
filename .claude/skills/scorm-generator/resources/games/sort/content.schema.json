@@ -1,0 +1,83 @@
+{
+  "description": "The sort game's words: a sorting line. Items ride a belt toward a drop at its far end, one after another, and the learner sends each one into the bin it belongs in before it falls. One item is one reported decision; its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. Ask the person for every rule and source you were not given.",
+  "x-points": "items[]",
+  "type": "object",
+  "required": [
+    "title",
+    "bins",
+    "items"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The game's title, on its first screen and its debrief."
+    },
+    "bins": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "description": "The two to four groups the learner tells apart, in the order they stand along the bottom of the screen (the first on the right). Each is a bin the learner taps, presses its number for, or drops an item on.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "What the LMS receives as the learner's answer when an item is sent to this bin: ASCII, unique among the bins. The words stay in the label."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The group's name on the bin, one to three words: the concept, never a hint about which items go in it."
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "description": "What rides the belt, in the order it comes. Mix the bins and keep the labels about the same length, so neither the order nor the length gives the answer away.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "bin",
+          "rule",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The interaction id the LMS receives: ASCII, unique in the lecture, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What rides the belt, read in a second while it moves: two to four words, a thing or a case, never the name of its bin."
+          },
+          "bin": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The id of the bin this item belongs in; it must be one of bins[].id, or the game refuses to start and names it."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why it belongs there, in one sentence: shown after a wrong bin or a fall during play, and in the debrief."
+          },
+          "source": {
+            "type": "string",
+            "description": "The citation the learner reads under the rule («المصدر: …»). Ask the person; never invent it. Left empty, the release lists it as left for the person."
+          }
+        }
+      }
+    }
+  }
+}

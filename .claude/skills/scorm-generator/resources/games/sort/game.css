@@ -1,0 +1,476 @@
+/*
+ * games/sort/game.css -- the sort game's stage (2026-11-07). The floor, belt,
+ * hopper, sparks and floating points are canvas (game.js); styled here is what
+ * a learner reads or presses. Only base.css variables, so deck.css reaches it.
+ */
+@import url("../core/game-core.css");
+
+.so > * {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.so-head { margin-block-end: var(--space-md); }
+
+.so-line {
+  margin: 0 0 var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.so-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.so-title:focus { outline: none; }
+.so-title:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
+
+.so-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+
+[data-tone="0"] { --so-tone: var(--color-primary); }
+[data-tone="1"] { --so-tone: var(--color-secondary); }
+[data-tone="2"] { --so-tone: var(--color-accent); }
+[data-tone="3"] { --so-tone: var(--color-growth); }
+
+.so-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.so-intro-text { display: flex; flex-direction: column; gap: var(--space-md); align-items: flex-start; }
+.so-intro-text p { margin: 0; font-size: var(--font-size-body); line-height: 1.7; }
+.so-how { color: var(--color-text-secondary); }
+
+.so-scene {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  padding: var(--space-xl) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.so-scene-belt {
+  height: 92px;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-md);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-text);
+  border-block: 8px solid var(--color-text-secondary);
+}
+
+.so-scene-item {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  font-weight: 800;
+  white-space: nowrap;
+  animation: so-ride 3.6s linear infinite;
+}
+
+.so-scene-bins {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+.so-scene-bin {
+  padding: var(--space-lg) var(--space-xs) var(--space-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  border-block-start: 12px solid var(--so-tone);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-md) var(--radius-md);
+  font-size: var(--font-size-small);
+  font-weight: 800;
+  text-align: center;
+}
+
+/* THE ROUND: floor canvas, the 1280x720 world, sparks canvas. */
+.so[data-screen="play"] { padding: 0; overflow: hidden; }
+
+.so > .so-play {
+  position: relative;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.so-floor,
+.so-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.so-fx { pointer-events: none; }
+
+.so-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+  transform-origin: 0 0;
+}
+
+.so-hud {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: 0 var(--space-lg);
+  background: var(--color-surface-elevated);
+  border-block-end: 2px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.so-hud p { margin: 0; color: var(--color-text); font-size: var(--font-size-body); font-weight: 700; }
+.so-hud-acts { margin-inline-start: auto; display: flex; gap: var(--space-sm); }
+.so-hearts { display: flex; gap: var(--space-xs); }
+.so-hud .so-hearts { font-size: var(--font-size-h1); line-height: 1; }
+.so-heart { display: inline-block; }
+.so-heart[data-full="true"] { color: var(--color-error); }
+.so-heart[data-full="false"] { color: var(--color-border); }
+.so-heart[data-anim="break"] { animation: so-break 0.6s ease-out; }
+
+.so-streak {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+}
+
+.so-streak[data-mult="2"] { background: var(--color-warning-bg); border-color: var(--color-warning); }
+.so-streak[data-mult="3"] { background: var(--color-growth-bg); border-color: var(--color-growth); }
+.so-streak[data-anim="pop"] { animation: so-pop 0.5s var(--spring-bouncy); }
+
+.so-items { position: absolute; inset: 0; pointer-events: none; }
+
+.so-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 232px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: 3px solid var(--color-border);
+  border-block-end-width: 7px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font: inherit;
+  text-align: center;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transform-origin: center;
+}
+
+/* Its height above the core's coarse-pointer floor (.game-root button, 0,1,1),
+   or a touch screen draws every card 55 px tall. */
+.so .so-item { min-height: 88px; }
+.so-item-label { font-size: var(--font-size-h3); font-weight: 800; line-height: 1.3; }
+.so-item:focus { outline: none; }
+.so-item:focus-visible { outline: 4px solid var(--color-primary); outline-offset: 3px; }
+.so-item:disabled { cursor: default; }
+
+.so-item[data-active] {
+  z-index: 2;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 5px var(--color-primary-light), var(--shadow-lg);
+}
+
+.so-item[data-active]::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  translate: -50% 0;
+  border: 13px solid transparent;
+  border-block-start-color: var(--color-primary);
+  animation: so-bob 0.6s ease-in-out infinite alternate;
+}
+
+.so-item[data-warn] { border-color: var(--color-warning); animation: so-warn 0.45s ease-in-out infinite alternate; }
+.so-item[data-warn][data-active] { border-color: var(--color-error); }
+.so-item[data-held] { z-index: 3; cursor: grabbing; box-shadow: var(--shadow-lg); }
+
+.so-bins {
+  position: absolute;
+  inset-block-start: 470px;
+  inset-inline: 40px;
+  height: 220px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-lg);
+}
+
+.so-bin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: 3px solid var(--color-border);
+  border-block-start: 22px solid var(--so-tone);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font: inherit;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.so-bin[data-over] {
+  transform: translateY(-6px);
+  box-shadow: 0 0 0 5px var(--so-tone), var(--shadow-lg);
+}
+
+@media (hover: hover) {
+  .so-bin:hover { transform: translateY(-6px); box-shadow: 0 0 0 5px var(--so-tone), var(--shadow-lg); }
+}
+
+.so-bin:focus-visible { outline: 4px solid var(--color-primary); outline-offset: 4px; }
+
+.so-bin-key {
+  position: absolute;
+  inset-block-start: var(--space-sm);
+  inset-inline-start: var(--space-sm);
+  min-width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--color-text);
+  color: var(--color-text-on-dark);
+  font-size: var(--font-size-small);
+  font-weight: 800;
+}
+
+.so-bin-label {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.so-bin-count {
+  min-width: 44px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+  font-weight: 800;
+}
+
+.so-bin-hint {
+  display: none;
+  position: absolute;
+  inset-block-start: -50px;
+  inset-inline: var(--space-lg);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-success-bg);
+  border: 2px solid var(--color-success);
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+  font-weight: 800;
+  text-align: center;
+}
+
+.so-bin[data-hint="right"] { box-shadow: 0 0 0 6px var(--color-success), var(--shadow-lg); }
+.so-bin[data-hint="right"] .so-bin-hint { display: block; animation: so-pop 0.45s var(--spring-bouncy); }
+.so-bin[data-anim="gulp"] { animation: so-gulp 0.5s var(--spring-bouncy); }
+.so-bin[data-anim="shake"] { animation: so-shake 0.5s ease-in-out; }
+.so-bin[data-hit="wrong"][data-anim="shake"] { border-color: var(--color-error); border-block-start-color: var(--color-error); }
+
+.so-toast {
+  position: absolute;
+  inset-block-start: 314px;
+  inset-inline: 140px;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-error);
+  border-inline-start-width: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  pointer-events: none;
+  animation: so-drop-in 0.3s var(--spring-bouncy);
+}
+
+.so-paused {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+}
+
+.so-end { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); text-align: center; }
+.so-end p { margin: 0; font-size: var(--font-size-body); line-height: 1.7; }
+.so-end .so-actions { justify-content: center; }
+.so-stars { display: flex; gap: var(--space-xl); }
+.so-end .so-stars { font-size: var(--font-size-display); line-height: 1.4; }
+.so-star { display: inline-block; scale: 1.6; }
+.so-star[data-on="true"] { color: var(--color-warning); animation: so-star 0.6s var(--spring-bouncy) backwards; }
+.so-star[data-on="false"] { color: var(--color-border); }
+[data-end="lost"] .so-star { animation: so-break 0.6s ease-out backwards; }
+.so-star:nth-child(3) { animation-delay: 0.15s; }
+.so-star:nth-child(4) { animation-delay: 0.3s; }
+.so-tiles { display: flex; gap: var(--space-md); margin-block: var(--space-md); }
+
+.so-tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-block-end-width: 6px;
+  box-shadow: var(--shadow-md);
+}
+
+.so-end .so-tile strong { font-family: var(--font-heading); font-size: var(--font-size-h1); font-weight: 800; }
+.so-end .so-tile span { color: var(--color-text-secondary); font-size: var(--font-size-small); font-weight: 700; }
+
+.so-cue {
+  position: absolute;
+  inset-block-start: 340px;
+  inset-inline: 260px;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* In the text colour: the success green on white is 2.54:1, under AA. */
+.so-debrief { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
+.so-debrief > .game-debrief { align-self: stretch; }
+/* «إنهاء» stays on screen while a long debrief scrolls under it: Next waits
+   for it, and a child should not have to find out that the slide scrolls. Its
+   bar wears the page's ground, so the rows pass under it, not through it. */
+.so-finish {
+  position: sticky;
+  inset-block-end: calc(-1 * var(--space-xl));
+  align-self: stretch;
+  display: flex;
+  padding-block: var(--space-sm) var(--space-xl);
+  margin-block-end: calc(-1 * var(--space-xl));
+  background: var(--color-background);
+}
+.so-done { margin: 0; font-weight: 700; color: var(--color-text); }
+
+.so-sheet-head { margin-block-end: var(--space-md); }
+.so-sheet-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
+
+.so-sheet-item {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-inline-start: 6px solid var(--so-tone);
+  border-radius: var(--radius-md);
+}
+
+.so-sheet-item h3 { margin: 0 0 var(--space-xs); font-size: var(--font-size-h4); }
+.so-sheet-item p { margin: 0; font-size: var(--font-size-small); line-height: 1.6; }
+.so-source { color: var(--color-text-secondary); }
+
+@keyframes so-ride {
+  from { translate: 0 0; }
+  to { translate: -280px 0; }
+}
+
+@keyframes so-bob {
+  from { translate: -50% -4px; }
+  to { translate: -50% 4px; }
+}
+
+@keyframes so-warn {
+  from { box-shadow: var(--shadow-md); }
+  to { box-shadow: 0 0 0 7px var(--color-warning-bg), var(--shadow-md); }
+}
+
+@keyframes so-gulp {
+  0% { scale: 1; }
+  35% { scale: 1.1 0.9; }
+  70% { scale: 0.96 1.05; }
+  100% { scale: 1; }
+}
+
+@keyframes so-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -14px 0; }
+  40% { translate: 12px 0; }
+  60% { translate: -8px 0; }
+  80% { translate: 5px 0; }
+}
+
+@keyframes so-pop {
+  from { scale: 0.6; }
+  to { scale: 1; }
+}
+
+@keyframes so-break {
+  0% { scale: 1; }
+  40% { scale: 1.6; }
+  100% { scale: 1; }
+}
+
+@keyframes so-star {
+  from { scale: 0; rotate: -40deg; }
+  to { scale: 1.6; rotate: 0deg; }
+}
+
+@keyframes so-drop-in {
+  from { translate: 0 -16px; opacity: 0; }
+  to { translate: 0 0; opacity: 1; }
+}
