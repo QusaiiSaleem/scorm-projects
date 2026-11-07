@@ -533,7 +533,7 @@
       '}',
       '.gamification-progress__label {',
       '  position: absolute; right: 4px; top: -2px;',
-      '  font-size: 10px; color: var(--text-secondary, #666);',
+      '  font-size: 12px; color: var(--text-secondary, #666);',
       '}',
 
       /* Streak */
