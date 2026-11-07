@@ -1,6 +1,7 @@
 /*
  * games/core/game-core.css -- what every game's stage shares (2026-11-06,
- * learning-games spec §4.1): the refusal box, the debrief, the touch rule.
+ * learning-games spec §4.1): the stage box that scrolls, the refusal box, the
+ * debrief, the touch rule.
  *
  * ONLY base.css VARIABLES: no colour and no font-size is spelled here, so a
  * lecture's deck.css restyles every game the way it restyles its slides. RTL
@@ -12,11 +13,27 @@
    browser's own [hidden] rule loses to any class that names a display. */
 .game-root [hidden] { display: none !important; }
 
+/* THE STAGE IS THE SLIDE'S OWN BOX, AND IT SCROLLS (2026-11-07): base.css's
+   `.slide` pattern, because its `body {overflow: hidden}` never scrolls; a
+   long debrief once hid «إنهاء» and trapped the learner behind a locked Next.
+   Fixed, not absolute: a deck.css may position `main` (height 0 here). The
+   cost: anything a page adds beside #game lies under the game. */
 .game-root {
   box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl) var(--space-lg);
   color: var(--color-text);
   font-family: var(--font-body);
 }
+
+/* One screen, centred while short; auto margins take only free space, so a
+   tall one starts at its top (`justify-content: center` would cut it off). */
+.game-root > * { margin-block: auto; }
 
 .game-root *,
 .game-root *::before,

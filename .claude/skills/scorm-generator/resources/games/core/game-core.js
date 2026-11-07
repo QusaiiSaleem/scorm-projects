@@ -285,6 +285,13 @@ export function finish() {
   return true;
 }
 
+/** A setting game.json declares, off the query render_slide passes: a whole
+ *  number, or null (a learner's slide has none). The platform checks range. */
+export function setting(name) {
+  const raw = new URLSearchParams(location.search).get(name);
+  return raw !== null && /^-?[0-9]{1,9}$/.test(raw) ? Number(raw) : null;
+}
+
 const PLAYS = ['right', 'wrong', 'skip'];
 const MOMENTS = ['start', 'after-wrong', 'debrief', 'feedback-sheet'];
 

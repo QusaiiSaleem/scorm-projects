@@ -1,5 +1,7 @@
 {
-  "settings": {},
+  "settings": {
+    "sheet": {"type": "int", "min": 1}
+  },
   "slots": {},
   "weight_kb": 16
 }

@@ -21,10 +21,11 @@
  * Laid out for the 1280x720 stage: the situation and the choices on the
  * inline-start side (the right, in Arabic), what happened on the other.
  * Touch first, every control a native button, so the keyboard path is the
- * browser's own.
+ * browser's own. Any length (2026-11-07): the core's stage scrolls, so a long
+ * game never hides «إنهاء», which opens Next.
  */
 import {
-  announce, debrief, el, finish, GameContentError, latencyFrom, onRestore, readContent, registerTest, save,
+  announce, debrief, el, finish, GameContentError, latencyFrom, onRestore, readContent, registerTest, save, setting,
 } from '../core/game-core.js';
 
 /** content.schema.json without its descriptions: what readContent enforces. */
@@ -132,6 +133,7 @@ function boot() {
     state.screen = screen;
     state.shownAt = performance.now();
     render();
+    root.scrollTop = 0; // a new screen opens at its top
   }
 
   function start() {
@@ -298,18 +300,50 @@ function boot() {
       el('button', { type: 'button', class: 'btn-primary', 'data-act': 'start', 'data-focus': true, text: 'ابدأ' }));
   }
 
-  /** Every choice's feedback in one grid, for a reviewer: moment=feedback-sheet. */
+  /** Every choice's feedback, for a reviewer: moment=feedback-sheet. One row
+   *  per point, its choices side by side; pageTheSheet keeps one page. */
   function sheetView() {
-    return el('div', { class: 'dg-sheet' },
-      points.map(({ point }) => el('section', { class: 'dg-sheet-point' },
+    return el('div', { class: 'dg-sheet', 'data-sheet': true },
+      el('header', { class: 'dg-sheet-head', 'data-sheet-head': true },
+        el('h2', { class: 'dg-title', text: `ورقة المراجعة: ${content.title}` }),
+        el('p', { class: 'dg-scene', 'data-sheet-count': true })),
+      points.map(({ point }) => el('section', { class: 'dg-sheet-point', 'data-sheet-point': point.id },
         el('h3', { text: point.situation }),
-        point.choices.map((choice) => el('div', {
+        el('div', { class: 'dg-sheet-choices' }, point.choices.map((choice) => el('div', {
           class: 'dg-sheet-choice', 'data-sheet-choice': `${point.id}.${choice.id}`, 'data-result': choice.result,
         },
         el('p', { class: 'dg-did' }, el('strong', { text: `${RESULT_WORDS[choice.result]}: ` }), choice.label),
         el('p', {}, el('strong', { text: 'ما حدث: ' }), choice.consequence),
         el('p', {}, el('strong', { text: 'القاعدة: ' }), choice.rule),
-        choice.source ? el('p', { class: 'dg-source', text: `المصدر: ${choice.source}` }) : null)))));
+        choice.source ? el('p', { class: 'dg-source', text: `المصدر: ${choice.source}` }) : null))))));
+  }
+
+  /** One 1280x720 picture cannot hold nine points (2026-11-07), so: whole
+   *  points, in order, as many as the stage holds under the head, measured;
+   *  `sheet=` picks the page (first by default, last past the end), and the
+   *  head names it and the next. A point taller than the stage is a page alone. */
+  function pageTheSheet() {
+    const sheet = root.querySelector('[data-sheet]');
+    const parts = [...sheet.querySelectorAll('[data-sheet-point]')];
+    const end = root.getBoundingClientRect().top + root.clientHeight
+      - parseFloat(getComputedStyle(root).paddingBlockEnd);
+    const room = end - parts[0].getBoundingClientRect().top;
+    const gap = parseFloat(getComputedStyle(sheet).rowGap) || 0;
+    let pages = 1;
+    let used = 0;
+    for (const part of parts) {
+      const height = part.getBoundingClientRect().height;
+      if (used && used + gap + height > room) { pages += 1; used = 0; }
+      used += (used ? gap : 0) + height;
+      part.dataset.page = String(pages);
+    }
+    const shown = Math.min(Math.max(setting('sheet') || 1, 1), pages);
+    parts.forEach((part) => { part.hidden = Number(part.dataset.page) !== shown; });
+    sheet.dataset.sheetPages = String(pages);
+    sheet.dataset.sheetPage = String(shown);
+    sheet.querySelector('[data-sheet-count]').replaceChildren(`الصفحة ${shown} من ${pages}`,
+      shown < pages ? ' · التالية: ' : '',
+      shown < pages ? el('span', { class: 'ltr-inline', dir: 'ltr', text: `sheet=${shown + 1}` }) : '');
   }
 
   const VIEWS = { intro: introView, point: pointView, debrief: debriefView, done: debriefView, sheet: sheetView };
@@ -318,6 +352,7 @@ function boot() {
     const hadFocus = root.contains(document.activeElement);
     root.setAttribute('data-screen', state.screen);
     root.replaceChildren(VIEWS[state.screen]());
+    if (state.screen === 'sheet') { pageTheSheet(); }
     // Focus follows the screen for a keyboard or screen-reader learner, and
     // only when it was already inside the game: a render must not pull the
     // page's focus from somewhere else.
@@ -325,6 +360,9 @@ function boot() {
       const target = [...root.querySelectorAll('[data-focus]')].pop();
       if (target) { target.focus(); }
     }
+    // What the choice did comes on screen even with no focus (an iOS tap).
+    const said = state.screen === 'point' && state.chosen ? root.querySelector('[data-feedback]') : null;
+    if (said) { said.scrollIntoView({ block: 'nearest' }); }
   }
 
   // ---- what a press does -------------------------------------------------

@@ -19,6 +19,17 @@ each answer's outcome codes from the page's `data-measures`):
 | `engine:restore` | `{text}` | dispatched BY the host when a returning learner's text comes back |
 | `engine:done` | none | once, after the debrief and the commitment |
 
+## The stage
+
+`game-core.css` makes the game's root (`#game`, given the class `game-root`)
+the slide's own box: fixed to the frame's 1280x720 viewport, and scrolling
+inside it when a screen is taller (base.css's `.slide` pattern; its `body
+{overflow: hidden}` never scrolls). Each screen is one child, centred while it
+is short and from its top once it is long. A game draws any amount of content
+and every control stays reachable by the wheel, a swipe or Tab: a five-point
+debrief once hid «إنهاء» under the bottom edge and kept a learner behind a
+locked Next (2026-11-07). Anything a page adds beside `#game` lies under it.
+
 ## The rules, kept by the core
 
 - **Content is refused loudly.** `readContent(shape)` parses the page's
@@ -63,6 +74,9 @@ after a reload.
 ## Other exports
 
 `debrief(rows)` draws one row per point (`اختيارك: …`, the rule, `المصدر: …`).
+`setting(name)` reads a test setting the game's `game.json` declares off the
+page's query, as render_slide passes it (`query="…&sheet=2"`): a whole number,
+or null when there is none, which is every learner's case.
 `el(tag, attrs, ...children)` builds elements from text only, never HTML.
 
 ## The contract an agent follows

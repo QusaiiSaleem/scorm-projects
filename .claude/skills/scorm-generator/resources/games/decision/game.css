@@ -3,24 +3,18 @@
  *
  * Its look comes from components/decision-sim.html -- the scenario card, the
  * full-width option buttons, the review list -- laid out for the 1280x720
- * stage instead of a 700 px column: the game takes the stage's width
- * (breaking out of the template's 900 px `.slide-inner`), the situation and
- * the choices on the inline-start side, what happened on the other. Only
- * base.css variables, logical properties, RTL first; the shared box, debrief
- * and touch rule are the core's.
+ * stage instead of a 700 px column: the situation and the choices on the
+ * inline-start side, what happened on the other. Only base.css variables,
+ * logical properties, RTL first; the stage box (the slide's own, scrolling
+ * when a screen is taller), the debrief and the touch rule are the core's.
  */
 @import url("../core/game-core.css");
 
-.dg {
-  /* The stage's width, centred, whatever column the page set around it. */
-  --dg-width: min(1200px, 100vw - 2 * var(--space-xl));
-  width: var(--dg-width);
-  margin-inline: calc((100% - var(--dg-width)) / 2);
-  min-height: 100vh;
-  padding-block: var(--space-xl);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* Each screen at the stage's width, centred in the core's box. */
+.dg > * {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
 }
 
 .dg-head { margin-block-end: var(--space-lg); }
@@ -151,21 +145,27 @@
 
 .dg-done { margin: 0; font-weight: 700; }
 
-/* THE FEEDBACK SHEET (moment=feedback-sheet): every choice of every point in
-   one view, for the person checking the words. */
-.dg-sheet {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-md);
-  align-items: start;
-}
+/* THE FEEDBACK SHEET (moment=feedback-sheet), a page at a time (`sheet=`): a
+   row per point, its choices side by side, so game.js counts whole points. */
+.dg-sheet { display: flex; flex-direction: column; gap: var(--space-md); }
+
+.dg-sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-sm); }
+.dg-sheet-head .dg-title { font-size: var(--font-size-h4); }
+.dg-sheet-head .dg-scene { margin: 0; }
 
 .dg-sheet-point { display: flex; flex-direction: column; gap: var(--space-xs); }
 
 .dg-sheet-point h3 {
-  margin: 0 0 var(--space-xs);
+  margin: 0;
   font-size: var(--font-size-small);
   line-height: 1.5;
+}
+
+.dg-sheet-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-sm);
+  align-items: start;
 }
 
 .dg-sheet-choice {

@@ -51,9 +51,17 @@ Through the core's events, for the host to put on its wire:
   returning learner on SCORM comes back to the situation they left; `engine:done`
   when they finish.
 
-`game.json` declares no test settings and no picture slots. Its `weight_kb`
-(16) is the gzip of every file a learner's browser fetches for this game, this
-folder's and `games/core/`'s together, stated before the game was built.
+Any amount of content plays: the core's stage scrolls, a new situation opens
+at its top, and what a choice did is brought on screen.
+
+`game.json` declares one test setting, `sheet` (a whole number from 1), and no
+picture slots. `moment=feedback-sheet` photographs every choice of every point
+-- the behaviour, what happened, the rule, the source -- a page of the stage at
+a time: as many whole points as one 1280x720 picture holds, measured. The head
+says «الصفحة ك من ن» and the query for the next page (`sheet=2`); the first
+page by default, the last for a number past it. Its `weight_kb` (16) is the
+gzip of every file a learner's browser fetches for this game, this folder's
+and `games/core/`'s together, stated before the game was built.
 
 ## The contract
 
