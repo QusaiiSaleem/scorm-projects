@@ -1,0 +1,401 @@
+/*
+ * games/hotspot/game.css -- the hotspot game's stage (2026-11-07).
+ *
+ * The darkness, the light, the bursts and the floating points are drawn on a
+ * canvas by game.js. What is styled here is what sits in the page: the scene
+ * picture, the spots (buttons over it, each with the words the light shows),
+ * the score bar with its battery, the message after a press, the screens.
+ * Only base.css variables, no colour or font-size of our own, so a lecture's
+ * deck.css reaches every word; the stage box, the debrief and the touch rule
+ * are the core's.
+ */
+@import url("../core/game-core.css");
+
+.hs > * {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.hs-head { margin-block-end: var(--space-md); }
+
+.hs-line {
+  margin: 0 0 var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.hs-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.hs-title:focus { outline: none; }
+.hs-title:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
+
+.hs-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+
+/* THE START AND END SCREENS: the words beside a look at the scene. */
+.hs-intro,
+.hs-end {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.hs-intro-text,
+.hs-end-text { display: flex; flex-direction: column; gap: var(--space-md); align-items: flex-start; }
+
+.hs-intro-text p,
+.hs-end p { margin: 0; font-size: var(--font-size-body); line-height: 1.7; }
+
+.hs-how { color: var(--color-text-secondary); }
+.hs-end .hs-big { font-family: var(--font-heading); font-size: var(--font-size-h1); font-weight: 800; }
+
+/* THE SCENE, SMALL: the start screen's peek, the end screen, the debrief
+   and the review sheet. Rings sit at a spot's x and y, sized by its r. */
+.hs-figure {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid var(--color-text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background: var(--color-text);
+  line-height: 0;
+}
+
+.hs-figure-art { display: block; width: 100%; height: auto; }
+.hs-peek-dark { filter: brightness(0.12); }
+.hs-peek-lit { position: absolute; inset: 0; background-size: 100% 100%; }
+
+.hs-mark {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  width: calc(var(--r) * 200%);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 4px solid var(--color-surface-elevated);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px var(--color-text);
+}
+
+.hs-mark[data-result="correct"] { border-color: var(--color-success); }
+.hs-mark[data-result="wrong"],
+.hs-mark[data-result="none"],
+.hs-mark[data-result="hazard"] { border-color: var(--color-error); }
+.hs-mark[data-result="decoy"] { border-style: dashed; }
+
+/* A number, readable on any picture: the text colour on its own ground. */
+.hs-mark-n,
+.hs-sheet-n {
+  display: inline-block;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--space-xs);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+  font-weight: 800;
+  line-height: 24px;
+  text-align: center;
+}
+
+.hs-mark-n { position: absolute; top: 0; left: 0; translate: -35% -35%; }
+
+/* THE ROUND: the score bar over the stage; the scene fitted in the stage
+   by game.js, letterboxed in the dark. */
+.hs[data-screen="play"] { padding: 0; overflow: hidden; }
+
+.hs > .hs-play {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.hs-hud {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-surface);
+  border-block-end: 2px solid var(--color-border);
+}
+
+.hs-hud p { margin: 0; font-size: var(--font-size-body); font-weight: 700; color: var(--color-text); }
+.hs-hud-acts { margin-inline-start: auto; display: flex; gap: var(--space-sm); }
+.hs-hearts { display: flex; gap: var(--space-xs); }
+.hs-hud .hs-hearts { font-size: var(--font-size-h3); font-weight: 800; }
+.hs-heart[data-full="true"] { color: var(--color-error); }
+.hs-heart[data-full="false"] { color: var(--color-border); }
+
+.hs-hud .hs-streak {
+  padding: 0 var(--space-sm);
+  border: 2px solid var(--color-warning);
+  border-radius: var(--radius-full);
+  background: var(--color-warning-bg);
+  animation: hs-pop 0.3s ease-out;
+}
+
+/* The battery is the clock: it drains toward the inline start. */
+.hs-battery { display: flex; align-items: center; gap: var(--space-sm); }
+
+.hs-meter {
+  position: relative;
+  width: 110px;
+  height: 20px;
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.hs-meter-fill {
+  position: absolute;
+  inset: 2px;
+  border-radius: var(--space-xs);
+  background: var(--color-success);
+  transform-origin: right center;
+  scale: var(--hs-left, 1) 1;
+}
+
+.hs-meter[data-level="low"] .hs-meter-fill { background: var(--color-warning); }
+.hs-meter[data-level="empty"] .hs-meter-fill { background: var(--color-error); animation: hs-blink 0.5s steps(2) infinite; }
+
+.hs-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-text);
+  overflow: hidden;
+}
+
+/* A drag on the scene moves the light: the page must not scroll. */
+.hs-field {
+  position: relative;
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.hs-field:focus { outline: none; }
+.hs-field:focus-visible { outline: 3px solid var(--color-primary); outline-offset: -3px; }
+
+.hs-scene,
+.hs-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hs-spots { position: absolute; inset: 0; pointer-events: none; }
+
+/* A spot: a round button over the thing it names, invisible until the light
+   falls on it. Placed by its x and y, sized by its r, so the coarse-pointer
+   rule (44 px at least) can still enlarge it. Nothing tells a hazard from a
+   decoy until it is pressed. */
+.hs-spot {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  width: calc(var(--r) * 200%);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* The ring is its own box, so its pop, wobble and pulse never move or fade
+   the words beside it. */
+.hs-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-radius: var(--radius-full);
+}
+
+.hs-spot[data-lit]::before { border-color: var(--color-surface-elevated); border-style: dashed; }
+.hs-spot:focus { outline: none; }
+
+.hs-spot:focus-visible {
+  outline: 4px solid var(--color-primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 9px var(--color-surface-elevated);
+}
+
+.hs-spot[aria-disabled="true"] { cursor: default; }
+.hs-spot[data-outcome="found"]::before { border: 5px solid var(--color-success); animation: hs-found 0.5s ease-out; }
+.hs-spot[data-outcome="decoy"]::before { border: 5px solid var(--color-error); animation: hs-wobble 0.45s ease-in-out; }
+.hs-spot[data-outcome="missed"]::before { border: 5px dashed var(--color-error); animation: hs-pulse 0.7s ease-in-out infinite alternate; }
+
+/* The words the light shows, above the spot (below it near the top), slid
+   by game.js (--nudge) to stay inside the scene near its sides. */
+.hs-tag {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  translate: calc(-50% + var(--nudge, 0px)) 0;
+  visibility: hidden;
+  padding: var(--space-xs) var(--space-sm);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hs-spot[data-low] .hs-tag { bottom: auto; top: calc(100% + 6px); }
+
+.hs-spot[data-lit] .hs-tag,
+.hs-spot:focus .hs-tag,
+.hs-spot[data-outcome] .hs-tag { visibility: visible; }
+
+.hs-spot[data-outcome="found"] .hs-tag { border-color: var(--color-success); }
+.hs-spot[data-outcome="decoy"] .hs-tag,
+.hs-spot[data-outcome="missed"] .hs-tag { border-color: var(--color-error); }
+
+/* What a press did -- the rule after a find, what a decoy was after it cost
+   a heart -- in the band of the scene away from the spot pressed. */
+.hs-toast {
+  position: absolute;
+  top: 74px;
+  inset-inline: 12%;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--color-border);
+  border-inline-start-width: 8px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  pointer-events: none;
+  animation: hs-drop 0.25s ease-out;
+}
+
+.hs-toast[data-at="bottom"] { top: auto; bottom: var(--space-md); }
+.hs-toast[data-kind="found"] { border-color: var(--color-success); }
+.hs-toast[data-kind="decoy"] { border-color: var(--color-error); }
+
+.hs-paused {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+}
+
+/* THE DEBRIEF: the scene with every hazard numbered, beside its rows. */
+.hs-debrief { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
+
+.hs-debrief-body {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+/* Three rows across beside the scene, so five hazards fit one screen. */
+.hs-debrief-body > .game-debrief { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+.hs-done { margin: 0; font-weight: 700; }
+
+/* THE FEEDBACK SHEET: every spot, numbered as on the scene beside it. */
+.hs-sheet-head { margin-block-end: var(--space-md); }
+
+.hs-sheet-body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.hs-sheet-items { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.hs-sheet-item {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.hs-sheet-item[data-kind="hazard"] { border-inline-start-color: var(--color-error); }
+
+.hs-sheet-item h3 {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-h4);
+}
+
+.hs-sheet-item p { margin: 0; font-size: var(--font-size-small); line-height: 1.6; }
+.hs-source { color: var(--color-text-secondary); }
+
+@keyframes hs-found {
+  0% { scale: 0.6; }
+  60% { scale: 1.25; }
+  100% { scale: 1; }
+}
+
+@keyframes hs-wobble {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -12deg; scale: 1.15; }
+  75% { rotate: 10deg; }
+}
+
+@keyframes hs-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+
+@keyframes hs-pop {
+  0% { scale: 0.7; }
+  70% { scale: 1.15; }
+  100% { scale: 1; }
+}
+
+@keyframes hs-blink {
+  to { opacity: 0.35; }
+}
+
+@keyframes hs-drop {
+  from { opacity: 0; translate: 0 -10px; }
+  to { opacity: 1; translate: 0 0; }
+}

@@ -1,0 +1,138 @@
+{
+  "description": "The hotspot game's words: one scene picture in the dark, searched with a flashlight whose battery is the clock. HAZARDS are what the learner must notice: each one is a reported decision, found (pressed) or missed (still unfound when the round ends); its id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. DECOYS are ordinary things in the same scene: pressing one costs a heart, and they are never reported. THE PICTURE DECIDES, NEVER THE WORDS: a label names the thing only, never its state, and each hazard should have a SAFE TWIN among the decoys -- the same thing done right, elsewhere in the picture, which may wear the same label -- so the learner must look to tell them apart. A spot's place is a fraction of the scene picture: x from its LEFT edge (a picture is not mirrored for Arabic), y from its top, r its radius as a fraction of the picture's width; keep spots apart, so one press never lands on two, and each circle inside the picture (y plus r times its width over its height at most 1), so no part of a spot is cut off. Ask the person for every rule and source you were not given.",
+  "x-points": "hazards[]",
+  "type": "object",
+  "required": [
+    "title",
+    "brief",
+    "hazards",
+    "decoys"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The game's title, on its first screen and its debrief."
+    },
+    "brief": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The place, in one or two sentences, on the first screen; it is also what a screen reader says the scene picture shows. Never name a hazard here."
+    },
+    "hazards": {
+      "type": "array",
+      "minItems": 1,
+      "description": "What the learner must notice, each over the thing in the picture it names. The condition that makes it a hazard (a handle past the edge, a medicine left open) is for the picture to show and the rule to say, never the label.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "x",
+          "y",
+          "r",
+          "rule",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The interaction id the LMS receives: ASCII, unique in the lecture, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the light shows beside the spot: one to four words naming the thing only («علبة دواء»), never its state («مفتوحة») and never a verdict («خطر», «آمن»), so only the picture gives the answer. Its safe twin among the decoys may wear the same words."
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The spot's centre across the picture, from its left edge: 0 is the left edge, 1 the right."
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The spot's centre down the picture: 0 is the top, 1 the bottom."
+          },
+          "r": {
+            "type": "number",
+            "minimum": 0.02,
+            "maximum": 0.25,
+            "description": "The spot's radius as a fraction of the picture's width: 0.04 is a hand-sized thing in a room. At least 0.02, so a finger can press it."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What makes it a hazard and what to do about it, in one sentence: shown when the learner finds it, and in the debrief."
+          },
+          "source": {
+            "type": "string",
+            "description": "The citation the learner reads under the rule («المصدر: …»). Ask the person; never invent it. Left empty, the release lists it as left for the person."
+          }
+        }
+      }
+    },
+    "decoys": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordinary things in the same scene, each over the thing it names -- best of all a safe twin of each hazard. Pressing one costs a heart; they are never reported, so they need no row on the page.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "x",
+          "y",
+          "r"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "An ASCII name for the spot, unique among the hazards and the decoys; it is never reported."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the light shows beside it, written like a hazard's label: the thing only, never its state."
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Across the picture, from its left edge, as a hazard's x."
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Down the picture, as a hazard's y."
+          },
+          "r": {
+            "type": "number",
+            "minimum": 0.02,
+            "maximum": 0.25,
+            "description": "Its radius as a fraction of the picture's width, as a hazard's r."
+          },
+          "why": {
+            "type": "string",
+            "description": "Optional: what makes it safe, in one sentence, shown when it is pressed and on the review sheet. Write it for a safe twin, so a learner who pressed it learns the difference."
+          }
+        }
+      }
+    },
+    "slots": {
+      "type": "object",
+      "description": "Optional: the art hand's own scene picture for the game's one picture slot (game.json names its size). The value is a path under the lecture's assets, such as \"../assets/kitchen.png\"; left out, the game shows its own placeholder scene, which the sample's spots fit. A new picture needs new spots.",
+      "properties": {
+        "scene": {
+          "type": "string",
+          "description": "The place, seen whole, 16:9, opaque: every hazard and decoy visible in it at its x and y."
+        }
+      }
+    }
+  }
+}

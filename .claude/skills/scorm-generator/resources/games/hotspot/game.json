@@ -1,0 +1,11 @@
+{
+  "settings": {
+    "duration": {"type": "int", "min": 5, "max": 180},
+    "lives": {"type": "int", "min": 1, "max": 5},
+    "sheet": {"type": "int", "min": 1}
+  },
+  "slots": {
+    "scene": {"size": [1600, 900], "transparent": false, "placeholder": "assets/scene.svg"}
+  },
+  "weight_kb": 32
+}
