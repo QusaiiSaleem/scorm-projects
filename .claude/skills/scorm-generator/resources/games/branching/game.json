@@ -1,0 +1,12 @@
+{
+  "settings": {
+    "clock": {"type": "int", "min": 3, "max": 120},
+    "meter": {"type": "int", "min": 1, "max": 100},
+    "sheet": {"type": "int", "min": 1}
+  },
+  "slots": {
+    "character": {"size": [256, 256], "transparent": true, "placeholder": "assets/character.svg"},
+    "scene": {"size": [1280, 720], "transparent": false, "placeholder": "assets/scene.svg"}
+  },
+  "weight_kb": 30
+}

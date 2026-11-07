@@ -1,0 +1,189 @@
+{
+  "description": "The branching game's words: a story told in turns. Each NODE is one situation and one reported decision; each of its choices moves the meter and names what happens next (another node, or an ending). A node's id is a data-question-id row on the page, and its outcome codes are that row's data-measures, never in here. A node the learner's path never reaches is reported as no decision (none, wrong) when the debrief opens, so it counts against them: put EVERY node on the all-right walk (the choice marked correct at each node leads on through all of them), let wrong choices skip ahead, end the story or lower the meter until a node's `leave` turns it -- the game warns in the console when the right walk misses a node, because a flawless learner would then be scored below full marks. Ask the person for every rule and source you were not given.",
+  "x-points": "nodes[]",
+  "type": "object",
+  "required": [
+    "title",
+    "meter",
+    "start",
+    "nodes",
+    "endings"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The story's title, on its first screen and its debrief."
+    },
+    "meter": {
+      "type": "object",
+      "required": [
+        "label"
+      ],
+      "description": "What is at stake, shown as a meter from 0 to 100 that starts at 50. A right choice raises it by 10, a hesitant one lowers it by 10 and a wrong one by 25, so two wrong acts in a row empty it; while a turn's clock has run out it drains; under 35 (its «منخفض» band) a node with `leave` is never entered; at 0 the story ends early.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The meter's name, one or two words: «ثقة العميل», «سلامة الفريق», «الوقت»."
+        }
+      }
+    },
+    "start": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$",
+      "description": "The id of the node the story opens on."
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 2,
+      "description": "The situations, in the order the debrief and the feedback sheet list them (not the order a learner meets them, which the choices decide). Every node must be reachable from start, and every path must reach an ending.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "text",
+          "rule",
+          "source",
+          "choices"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The interaction id the LMS receives: ASCII, unique in the lecture, never the id of an ending, and the data-question-id of one row on the page. Take it from the client's alignment document; never invent it."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Two to four words naming the moment («الاستقبال», «الفحص»): on the trail of steps taken, and as the debrief's row."
+          },
+          "speaker": {
+            "type": "string",
+            "description": "Optional: who speaks or acts in this node («العميل»), shown under the character's picture."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The situation, one to three short sentences the learner reads while the clock runs."
+          },
+          "leave": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "Optional: the id of an ending the story goes to INSTEAD of this node when the learner arrives with the meter under 35 -- the stake changing what happens next («لم يعد يثق بكم فخرج»). The ending screen says the meter did it; the nodes never met are reported none/wrong. Give it to a node late on the spine, never to start."
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What to do here and why, in one sentence: shown after the consequence of any choice, and in the debrief."
+          },
+          "source": {
+            "type": "string",
+            "description": "The citation the learner reads under the rule («المصدر: …»). Ask the person; never invent it. Left empty, the release lists it as left for the person."
+          },
+          "choices": {
+            "type": "array",
+            "minItems": 2,
+            "description": "What the learner may do, two to four. The game shuffles their order on screen, seeded by the ids, so the right one is not always first.",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "label",
+                "result",
+                "consequence",
+                "next"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                  "description": "The response the LMS receives (a, b, c): ASCII, unique inside its node. The label never travels on the wire."
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "What the learner does, in the first person, five to ten words; never a verdict that tells the answer."
+                },
+                "result": {
+                  "type": "string",
+                  "enum": [
+                    "correct",
+                    "wrong",
+                    "neutral"
+                  ],
+                  "description": "correct raises the meter by 10, neutral (a hesitant act) lowers it by 10, wrong lowers it by 25."
+                },
+                "consequence": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "What happens because of this choice, told as the story's next beat, before the rule: name the behaviour, never the learner."
+                },
+                "next": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                  "description": "The id of the node or the ending this choice leads to."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "endings": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Where the story can end, each reached by some choice's next. Endings are not decisions and report nothing; the meter running out is an ending of the game's own.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "text",
+          "tone"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "ASCII, and never the id of a node."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The ending's name, two to four words."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What came of the path, one or two sentences."
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "good",
+              "mixed",
+              "bad"
+            ],
+            "description": "good: the path the rules lead to; mixed: part of it; bad: a path that went wrong."
+          }
+        }
+      }
+    },
+    "slots": {
+      "type": "object",
+      "description": "Optional: the art hand's own pictures for the game's two picture slots (game.json names their sizes). Each value is a path under the lecture's assets, such as \"../assets/customer.png\"; a slot left out keeps the game's own placeholder.",
+      "properties": {
+        "character": {
+          "type": "string",
+          "description": "The person the learner deals with, from the waist up; transparent around them."
+        },
+        "scene": {
+          "type": "string",
+          "description": "Where the story happens, behind everything; opaque, 1280x720."
+        }
+      }
+    }
+  }
+}
