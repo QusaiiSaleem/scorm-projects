@@ -1,0 +1,391 @@
+/*
+ * games/catch3d/game.css -- the 3D catch game's stage (2026-11-07).
+ *
+ * dsh-game-studio's `voxel` (MIT; notice in README.md) draws the island, its
+ * characters, the sparks and the sky on a WebGL canvas, and game.js keeps
+ * that canvas. What is styled here is what the learning layer put in the
+ * page: the word cards over the lanterns, the score bar, the rule after a
+ * mistake, the panels, the flat board a device without WebGL plays on. Only
+ * base.css variables, no colour or font-size of our own, so a lecture's
+ * deck.css reaches every word; the stage box, the debrief and the touch rule
+ * are the core's. Voxel's HUD was white text on dark glass as inline styles;
+ * here every word sits on the lecture's own surface, so it reads at AA over
+ * any sky.
+ */
+@import url("../core/game-core.css");
+
+.c3 > .c3-screen {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.c3-head { margin-block-end: var(--space-md); }
+
+.c3-line {
+  margin: 0 0 var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.c3-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.c3-title:focus { outline: none; }
+.c3-title:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
+
+.c3-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+
+/* THE START, NO-WEBGL AND END SCREENS: the words beside voxel's cast. */
+.c3-intro,
+.c3-end {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.c3-intro-text,
+.c3-end-text { display: flex; flex-direction: column; gap: var(--space-md); align-items: flex-start; }
+
+.c3-intro-text p,
+.c3-end p { margin: 0; font-size: var(--font-size-body); line-height: 1.7; }
+
+.c3-how { color: var(--color-text-secondary); }
+.c3-end .c3-big { font-family: var(--font-heading); font-size: var(--font-size-h1); font-weight: 800; }
+
+.c3-scene { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.c3-scene-row { display: flex; gap: var(--space-xl); align-items: flex-end; }
+.c3-scene-item,
+.c3-scene-enemy { width: 110px; height: 110px; }
+.c3-scene-hero { width: 220px; height: 220px; }
+
+/* THE ISLAND: on the round's screens the root is the canvas' own box. */
+.c3[data-screen="play"],
+.c3[data-screen="won"],
+.c3[data-screen="lost"] { padding: 0; overflow: hidden; }
+
+.c3-world { position: absolute; inset: 0; overflow: hidden; }
+
+/* A drag on the island is voxel's joystick: the page must not scroll. */
+.c3-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* The flat board, only where there is no WebGL: the same cards on a plain
+   field ruled like squared paper. */
+.c3-board {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-background);
+  background-image:
+    repeating-linear-gradient(0deg, var(--color-border-subtle) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(90deg, var(--color-border-subtle) 0 1px, transparent 1px 64px);
+}
+
+.c3[data-world="flat"] .c3-board { display: block; }
+.c3[data-world="flat"] .c3-canvas { display: none; }
+
+.c3-cards,
+.c3-floaters { position: absolute; inset: 0; pointer-events: none; }
+
+/* The group only holds a keyboard learner's focus until a card rises and
+   takes it (game.js, cardsBox); a ring round the whole stage marks nothing
+   a learner can press, and each card draws its own. */
+.c3-cards:focus { outline: none; }
+
+/* A card: its words over its lantern, and how long it stays. Placed by the
+   game with `transform` every frame; its catch and its fade animate `scale`
+   and `opacity`, which never move it. */
+.c3-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm) var(--space-sm);
+  background: var(--color-surface-elevated);
+  border: 3px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* The tail that points down at the lantern; gone when the card is held
+   inside the stage away from it. */
+.c3-card::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: calc(50% - 10px);
+  border: 10px solid transparent;
+  border-block-start-color: var(--color-border);
+}
+
+.c3-card[data-edge]::after,
+.c3[data-world="flat"] .c3-card::after { display: none; }
+
+.c3[data-world="flat"] .c3-card { width: 230px; padding-block-start: var(--space-sm); }
+
+.c3-card:focus { outline: none; }
+.c3-card:focus-visible { outline: 4px solid var(--color-primary); outline-offset: 3px; }
+.c3-card-art { width: 52px; height: 52px; }
+.c3-card-label { font-size: var(--font-size-h4); font-weight: 700; line-height: 1.35; }
+
+.c3-card-life {
+  align-self: stretch;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform-origin: center;
+  scale: var(--c3-left, 1) 1;
+}
+
+.c3-card[data-result="correct"] { border-color: var(--color-success); }
+.c3-card[data-result="wrong"] { border-color: var(--color-error); }
+.c3-card[data-result="correct"]::after { border-block-start-color: var(--color-success); }
+.c3-card[data-result="wrong"]::after { border-block-start-color: var(--color-error); }
+.c3-card[data-outcome="caught"] { animation: c3-pop 0.4s ease-out forwards; }
+.c3-card[data-outcome="passed"] { animation: c3-fade 0.4s ease-in forwards; }
+
+@keyframes c3-pop {
+  0% { scale: 1; opacity: 1; }
+  40% { scale: 1.12; opacity: 1; }
+  100% { scale: 0.6; opacity: 0; }
+}
+
+@keyframes c3-fade {
+  from { scale: 1; opacity: 1; }
+  to { scale: 0.9; opacity: 0; }
+}
+
+/* +1, «فاتتك», the shield: a word that rises and fades where it happened. */
+.c3-floater {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -50% -100%;
+  padding: 0 var(--space-sm);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-h4);
+  font-weight: 800;
+  white-space: nowrap;
+  animation: c3-rise 0.9s ease-out forwards;
+}
+
+.c3-floater[data-kind="bad"] { border-color: var(--color-error); }
+.c3-floater[data-kind="shield"] { border-color: var(--color-info); }
+
+@keyframes c3-rise {
+  from { top: 0; opacity: 1; }
+  to { top: -56px; opacity: 0; }
+}
+
+/* A heart lost: the island's edge flashes in the lecture's error colour. */
+.c3-hurt {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 12px var(--color-error), inset 0 0 140px var(--color-error);
+}
+
+.c3-hurt[data-on] { animation: c3-flash 0.5s ease-out; }
+
+@keyframes c3-flash {
+  from { opacity: 0.8; }
+  to { opacity: 0; }
+}
+
+/* THE SCREEN LAYER over the island: the score bar, the rule, the pause, the
+   end panel. It lets a press through to the island except on its controls. */
+.c3 > .c3-on-play,
+.c3 > .c3-on-won,
+.c3 > .c3-on-lost {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  margin: 0;
+  pointer-events: none;
+}
+
+.c3-play { position: absolute; inset: 0; }
+
+/* Voxel's pills, on the lecture's surface instead of dark glass. */
+.c3-hud {
+  position: absolute;
+  inset-block-start: var(--space-sm);
+  inset-inline: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.c3-pill {
+  margin: 0;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.c3-hearts { display: flex; gap: var(--space-xs); font-size: var(--font-size-h3); line-height: 1.2; }
+.c3-heart[data-full="true"] { color: var(--color-error); }
+.c3-heart[data-full="false"] { color: var(--color-border); }
+.c3-shield { border-color: var(--color-info); }
+
+.c3-hud-acts {
+  margin-inline-start: auto;
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-xs);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+}
+
+.c3-loading {
+  position: absolute;
+  inset-block-end: var(--space-xl);
+  inset-inline: 0;
+  width: max-content;
+  margin: 0 auto;
+  padding: var(--space-xs) var(--space-lg);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+}
+
+/* The rule, after a mistake, under the score bar. */
+.c3-toast {
+  position: absolute;
+  inset-block-start: 76px;
+  inset-inline: var(--space-xl);
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  pointer-events: none;
+}
+
+.c3-paused {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  pointer-events: auto;
+}
+
+/* The end of a round: voxel's card over the island, which keeps living
+   behind it, on a veil of the lecture's surface. */
+.c3 > .c3-on-won,
+.c3 > .c3-on-lost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  pointer-events: auto;
+}
+
+.c3 > .c3-on-won::before,
+.c3 > .c3-on-lost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-surface);
+  opacity: 0.45;
+}
+
+.c3-on-won .c3-end,
+.c3-on-lost .c3-end {
+  position: relative;
+  width: 100%;
+  max-width: 1040px;
+  padding: var(--space-xl);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* In the text colour: the success green on white is 2.54:1 (measured on
+   production 2026-11-07), under AA's 4.5:1. */
+.c3-debrief { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
+.c3-debrief > .game-debrief { align-self: stretch; }
+.c3-done { margin: 0; font-weight: 700; color: var(--color-text); }
+
+/* «إنهاء» STAYS ON SCREEN. Ten cards make the debrief taller than the 720 px
+   stage (980 measured), Next is held until «إنهاء» is pressed, and the
+   stage's scrollbar is an overlay a child may never see (review of
+   2026-11-07: the button at 899-948, nothing showing there was more).
+   Sticky inside the core's scrolling stage, it holds at the stage's foot
+   while the rows pass under it, and rests in its own place at the end. */
+.c3-debrief > [data-act="finish"] {
+  position: sticky;
+  inset-block-end: 0;
+  box-shadow: var(--shadow-lg);
+}
+
+/* THE FEEDBACK SHEET: every card, its kind, the right act, rule and source. */
+.c3-sheet-head { margin-block-end: var(--space-md); }
+.c3-sheet-items { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.c3-sheet-item {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-success);
+  border-radius: var(--radius-md);
+}
+
+.c3-sheet-item[data-kind="hazard"] { border-inline-start-color: var(--color-error); }
+.c3-sheet-item h3 { margin: 0 0 var(--space-xs); font-size: var(--font-size-h4); }
+.c3-sheet-item p { margin: 0; font-size: var(--font-size-small); line-height: 1.6; }
+.c3-source { color: var(--color-text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .c3-card[data-outcome] { animation-duration: 0.01s; }
+}

@@ -1,0 +1,15 @@
+{
+  "settings": {
+    "duration": {"type": "int", "min": 3, "max": 120},
+    "lives": {"type": "int", "min": 1, "max": 5},
+    "enemies": {"type": "int", "min": 0, "max": 8},
+    "sheet": {"type": "int", "min": 1}
+  },
+  "slots": {
+    "hero": {"size": [256, 256], "transparent": true, "placeholder": "assets/hero.svg"},
+    "enemy": {"size": [256, 256], "transparent": true, "placeholder": "assets/enemy.svg"},
+    "item": {"size": [256, 256], "transparent": true, "placeholder": "assets/item.svg"},
+    "background": {"size": [512, 512], "transparent": false, "placeholder": "assets/background.svg"}
+  },
+  "weight_kb": 240
+}
