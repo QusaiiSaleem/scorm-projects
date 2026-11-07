@@ -3,5 +3,5 @@
     "sheet": {"type": "int", "min": 1}
   },
   "slots": {},
-  "weight_kb": 16
+  "weight_kb": 18
 }

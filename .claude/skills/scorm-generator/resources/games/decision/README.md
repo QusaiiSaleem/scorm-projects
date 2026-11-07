@@ -59,9 +59,12 @@ picture slots. `moment=feedback-sheet` photographs every choice of every point
 -- the behaviour, what happened, the rule, the source -- a page of the stage at
 a time: as many whole points as one 1280x720 picture holds, measured. The head
 says «الصفحة ك من ن» and the query for the next page (`sheet=2`); the first
-page by default, the last for a number past it. Its `weight_kb` (16) is the
-gzip of every file a learner's browser fetches for this game, this folder's
-and `games/core/`'s together, stated before the game was built.
+page by default, the last for a number past it. Its `weight_kb` is the gzip
+of every file a learner's browser fetches for this game, this folder's and
+`games/core/`'s together, plus `sample.json`, which travels as the content
+block a template writes into the page (Scitter spec §6 bar 5: "the game's
+files and its sample"). It was first stated before the game was built, over
+the files alone, and re-stated once the sample was counted.
 
 ## The contract
 
