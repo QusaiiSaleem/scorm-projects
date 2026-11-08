@@ -14,9 +14,23 @@
  *
  * canGoNext (optional): asked before every forward move -- the Next button,
  * the arrow keys and a swipe all go through next(), so one answer governs all
- * three. Return false and Next is disabled and does nothing (on the last
- * slide that includes completion). Previous is never blocked. When the answer
- * changes while the slide stays the same, call refreshNav() to redraw Next.
+ * three. Return false and Next is marked unavailable and does nothing (on the
+ * last slide that includes completion). Previous is never blocked. When the
+ * answer changes while the slide stays the same, call refreshNav() to redraw
+ * Next.
+ *
+ * A HELD NEXT IS aria-disabled="true", NOT `disabled` (2026-11-08). A disabled
+ * button cannot hold focus and Tab skips it: Enter on Next onto a slide that
+ * holds Next dropped keyboard focus to the page itself (measured in Chromium,
+ * Firefox and WebKit on 13 of 179 slides in Scitter's baseline decks), and the
+ * reason the page gives for the hold (aria-describedby) was never read with
+ * the button. aria-disabled keeps Next where it is in the tab order and says it
+ * is unavailable; next() refuses the move itself, as before. Style a held Next
+ * with [aria-disabled="true"] (css/base.css does), not :disabled.
+ *
+ * THE ARROW KEYS FOLLOW THE PAGE'S DIRECTION, as the swipe below always did:
+ * in a right-to-left deck Next sits on the left, so ArrowLeft goes forward and
+ * ArrowRight back. ArrowDown and ArrowUp stay next and previous.
  *
  * HTML structure expected:
  *   <div class="sco-container">
@@ -132,7 +146,7 @@
         this.nextBtn.textContent =
           this.nextBtn.getAttribute('data-next-text') || 'Next';
       }
-      this.nextBtn.disabled = !this._nextAllowed();
+      this._markNext();
     }
 
     // Callback
@@ -145,10 +159,22 @@
     return !this.canGoNext || this.canGoNext(this.currentIndex) !== false;
   };
 
+  // Next held or free, said without taking it out of the tab order (see the
+  // header). `disabled` is cleared too, so markup that shipped it cannot hold
+  // focus out of the button.
+  SlideController.prototype._markNext = function() {
+    this.nextBtn.disabled = false;
+    if (this._nextAllowed()) {
+      this.nextBtn.removeAttribute('aria-disabled');
+    } else {
+      this.nextBtn.setAttribute('aria-disabled', 'true');
+    }
+  };
+
   // Redraw Next after canGoNext's answer changed on the same slide.
   SlideController.prototype.refreshNav = function() {
     if (this.nextBtn) {
-      this.nextBtn.disabled = !this._nextAllowed();
+      this._markNext();
     }
   };
 
@@ -197,12 +223,15 @@
       this.nextBtn.addEventListener('click', function() { self.next(); });
     }
 
-    // Keyboard navigation
+    // Keyboard navigation, mirrored for a right-to-left page like the swipe.
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      var isRTL = document.documentElement.dir === 'rtl';
+      var forward = isRTL ? 'ArrowLeft' : 'ArrowRight';
+      var back = isRTL ? 'ArrowRight' : 'ArrowLeft';
+      if (e.key === forward || e.key === 'ArrowDown') {
         e.preventDefault();
         self.next();
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      } else if (e.key === back || e.key === 'ArrowUp') {
         e.preventDefault();
         self.prev();
       }

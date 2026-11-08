@@ -495,13 +495,17 @@ label:has(input.sr-only:focus-visible) {
 }
 
 /* Not on a disabled button: a slide that holds Next dims it, and hovering a
-   dimmed button must not dress it as live. */
-.nav-btn:hover:not(:disabled) {
+   dimmed button must not dress it as live. A held Next is aria-disabled, not
+   disabled (engine/slide-controller.js says why), so both spellings are read;
+   one :not() list, so the rule keeps the specificity it always had. */
+.nav-btn:hover:not(:disabled, [aria-disabled="true"]) {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.nav-btn:disabled {
+/* The dimmed look in two plain selectors, not one :is(): a browser without
+   :is() drops the whole rule, and a held Next would then look live. */
+.nav-btn:disabled, .nav-btn[aria-disabled="true"] {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -532,12 +536,12 @@ label:has(input.sr-only:focus-visible) {
    colour. The label is restated because .nav-btn:hover recolours it to the
    primary -- on a primary fill, which made the label vanish under the mouse.
    Same specificity as that rule and later in the file, so this one wins. */
-.btn-next:hover:not(:disabled) {
+.btn-next:hover:not(:disabled, [aria-disabled="true"]) {
   color: var(--color-text-on-primary);
   filter: brightness(0.92);
 }
 
-.btn-next:active:not(:disabled) {
+.btn-next:active:not(:disabled, [aria-disabled="true"]) {
   filter: brightness(0.85);
 }
 
@@ -555,12 +559,13 @@ label:has(input.sr-only:focus-visible) {
   border: 2px solid var(--color-border);
 }
 
-.btn-prev:hover:not(:disabled) {
+.btn-prev:hover:not(:disabled, [aria-disabled="true"]) {
   border-color: var(--color-primary);
   color: var(--color-text);
 }
 
-.btn-prev:disabled, .btn-next:disabled {
+.btn-prev:disabled, .btn-next:disabled,
+.btn-prev[aria-disabled="true"], .btn-next[aria-disabled="true"] {
   opacity: 0.5;
   cursor: not-allowed;
 }
